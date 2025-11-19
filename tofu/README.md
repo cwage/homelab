@@ -41,6 +41,8 @@ Edit `.env` with your Proxmox credentials:
 PM_API_URL=https://10.15.15.18:8006/api2/json
 PM_API_TOKEN_ID=root@pam!tofu-token
 PM_API_TOKEN_SECRET=your-secret-here
+PM_NODE_NAME=pve                     # Proxmox node to manage images/VMs
+PM_IMAGE_DATASTORE_ID=local          # Datastore for downloaded cloud images
 ```
 
 **Important**: The `.env` file is gitignored and should never be committed.
@@ -82,6 +84,10 @@ make apply     # Apply if everything looks good
 ```bash
 make shell     # Opens bash in container with tofu available
 ```
+
+## Base images (Debian bookworm)
+
+The configuration downloads the current Debian stable cloud image to the `PM_IMAGE_DATASTORE_ID` datastore on `PM_NODE_NAME`. Run `make plan`/`make apply` to pull or refresh the file (`debian-12-genericcloud-amd64.img` stored under `template/iso`). Future VM/template resources can reference this downloaded image ID directly.
 
 ## Secret scanning and pre-commit hook
 
