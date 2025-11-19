@@ -1,0 +1,72 @@
+# {{ ansible_managed }}
+# Unbound DNS resolver configuration
+
+server:
+    # Network interfaces to listen on
+{% for interface in unbound_listen_interfaces %}
+    interface: {{ interface }}
+{% endfor %}
+
+    # Port to listen on
+    port: {{ unbound_port }}
+
+    # Enable IPv4/IPv6
+    do-ip4: yes
+    do-ip6: no
+    do-udp: yes
+    do-tcp: yes
+
+    # Access control - allow queries from these networks
+{% for network in unbound_access_control %}
+    access-control: {{ network }} allow
+{% endfor %}
+
+    # Deny all others
+    access-control: 0.0.0.0/0 refuse
+    access-control: ::/0 refuse
+
+    # Performance tuning
+    num-threads: 2
+    msg-cache-slabs: 4
+    rrset-cache-slabs: 4
+    infra-cache-slabs: 4
+    key-cache-slabs: 4
+
+    # Cache sizes
+    rrset-cache-size: 100m
+    msg-cache-size: 50m
+
+    # TTL settings
+    cache-min-ttl: 300
+    cache-max-ttl: 86400
+
+    # Privacy settings
+    hide-identity: yes
+    hide-version: yes
+
+    # DNSSEC
+    # Note: root.key will be created automatically by unbound-anchor on first start
+    # auto-trust-anchor-file: "/var/unbound/db/root.key"
+
+    # Logging (adjust verbosity as needed)
+    verbosity: 1
+    log-queries: no
+    log-replies: no
+    log-servfail: yes
+
+    # Performance
+    prefetch: yes
+    prefetch-key: yes
+
+# Forward queries to upstream resolvers
+forward-zone:
+    name: "."
+{% for forwarder in unbound_forwarders %}
+    forward-addr: {{ forwarder }}
+{% endfor %}
+
+# Stub zone for local domain (currently commented out)
+# Uncomment and configure when bind instance is ready
+# stub-zone:
+#     name: "lan.quietlife.net"
+#     stub-addr: <bind-server-ip>

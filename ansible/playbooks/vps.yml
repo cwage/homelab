@@ -1,0 +1,11 @@
+---
+- name: Manage Linode VPS servers
+  hosts: linode_vps
+  become: true
+  gather_facts: false
+  roles:
+    - system
+    - users
+    - packages
+    - custom_packages
+    - nginx

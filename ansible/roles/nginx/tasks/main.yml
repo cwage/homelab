@@ -1,0 +1,126 @@
+---
+- name: Install nginx and dependencies
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - python3-passlib
+    state: present
+    update_cache: true
+
+- name: Add www-data to site owner groups
+  ansible.builtin.user:
+    name: www-data
+    groups: "{{ nginx_sites | map(attribute='group') | unique | list }}"
+    append: true
+
+- name: Remove default nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: reload nginx
+
+- name: Configure catch-all default server
+  ansible.builtin.copy:
+    content: |
+      # Catch-all server for unmatched Host headers
+      server {
+          listen 80 default_server;
+          listen [::]:80 default_server;
+          server_name _;
+          return 444;  # Close connection without response
+      }
+    dest: /etc/nginx/sites-available/00-default
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload nginx
+
+- name: Enable catch-all default server
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/00-default
+    dest: /etc/nginx/sites-enabled/00-default
+    state: link
+  notify: reload nginx
+
+- name: Create web root directories
+  ansible.builtin.file:
+    path: "{{ item.root }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.dir_mode }}"
+  loop: "{{ nginx_sites }}"
+  loop_control:
+    label: "{{ item.server_name }}"
+
+- name: Create blank index.html files
+  ansible.builtin.copy:
+    content: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>{{ item.server_name }}</title>
+      </head>
+      <body>
+      </body>
+      </html>
+    dest: "{{ item.root }}/index.html"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.file_mode }}"
+    force: false
+  loop: "{{ nginx_sites }}"
+  loop_control:
+    label: "{{ item.server_name }}"
+
+- name: Create htpasswd directory
+  ansible.builtin.file:
+    path: /etc/nginx/htpasswd
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create htpasswd files for sites with basic auth
+  ansible.builtin.copy:
+    content: |
+      {% for user in item.basic_auth.users %}
+      {{ user.username }}:{{ user.password_hash }}
+      {% endfor %}
+    dest: "/etc/nginx/htpasswd/{{ item.server_name }}"
+    owner: root
+    group: www-data
+    mode: '0640'
+  loop: "{{ nginx_sites | selectattr('basic_auth', 'defined') | list }}"
+  loop_control:
+    label: "{{ item.server_name }}"
+  no_log: true
+
+- name: Configure nginx virtual hosts
+  ansible.builtin.template:
+    src: vhost.conf.j2
+    dest: "/etc/nginx/sites-available/{{ item.server_name }}"
+    owner: root
+    group: root
+    mode: '0644'
+    validate: 'nginx -t'
+  loop: "{{ nginx_sites }}"
+  loop_control:
+    label: "{{ item.server_name }}"
+  notify: reload nginx
+
+- name: Enable nginx virtual hosts
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ item.server_name }}"
+    dest: "/etc/nginx/sites-enabled/{{ item.server_name }}"
+    state: link
+  loop: "{{ nginx_sites }}"
+  loop_control:
+    label: "{{ item.server_name }}"
+  notify: reload nginx
+
+- name: Ensure nginx is running and enabled
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true

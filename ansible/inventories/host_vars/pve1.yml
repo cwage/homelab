@@ -1,0 +1,2 @@
+# Host-specific variables for 10.10.15.18 (Proxmox)
+proxmox_hostname: pve1

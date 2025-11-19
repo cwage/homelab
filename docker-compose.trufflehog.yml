@@ -1,0 +1,10 @@
+services:
+  trufflehog:
+    build:
+      context: .
+      dockerfile: Dockerfile.trufflehog
+    working_dir: /repo
+    volumes:
+      - ./:/repo:ro
+    environment:
+      - NO_COLOR=1

@@ -1,0 +1,24 @@
+---
+- name: Write dhcpd.conf to temporary location
+  ansible.builtin.raw: |
+    cat > /tmp/dhcpd.conf.new << 'DHCPDCONF_EOF'
+    {{ lookup('template', 'dhcpd.conf.j2') }}
+    DHCPDCONF_EOF
+  changed_when: false
+  check_mode: false
+
+- name: Validate new dhcpd.conf
+  ansible.builtin.raw: /usr/sbin/dhcpd -n -c /tmp/dhcpd.conf.new
+  become: true
+  changed_when: false
+  check_mode: false
+
+- name: Deploy dhcpd.conf if validation passed
+  ansible.builtin.raw: cat /tmp/dhcpd.conf.new | /usr/bin/tee {{ dhcpd_conf_path }} > /dev/null
+  become: true
+  notify: restart dhcpd
+
+- name: Ensure dhcpd is enabled
+  ansible.builtin.raw: /usr/sbin/rcctl enable dhcpd
+  become: true
+  changed_when: false

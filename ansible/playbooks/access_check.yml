@@ -1,0 +1,43 @@
+---
+- name: Access and sudo checks
+  hosts: all
+  gather_facts: false
+  become: false
+  tasks:
+    - name: SSH connectivity (ping module)
+      ansible.builtin.ping:
+
+    - name: whoami (without sudo)
+      ansible.builtin.command: whoami
+      register: whoami_user
+      changed_when: false
+
+    - name: Show whoami result
+      ansible.builtin.debug:
+        var: whoami_user.stdout
+
+    - name: Group membership (id -nG)
+      ansible.builtin.command: id -nG
+      register: groups_out
+      changed_when: false
+
+    - name: Verify membership includes sudo
+      ansible.builtin.assert:
+        that:
+          - "'sudo' in groups_out.stdout.split()"
+        fail_msg: "User not in sudo group"
+        success_msg: "User is in sudo group"
+
+    - name: whoami with sudo (become)
+      become: true
+      become_method: sudo
+      ansible.builtin.command: whoami
+      register: whoami_root
+      changed_when: false
+
+    - name: Verify sudo whoami == root
+      ansible.builtin.assert:
+        that:
+          - whoami_root.stdout == 'root'
+        fail_msg: "sudo whoami did not return root"
+        success_msg: "sudo is working (whoami == root)"

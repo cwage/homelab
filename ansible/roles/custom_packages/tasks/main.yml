@@ -1,0 +1,16 @@
+---
+- name: Copy tinyfugue .deb package to remote host
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../files/packages/tinyfugue_5.0-widechar-2_amd64.deb"
+    dest: /tmp/tinyfugue_5.0-widechar-2_amd64.deb
+    mode: '0644'
+
+- name: Install tinyfugue package (static binary, no dependencies)
+  ansible.builtin.apt:
+    deb: /tmp/tinyfugue_5.0-widechar-2_amd64.deb
+    state: present
+
+- name: Remove temporary .deb file
+  ansible.builtin.file:
+    path: /tmp/tinyfugue_5.0-widechar-2_amd64.deb
+    state: absent

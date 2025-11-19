@@ -1,0 +1,19 @@
+---
+- name: Write pf.conf to temporary location
+  ansible.builtin.raw: |
+    cat > /tmp/pf.conf.new << 'PFCONF_EOF'
+    {{ lookup('template', 'pf.conf.j2') }}
+    PFCONF_EOF
+  changed_when: false
+  check_mode: false
+
+- name: Validate new pf.conf
+  ansible.builtin.raw: /sbin/pfctl -nf /tmp/pf.conf.new
+  become: true
+  changed_when: false
+  check_mode: false
+
+- name: Deploy pf.conf if validation passed
+  ansible.builtin.raw: cat /tmp/pf.conf.new | /usr/bin/tee {{ pf_conf_path }} > /dev/null
+  become: true
+  notify: reload pf

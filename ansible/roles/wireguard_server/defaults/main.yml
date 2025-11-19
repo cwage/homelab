@@ -1,0 +1,36 @@
+---
+# Default variables for wireguard_server role
+
+# WireGuard configuration
+wireguard_interface: wg0
+wireguard_port: 51923
+wireguard_vpn_network: 10.10.16.0/24
+wireguard_vpn_ip: 10.10.16.1
+wireguard_vpn_netmask: 255.255.255.0
+
+# Path to private key file (must be placed manually before running)
+wireguard_private_key_path: /etc/wireguard/private.key
+
+# LAN interface and network (for routing/forwarding)
+wireguard_lan_interface: em1
+wireguard_lan_network: 10.10.15.0/24
+
+# WireGuard peers configuration
+# Format:
+#   name: descriptive name
+#   public_key: base64 encoded public key
+#   allowed_ips: CIDR notation for allowed IPs (what this peer can send from)
+#   persistent_keepalive: seconds between keepalive packets (0 = disabled)
+wireguard_peers: []
+#  - name: portaptty
+#    public_key: "BASE64_PUBLIC_KEY_HERE"
+#    allowed_ips: "10.10.16.2/32"
+#    persistent_keepalive: 0
+#
+#  - name: android
+#    public_key: "BASE64_PUBLIC_KEY_HERE"
+#    allowed_ips: "10.10.16.3/32"
+#    persistent_keepalive: 0
+
+# Enable IP forwarding (required for routing between VPN and LAN)
+wireguard_enable_ip_forwarding: true

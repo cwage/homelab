@@ -1,0 +1,60 @@
+---
+- name: Set system hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname_short }}.{{ domain_name }}"
+  when: domain_name is defined
+
+- name: Update /etc/hosts with hostname
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s+'
+    line: "127.0.1.1\t{{ inventory_hostname_short }}.{{ domain_name }} {{ inventory_hostname_short }}"
+    state: present
+  when: domain_name is defined
+
+- name: Create systemd drop-in directory for ssh.socket
+  ansible.builtin.file:
+    path: /etc/systemd/system/ssh.socket.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure ssh.socket to listen on multiple ports
+  ansible.builtin.copy:
+    content: |
+      [Socket]
+      ListenStream=
+      {% for port in ssh_ports %}
+      ListenStream=0.0.0.0:{{ port }}
+      ListenStream=[::]:{{ port }}
+      {% endfor %}
+    dest: /etc/systemd/system/ssh.socket.d/listen.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Configure sshd_config
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: '0644'
+    validate: '/usr/sbin/sshd -t -f %s'
+
+- name: Reload systemd daemon to pick up socket configuration
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Ensure ssh.service is stopped (we use socket activation instead)
+  ansible.builtin.systemd:
+    name: ssh.service
+    state: stopped
+    enabled: false
+
+- name: Enable and start ssh.socket
+  ansible.builtin.systemd:
+    name: ssh.socket
+    enabled: true
+    state: started

@@ -1,0 +1,39 @@
+# OpenTofu / Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Secrets and sensitive data
+*.pem
+*.key
+secrets/
+.env
+.env.*
+!.env.example
+
+# Docker
+.docker/
+
+# OS / Editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vim/
+
+# Backup files
+*.bak
+*.backup
+*.orig

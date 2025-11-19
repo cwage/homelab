@@ -1,0 +1,21 @@
+---
+- name: Include package installation tasks
+  ansible.builtin.include_tasks: packages.yml
+  tags: ['wireguard', 'packages']
+
+- name: Check that private key exists
+  ansible.builtin.raw: test -f {{ wireguard_private_key_path }}
+  become: true
+  register: private_key_check
+  failed_when: private_key_check.rc != 0
+  changed_when: false
+  check_mode: false
+
+- name: Include interface configuration tasks
+  ansible.builtin.include_tasks: interface.yml
+  tags: ['wireguard', 'interface']
+
+- name: Include IP forwarding tasks
+  ansible.builtin.include_tasks: forwarding.yml
+  when: wireguard_enable_ip_forwarding
+  tags: ['wireguard', 'forwarding']

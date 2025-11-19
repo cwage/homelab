@@ -1,0 +1,24 @@
+---
+managed_users:
+  - name: deploy
+    shell: /bin/bash
+    groups: ["sudo"]
+    ssh_pubkey_file: "keys/deploy.pub"
+  - name: cwage
+    shell: /bin/bash
+    groups: ["sudo", "adm"]
+    ssh_pubkey_files:
+      - "inventories/keys/cwage-portaplotz.pub"
+      - "inventories/keys/cwage-portaptty.pub"
+  - name: vlee
+    shell: /bin/bash
+    groups: []
+    # No SSH key yet - will be added later
+  - name: mlis
+    shell: /bin/bash
+    groups: []
+    ssh_pubkey_file: "inventories/keys/mlis.pub"
+  - name: cowens
+    shell: /bin/bash
+    groups: []
+    # No SSH key yet - will be added later

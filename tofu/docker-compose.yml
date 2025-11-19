@@ -1,0 +1,23 @@
+services:
+  tofu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: homelab-tofu:latest
+    container_name: homelab-tofu
+    working_dir: /workspace
+    volumes:
+      # Mount the entire project directory
+      - .:/workspace
+      # Preserve SSH keys for git operations if needed
+      - ${HOME}/.ssh:/home/tofu/.ssh:ro
+    environment:
+      # Proxmox API credentials - TF_VAR_ prefix maps to OpenTofu variables
+      - TF_VAR_pm_api_url=${PM_API_URL}
+      - TF_VAR_pm_api_token_id=${PM_API_TOKEN_ID}
+      - TF_VAR_pm_api_token_secret=${PM_API_TOKEN_SECRET}
+      # Disable OpenTofu telemetry
+      - TF_CLI_ARGS=-no-color
+    # Keep container running for interactive use
+    stdin_open: true
+    tty: true

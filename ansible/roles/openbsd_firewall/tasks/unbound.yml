@@ -1,0 +1,56 @@
+---
+- name: Install unbound package
+  ansible.builtin.raw: /usr/sbin/pkg_add -I unbound
+  become: true
+  register: pkg_result
+  changed_when: "'unbound' in pkg_result.stdout and 'already installed' not in pkg_result.stdout"
+
+- name: Write unbound.conf to temporary location
+  ansible.builtin.raw: |
+    cat > /tmp/unbound.conf.new << 'UNBOUND_EOF'
+    {{ lookup('template', 'unbound.conf.j2') }}
+    UNBOUND_EOF
+  changed_when: false
+  check_mode: false
+
+- name: Validate new unbound.conf
+  ansible.builtin.raw: /usr/sbin/unbound-checkconf /tmp/unbound.conf.new
+  become: true
+  changed_when: false
+  check_mode: false
+
+- name: Check if current config differs from new config
+  ansible.builtin.raw: |
+    if [ -f {{ unbound_conf_path }} ]; then
+      diff -q {{ unbound_conf_path }} /tmp/unbound.conf.new
+    else
+      exit 1
+    fi
+  become: true
+  register: config_diff
+  changed_when: config_diff.rc != 0
+  failed_when: false
+  check_mode: false
+
+- name: Deploy unbound.conf if validation passed
+  ansible.builtin.raw: cat /tmp/unbound.conf.new | /usr/bin/tee {{ unbound_conf_path }} > /dev/null
+  become: true
+  when: config_diff.rc != 0
+  notify: reload unbound
+
+- name: Enable unbound service
+  ansible.builtin.raw: /usr/sbin/rcctl enable unbound
+  become: true
+  changed_when: false
+
+- name: Check if unbound is running
+  ansible.builtin.raw: /usr/sbin/rcctl check unbound
+  become: true
+  register: unbound_status
+  changed_when: false
+  failed_when: false
+
+- name: Start unbound service if not running
+  ansible.builtin.raw: /usr/sbin/rcctl start unbound
+  become: true
+  when: unbound_status.rc | default(1) != 0

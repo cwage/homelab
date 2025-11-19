@@ -1,0 +1,20 @@
+---
+nginx_sites:
+  - server_name: tmp.quietlife.net
+    root: /var/www/tmp.quietlife.net
+    owner: cwage
+    group: cwage
+    dir_mode: '0750'
+    file_mode: '0640'
+  - server_name: books.quietlife.net
+    root: /var/www/books.quietlife.net
+    owner: cwage
+    group: cwage
+    dir_mode: '0750'
+    file_mode: '0640'
+    basic_auth:
+      realm: "Books"
+      users:
+        - username: books
+          # Generate with: openssl passwd -apr1 'password'
+          password_hash: "$apr1$FNJE//Et$2SbsI8ws4cPCWQexEzrbb0"

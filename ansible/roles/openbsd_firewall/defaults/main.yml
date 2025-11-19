@@ -1,0 +1,32 @@
+---
+# Default variables for openbsd_firewall role
+
+# Path to pf configuration file
+pf_conf_path: /etc/pf.conf
+
+# Path to dhcpd configuration file
+dhcpd_conf_path: /etc/dhcpd.conf
+
+# Service manager (OpenBSD uses rcctl)
+service_manager: rcctl
+
+# Unbound DNS resolver configuration
+unbound_conf_path: /var/unbound/etc/unbound.conf
+unbound_port: 53
+
+# Interfaces for Unbound to listen on
+unbound_listen_interfaces:
+  - 127.0.0.1
+  - 10.10.15.1  # LAN interface
+  - 10.10.16.1  # WireGuard VPN interface
+
+# Networks allowed to query DNS
+unbound_access_control:
+  - 127.0.0.0/8
+  - 10.10.15.0/24  # LAN network
+  - 10.10.16.0/24  # WireGuard VPN network
+
+# Upstream DNS forwarders (Cloudflare)
+unbound_forwarders:
+  - 1.1.1.1
+  - 1.0.0.1

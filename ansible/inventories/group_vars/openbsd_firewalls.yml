@@ -1,0 +1,24 @@
+---
+# OpenBSD firewall-specific variables
+
+# Use doas instead of sudo for privilege escalation
+ansible_become_method: doas
+
+# No Python required - using raw module only
+# OpenBSD uses ksh by default, but we can specify if needed
+# ansible_shell_type: sh
+
+# Managed users for OpenBSD firewalls
+managed_users:
+  - name: deploy
+    shell: /bin/ksh
+    groups: []  # OpenBSD groups are managed differently; doas config handles privileges
+    ssh_pubkey_file: "keys/deploy.pub"
+    # Note: doas privileges are configured in /etc/doas.conf on the host
+
+# Firewall-specific paths
+pf_conf_path: /etc/pf.conf
+dhcpd_conf_path: /etc/dhcpd.conf
+
+# Service management commands (OpenBSD uses rcctl)
+service_manager: rcctl

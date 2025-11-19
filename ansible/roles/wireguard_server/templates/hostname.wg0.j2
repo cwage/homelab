@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+# WireGuard interface configuration for {{ wireguard_interface }}
+
+inet {{ wireguard_vpn_ip }} {{ wireguard_vpn_netmask }}
+wgport {{ wireguard_port }}
+wgkey {{ wireguard_private_key }}
+{% for peer in wireguard_peers %}
+wgpeer {{ peer.public_key }} wgaip {{ peer.allowed_ips }}{% if peer.persistent_keepalive | default(0) > 0 %} wgpka {{ peer.persistent_keepalive }}{% endif %}
+
+{% endfor %}
+up

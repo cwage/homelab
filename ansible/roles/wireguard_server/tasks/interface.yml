@@ -1,0 +1,35 @@
+---
+- name: Read private key from file
+  ansible.builtin.raw: cat {{ wireguard_private_key_path }}
+  become: true
+  register: wg_private_key_content
+  changed_when: false
+  check_mode: false
+
+- name: Set private key fact
+  ansible.builtin.set_fact:
+    wireguard_private_key: "{{ wg_private_key_content.stdout | trim }}"
+
+- name: Write hostname.wg0 to temporary location
+  ansible.builtin.raw: |
+    cat > /tmp/hostname.wg0.new << 'HOSTNAME_WG0_EOF'
+    {{ lookup('template', 'hostname.wg0.j2') }}
+    HOSTNAME_WG0_EOF
+  changed_when: false
+  check_mode: false
+
+- name: Deploy hostname.wg0
+  ansible.builtin.raw: cat /tmp/hostname.wg0.new | /usr/bin/tee /etc/hostname.{{ wireguard_interface }} > /dev/null
+  become: true
+
+- name: Ensure WireGuard interface is created
+  ansible.builtin.raw: |
+    if ! ifconfig {{ wireguard_interface }} >/dev/null 2>&1; then
+      ifconfig {{ wireguard_interface }} create
+    fi
+  become: true
+  changed_when: false
+
+- name: Bring up WireGuard interface
+  ansible.builtin.raw: sh /etc/netstart {{ wireguard_interface }}
+  become: true

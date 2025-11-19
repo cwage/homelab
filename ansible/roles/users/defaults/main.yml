@@ -1,0 +1,11 @@
+---
+# List of users to manage
+# Example item keys:
+# - name: deploy
+#   shell: /bin/bash
+#   groups: ["sudo"]
+#   sudo_nopasswd: true
+#   ssh_pubkey: "ssh-ed25519 AAAA... user@host"  # optional
+#   ssh_pubkey_file: "keys/deploy.pub"            # optional, relative to repo root
+managed_users: []
+

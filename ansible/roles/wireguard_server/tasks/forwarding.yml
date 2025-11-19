@@ -1,0 +1,23 @@
+---
+- name: Check current IP forwarding status
+  ansible.builtin.raw: sysctl net.inet.ip.forwarding
+  register: ip_forwarding_current
+  changed_when: false
+  check_mode: false
+
+- name: Enable IP forwarding immediately
+  ansible.builtin.raw: sysctl net.inet.ip.forwarding=1
+  become: true
+  when: "'net.inet.ip.forwarding=0' in ip_forwarding_current.stdout"
+
+- name: Check if IP forwarding is set in /etc/sysctl.conf
+  ansible.builtin.raw: grep -q '^net.inet.ip.forwarding=1' /etc/sysctl.conf
+  register: sysctl_conf_check
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Add IP forwarding to /etc/sysctl.conf for persistence
+  ansible.builtin.raw: echo 'net.inet.ip.forwarding=1' >> /etc/sysctl.conf
+  become: true
+  when: sysctl_conf_check.rc != 0

@@ -1,0 +1,11 @@
+^/repo/\.git/
+^/repo/ansible/\.ansible/
+^/repo/ansible/collections/
+^/repo/ansible/keys/deploy
+^/repo/ansible/\.env$
+^/repo/ansible/\.env\..*
+^/repo/tofu/\.terraform/
+^/repo/tofu/\.tfstate(\..*)?$
+^/repo/tofu/\.env$
+^/repo/tofu/\.env\..*
+^/repo/tofu/secrets/

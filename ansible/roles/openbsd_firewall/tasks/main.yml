@@ -1,0 +1,16 @@
+---
+- name: Include pf.conf management tasks
+  ansible.builtin.include_tasks: pf.yml
+  tags: ['pf', 'firewall']
+
+- name: Include dhcpd.conf management tasks
+  ansible.builtin.include_tasks: dhcpd.yml
+  tags: ['dhcpd', 'firewall']
+
+- name: Include unbound DNS resolver tasks
+  ansible.builtin.include_tasks: unbound.yml
+  tags: ['unbound', 'dns', 'firewall']
+
+- name: Include resolv.conf management tasks
+  ansible.builtin.include_tasks: resolv.yml
+  tags: ['resolv', 'dns', 'firewall']

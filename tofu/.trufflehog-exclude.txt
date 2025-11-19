@@ -1,0 +1,7 @@
+^/workspace/.git/
+^/workspace/.terraform/
+^/workspace/.claude/
+^/workspace/.env$
+^/workspace/.env\..*
+^/workspace/secrets/
+^/workspace/.*\.tfstate(\..*)?$

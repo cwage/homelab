@@ -1,0 +1,4 @@
+---
+- name: restart wireguard interface
+  ansible.builtin.raw: sh /etc/netstart {{ wireguard_interface }}
+  become: true

@@ -1,0 +1,12 @@
+---
+- name: reload pf
+  ansible.builtin.raw: /sbin/pfctl -f {{ pf_conf_path }}
+  become: true
+
+- name: restart dhcpd
+  ansible.builtin.raw: /usr/sbin/rcctl restart dhcpd
+  become: true
+
+- name: reload unbound
+  ansible.builtin.raw: /usr/sbin/rcctl reload unbound
+  become: true

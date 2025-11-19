@@ -1,0 +1,5 @@
+---
+- name: Install wireguard-tools package
+  ansible.builtin.raw: pkg_add -I wireguard-tools
+  become: true
+  changed_when: false

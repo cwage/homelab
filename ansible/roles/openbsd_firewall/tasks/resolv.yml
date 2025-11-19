@@ -1,0 +1,28 @@
+---
+- name: Write resolv.conf to temporary location
+  ansible.builtin.raw: |
+    cat > /tmp/resolv.conf.new << 'RESOLV_EOF'
+    # Managed by Ansible
+    nameserver 127.0.0.1
+    nameserver {{ unbound_forwarders[0] }}
+    lookup file bind
+    RESOLV_EOF
+  changed_when: false
+  check_mode: false
+
+- name: Check if current resolv.conf differs from new config
+  ansible.builtin.raw: |
+    if [ -f /etc/resolv.conf ]; then
+      diff -q /etc/resolv.conf /tmp/resolv.conf.new
+    else
+      exit 1
+    fi
+  register: resolv_diff
+  changed_when: resolv_diff.rc != 0
+  failed_when: false
+  check_mode: false
+
+- name: Deploy resolv.conf
+  ansible.builtin.raw: cat /tmp/resolv.conf.new | /usr/bin/tee /etc/resolv.conf > /dev/null
+  become: true
+  when: resolv_diff.rc != 0

@@ -1,0 +1,99 @@
+---
+- name: Ensure sudo package is present
+  ansible.builtin.package:
+    name: sudo
+    state: present
+
+- name: Ensure primary group 'sudo' exists (Debian-based)
+  ansible.builtin.group:
+    name: sudo
+    state: present
+
+- name: Configure default home directory permissions to 0700
+  ansible.builtin.lineinfile:
+    path: /etc/adduser.conf
+    regexp: '^DIR_MODE='
+    line: 'DIR_MODE=0700'
+    state: present
+  failed_when: false  # Ignore if file doesn't exist (non-Debian systems)
+
+- name: Create/manage users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell | default('/bin/bash') }}"
+    groups: "{{ (item.groups | default([])) | join(',') }}"
+    append: true
+    create_home: true
+    state: present
+  loop: "{{ managed_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Secure home directory permissions (owner only, no group/other access)
+  ansible.builtin.file:
+    path: "/home/{{ item.name }}"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0700'
+  loop: "{{ managed_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Ensure .ssh directory exists with correct permissions
+  ansible.builtin.file:
+    path: "/home/{{ item.name }}/.ssh"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0700'
+  when: item.ssh_pubkey is defined or item.ssh_pubkey_file is defined or item.ssh_pubkey_files is defined
+  loop: "{{ managed_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Install authorized key from literal string
+  ansible.posix.authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.ssh_pubkey }}"
+    state: present
+    manage_dir: false
+  when: item.ssh_pubkey is defined
+  loop: "{{ managed_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Install authorized key from file on controller
+  ansible.posix.authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', (item.ssh_pubkey_file if (item.ssh_pubkey_file is regex('^/')) else (inventory_dir ~ '/../' ~ item.ssh_pubkey_file))) }}"
+    state: present
+    manage_dir: false
+  when: item.ssh_pubkey_file is defined
+  loop: "{{ managed_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Install authorized keys from multiple files on controller
+  ansible.posix.authorized_key:
+    user: "{{ item.0.name }}"
+    key: "{{ lookup('file', (item.1 if (item.1 is regex('^/')) else (inventory_dir ~ '/../' ~ item.1))) }}"
+    state: present
+    manage_dir: false
+  when: item.0.ssh_pubkey_files is defined
+  loop: "{{ managed_users | subelements('ssh_pubkey_files', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} - {{ item.1 | basename }}"
+
+- name: Configure passwordless sudo for user (sudoers.d)
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/{{ item.name }}"
+    content: "{{ item.name }} ALL=(ALL:ALL) NOPASSWD: ALL\n"
+    owner: root
+    group: root
+    mode: '0440'
+    validate: 'visudo -cf %s'
+  when: item.sudo_nopasswd | default(false) | bool
+  loop: "{{ managed_users }}"
+  loop_control:
+    label: "{{ item.name }}"

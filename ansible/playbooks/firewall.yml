@@ -1,0 +1,8 @@
+---
+- name: Manage OpenBSD Firewall
+  hosts: openbsd_firewalls
+  become: false
+  gather_facts: false
+  roles:
+    - wireguard_server
+    - openbsd_firewall

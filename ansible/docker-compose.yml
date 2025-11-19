@@ -1,0 +1,31 @@
+services:
+  ansible:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: "${UID}:${GID}"
+    working_dir: /work
+    volumes:
+      - ./:/work:Z
+    environment:
+      - ANSIBLE_CONFIG=/work/ansible.cfg
+      - HOME=/work
+      - ANSIBLE_LOCAL_TEMP=/work/.ansible/tmp
+      - USER=nonroot
+      - LOGNAME=nonroot
+    entrypoint: ""
+    # Network mode so the container can reach LAN hosts directly
+    network_mode: host
+
+  tinyfugue-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.tinyfugue-builder
+      args:
+        UID: "${UID}"
+        GID: "${GID}"
+    working_dir: /build
+    volumes:
+      - ./files:/files:Z
+      - ./files/packages:/output:Z
+    entrypoint: ""

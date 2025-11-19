@@ -1,0 +1,27 @@
+# Ansible artifacts
+*.retry
+.cache/
+.pytest_cache/
+__pycache__/
+*.pyc
+collections/
+venv/
+.venv/
+.env
+.env.*
+
+# Keys (keep directory, ignore contents)
+keys/*
+!keys/.gitkeep
+
+# Local Ansible runtime artifacts
+.ansible/
+
+# Inventory/vars secrets
+inventories/*_vault.yml
+group_vars/*_vault.yml
+host_vars/*_vault.yml
+
+# IDE/editor
+.vscode/
+.idea/

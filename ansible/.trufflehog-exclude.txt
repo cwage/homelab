@@ -1,0 +1,4 @@
+^/work/\.ansible/
+^/work/collections/
+^/work/keys/deploy
+^/work/\.git/

@@ -1,0 +1,86 @@
+# {{ ansible_managed }}
+# OpenBSD DHCP daemon configuration
+
+option  domain-name "quietlife.net";
+option  domain-name-servers 10.10.15.1, {{ unbound_forwarders[0] }};
+
+subnet 10.10.15.0 netmask 255.255.255.0 {
+        option routers 10.10.15.1;
+
+        range 10.10.15.100 10.10.15.254;
+}
+
+host portaptty {
+  hardware ethernet e8:2a:ea:30:70:00;
+  fixed-address 10.10.15.16;
+}
+
+host portapttyeth {
+  hardware ethernet 54:ee:75:12:ff:e7;
+  fixed-address 10.10.15.17;
+}
+
+host portaplotz {
+  hardware ethernet e0:d5:5e:21:c7:80;
+  fixed-address 10.10.15.18;
+}
+
+host portarasp {
+  hardware ethernet 80:1f:02:d3:7e:70;
+  fixed-address 10.10.15.19;
+}
+
+host docker {
+  hardware ethernet 02:00:00:00:00:00;
+  fixed-address 10.10.15.5;
+}
+
+host zsun {
+  hardware ethernet A0:03:7F:91:42:E7;
+  fixed-address 10.10.15.6;
+}
+
+host portarasp {
+  hardware ethernet b8:27:eb:72:e8:32;
+  fixed-address 10.10.15.7;
+}
+
+host portaraspeth {
+  hardware ethernet b8:27:eb:27:bd:67;
+  fixed-address 10.10.15.8;
+}
+
+host portajohn {
+  hardware ethernet 1c:4b:d6:7f:f1:83;
+  fixed-address 10.10.15.3;
+}
+
+host portanas {
+  hardware ethernet 00:11:32:6C:7A:F3;
+  fixed-address 10.10.15.4;
+}
+
+host lattepanda {
+  hardware ethernet 80:5e:4f:b4:79:64;
+  fixed-address 10.10.15.20;
+}
+
+host switch {
+  hardware ethernet b8:8a:ec:84:ff:3e;
+  fixed-address 10.10.15.13;
+}
+
+host wap {
+  hardware ethernet 78:d2:94:a3:95:1f;
+  fixed-address 10.10.15.2;
+}
+
+host remarkable {
+  hardware ethernet b8:2d:28:76:04:d4;
+  fixed-address 10.10.15.115;
+}
+
+host lattepandaeth {
+  hardware ethernet 00:E0:4C:36:65:2B;
+  fixed-address 10.10.15.130;
+}

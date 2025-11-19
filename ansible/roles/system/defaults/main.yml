@@ -1,0 +1,5 @@
+---
+domain_name: quietlife.net
+ssh_ports:
+  - 443
+  - 5344
