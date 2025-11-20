@@ -1,0 +1,8 @@
+# Host-specific configuration for felix (Linode VPS)
+
+# Static MOTD text
+motd_message: "Welcome to felix.quietlife.net! E-mail cwage@quietlife.net if you need help."
+
+# Disable Ubuntu dynamic MOTD (update-motd scripts)
+disable_update_motd: true
+
