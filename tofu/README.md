@@ -87,7 +87,7 @@ make shell     # Opens bash in container with tofu available
 
 ## Base images (Debian bookworm)
 
-The configuration downloads the current Debian stable cloud image to the `PM_IMAGE_DATASTORE_ID` datastore on `PM_NODE_NAME`. Run `make plan`/`make apply` to pull or refresh the file (`debian-12-genericcloud-amd64.img` stored under `template/iso`). Future VM/template resources can reference this downloaded image ID directly.
+The configuration downloads the current Debian stable cloud image to the `PM_IMAGE_DATASTORE_ID` datastore on `PM_NODE_NAME`. Run `make plan`/`make apply` to pull or refresh the file (`debian-12-genericcloud-amd64.img` stored under `template/iso`). The upstream image is qcow2; the filename uses `.img` because the Proxmox download API only accepts `.img/.iso` extensions, but the content remains qcow2. Future VM/template resources can reference this downloaded image ID directly.
 
 ## Secret scanning and pre-commit hook
 
