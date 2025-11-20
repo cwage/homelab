@@ -1,0 +1,19 @@
+---
+- name: Ensure template definitions are provided
+  assert:
+    that:
+      - pve_templates is defined
+      - pve_templates | length > 0
+    fail_msg: "Define pve_templates (list of templates to build) in group_vars/host_vars."
+
+- name: Load deploy SSH public key
+  set_fact:
+    pve_template_deploy_pubkey: "{{ lookup('file', pve_template_deploy_pubkey_path) | trim }}"
+  delegate_to: localhost
+  run_once: true
+
+- name: Build templates
+  include_tasks: template.yml
+  loop: "{{ pve_templates }}"
+  loop_control:
+    loop_var: tpl

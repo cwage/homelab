@@ -40,6 +40,9 @@ firewall: ## Apply firewall configuration (pf.conf, dhcpd.conf)
 firewall-check: ## Dry-run firewall configuration with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/firewall.yml -vv --ask-become-pass --check --diff $(OPTS)
 
+templates: ## Build Proxmox VM templates
+	$(DC) run --rm ansible ansible-playbook playbooks/pve-templates.yml -vv $(OPTS)
+
 felix: ## Apply felix VPS configuration (users)
 	$(DC) run --rm ansible ansible-playbook playbooks/vps.yml -vv --ask-become-pass $(OPTS)
 

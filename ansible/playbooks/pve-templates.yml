@@ -1,0 +1,6 @@
+---
+- name: Build Proxmox templates
+  hosts: proxmox
+  become: true
+  roles:
+    - pve_template
