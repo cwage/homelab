@@ -1,0 +1,139 @@
+---
+- name: Validate VMID floor for {{ tpl.name }}
+  assert:
+    that:
+      - tpl.vmid | int >= pve_template_min_vmid
+    fail_msg: "Refusing to manage VMID {{ tpl.vmid }} below safety floor {{ pve_template_min_vmid }}"
+
+- name: Derive template paths for {{ tpl.name }}
+  set_fact:
+    tpl_image_path: "{{ tpl.image_path | default(pve_template_image_dir ~ '/' ~ tpl.image_file) }}"
+    tpl_snippet: "{{ tpl.snippet | default(tpl.name ~ '-user.yaml') }}"
+    tpl_snippet_storage: "{{ tpl.snippet_storage | default(pve_template_snippet_storage) }}"
+    tpl_snippet_path: "{{ pve_template_snippets_dir }}/{{ tpl.snippet | default(tpl.name ~ '-user.yaml') }}"
+
+- name: Check source image is present for {{ tpl.name }}
+  stat:
+    path: "{{ tpl_image_path }}"
+  register: tpl_image_stat
+  failed_when: not tpl_image_stat.stat.exists
+  become: true
+
+- name: Ensure snippets directory exists
+  file:
+    path: "{{ pve_template_snippets_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Render cloud-init user-data for {{ tpl.name }}
+  copy:
+    dest: "{{ tpl_snippet_path }}"
+    mode: "0644"
+    content: |
+      #cloud-config
+      hostname: {{ tpl.name }}
+      manage_etc_hosts: true
+      fqdn: {{ tpl.name }}
+      user: {{ tpl.ciuser | default(pve_template_default_cloud_user) }}
+      ssh_authorized_keys:
+        - {{ pve_template_deploy_pubkey }}
+      package_update: true
+      packages:
+      {% for pkg in tpl.packages | default(pve_template_packages) %}
+        - {{ pkg }}
+      {% endfor %}
+      runcmd:
+        - systemctl enable --now qemu-guest-agent
+  become: true
+
+- name: Check for existing VMID {{ tpl.vmid }}
+  command: "qm status {{ tpl.vmid }}"
+  register: tpl_status
+  failed_when: false
+  changed_when: false
+  become: true
+
+- name: Stop existing VMID {{ tpl.vmid }} if running
+  command: "qm stop {{ tpl.vmid }}"
+  when: tpl_status.rc == 0
+  ignore_errors: true
+  become: true
+
+- name: Destroy existing VMID {{ tpl.vmid }}
+  command: "qm destroy {{ tpl.vmid }} --purge"
+  when: tpl_status.rc == 0
+  become: true
+
+- name: Create VM shell for {{ tpl.name }}
+  command: >
+    qm create {{ tpl.vmid }}
+    --name {{ tpl.name }}
+    --memory {{ tpl.memory | default(2048) }}
+    --cores {{ tpl.cores | default(2) }}
+    --net0 virtio,bridge={{ tpl.bridge | default('vmbr0') }}
+    --scsihw virtio-scsi-single
+    --serial0 socket
+    --vga serial0
+    --description "{{ tpl.description | default('Template built by Ansible') }}"
+  become: true
+
+- name: Import disk image for {{ tpl.name }}
+  command: >
+    qm importdisk {{ tpl.vmid }}
+    {{ tpl_image_path }}
+    {{ tpl.datastore }}
+    --format raw
+  become: true
+
+- name: Attach cloud-init drive and disk for {{ tpl.name }}
+  command: >
+    qm set {{ tpl.vmid }}
+    --scsi0 {{ tpl.datastore }}:vm-{{ tpl.vmid }}-disk-0
+    --boot order=scsi0
+    --ide2 {{ tpl.datastore }}:cloudinit,media=cdrom
+    --agent enabled=1
+    --ipconfig0 ip=dhcp
+    --cicustom user={{ tpl_snippet_storage }}:snippets/{{ tpl_snippet }}
+  become: true
+
+- name: Start VM {{ tpl.vmid }} for first boot
+  command: "qm start {{ tpl.vmid }}"
+  become: true
+
+- name: Wait for guest agent and cloud-init on {{ tpl.name }}
+  command: "qm guest exec {{ tpl.vmid }} -- sudo cloud-init status --wait"
+  register: tpl_cloudinit_wait
+  retries: "{{ pve_template_wait_retries }}"
+  delay: "{{ pve_template_wait_delay }}"
+  until: tpl_cloudinit_wait.rc == 0
+  become: true
+
+- name: Verify qemu-guest-agent is active on {{ tpl.name }}
+  command: "qm guest exec {{ tpl.vmid }} -- systemctl is-active --quiet qemu-guest-agent"
+  register: tpl_qga_check
+  retries: 5
+  delay: 5
+  until: tpl_qga_check.rc == 0
+  become: true
+
+- name: Shut down VM {{ tpl.vmid }} cleanly
+  command: "qm shutdown {{ tpl.vmid }} --timeout 180"
+  become: true
+
+- name: Wait for VM {{ tpl.vmid }} to stop
+  command: "qm status {{ tpl.vmid }}"
+  register: tpl_shutdown_status
+  retries: 18
+  delay: 10
+  until: "'status: stopped' in tpl_shutdown_status.stdout"
+  changed_when: false
+  become: true
+
+- name: Clear any temporary cloud-init password for {{ tpl.name }}
+  command: "qm set {{ tpl.vmid }} --delete cipassword"
+  become: true
+
+- name: Convert VM {{ tpl.vmid }} to template
+  command: "qm template {{ tpl.vmid }}"
+  become: true
