@@ -5,10 +5,10 @@ services:
       dockerfile: Dockerfile
     image: homelab-tofu:latest
     container_name: homelab-tofu
-    working_dir: /workspace
+    working_dir: /workspace/tofu
     volumes:
-      # Mount the entire project directory
-      - .:/workspace
+      # Mount the entire monorepo so shared assets (e.g., SSH keys) are available
+      - ..:/workspace
       # Preserve SSH keys for git operations if needed
       - ${HOME}/.ssh:/home/tofu/.ssh:ro
     environment:
@@ -18,6 +18,9 @@ services:
       - TF_VAR_pm_api_token_secret=${PM_API_TOKEN_SECRET}
       - TF_VAR_pm_node_name=${PM_NODE_NAME}
       - TF_VAR_pm_image_datastore_id=${PM_IMAGE_DATASTORE_ID:-local}
+      - TF_VAR_pm_vm_datastore_id=${PM_VM_DATASTORE_ID:-local-lvm}
+      - TF_VAR_pm_lan_bridge=${PM_LAN_BRIDGE:-vmbr0}
+      - TF_VAR_pm_debian12_template_id=${PM_DEBIAN12_TEMPLATE_ID:-9000}
       # Disable OpenTofu telemetry
       - TF_CLI_ARGS=-no-color
     # Keep container running for interactive use

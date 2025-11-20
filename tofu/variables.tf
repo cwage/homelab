@@ -25,3 +25,21 @@ variable "pm_image_datastore_id" {
   type        = string
   default     = "local"
 }
+
+variable "pm_vm_datastore_id" {
+  description = "Datastore ID for VM disks/cloud-init volumes (typically 'local-lvm')"
+  type        = string
+  default     = "local-lvm"
+}
+
+variable "pm_lan_bridge" {
+  description = "Bridge to attach VM NICs to the LAN"
+  type        = string
+  default     = "vmbr0"
+}
+
+variable "pm_debian12_template_id" {
+  description = "Template VMID for Debian 12 cloud-init base"
+  type        = number
+  default     = 9000
+}

@@ -43,6 +43,8 @@ PM_API_TOKEN_ID=root@pam!tofu-token
 PM_API_TOKEN_SECRET=your-secret-here
 PM_NODE_NAME=pve                     # Proxmox node to manage images/VMs
 PM_IMAGE_DATASTORE_ID=local          # Datastore for downloaded cloud images
+PM_VM_DATASTORE_ID=local-lvm         # Datastore for VM disks/cloud-init volumes
+PM_LAN_BRIDGE=vmbr0                  # Bridge for LAN-attached NICs
 ```
 
 **Important**: The `.env` file is gitignored and should never be committed.
@@ -87,7 +89,16 @@ make shell     # Opens bash in container with tofu available
 
 ## Base images (Debian bookworm)
 
-The configuration downloads the current Debian stable cloud image to the `PM_IMAGE_DATASTORE_ID` datastore on `PM_NODE_NAME`. Run `make plan`/`make apply` to pull or refresh the file (`debian-12-genericcloud-amd64.img` stored under `template/iso`). The upstream image is qcow2; the filename uses `.img` because the Proxmox download API only accepts `.img/.iso` extensions, but the content remains qcow2. Future VM/template resources can reference this downloaded image ID directly.
+The configuration downloads the current Debian stable cloud image to the `PM_IMAGE_DATASTORE_ID` datastore on `PM_NODE_NAME`. Run `make plan`/`make apply` to pull or refresh the file (`debian-12-genericcloud-amd64.img` stored under `template/iso`). The upstream image is qcow2; the filename uses `.img` because the Proxmox download API only accepts `.img/.iso` extensions, but the content remains qcow2. A cloud-init template (VMID `PM_DEBIAN12_TEMPLATE_ID`, default 9000) should be created on the Proxmox node from this image; VM resources clone from that template to avoid SSH during applies.
+
+## Test VM (DHCP)
+
+`vm-test-01` is a minimal Debian 12 VM cloned from the pre-staged template (`PM_DEBIAN12_TEMPLATE_ID`). It:
+- boots with 2 vCPU, 2 GiB RAM, and a 20 GiB disk on `PM_VM_DATASTORE_ID` (resizes the cloned disk)
+- attaches a virtio NIC to `PM_LAN_BRIDGE` with IPv4 DHCP
+- enables cloud-init with user `cwage` and the repo-supplied `ansible/inventories/keys/cwage-portaptty.pub` SSH key
+
+Adjust the datastore/bridge/template defaults via the environment variables noted above before running `make plan`/`make apply`.
 
 ## Secret scanning and pre-commit hook
 
