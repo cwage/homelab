@@ -16,6 +16,8 @@ services:
       - TF_VAR_pm_api_url=${PM_API_URL}
       - TF_VAR_pm_api_token_id=${PM_API_TOKEN_ID}
       - TF_VAR_pm_api_token_secret=${PM_API_TOKEN_SECRET}
+      - TF_VAR_pm_node_name=${PM_NODE_NAME}
+      - TF_VAR_pm_image_datastore_id=${PM_IMAGE_DATASTORE_ID:-local}
       # Disable OpenTofu telemetry
       - TF_CLI_ARGS=-no-color
     # Keep container running for interactive use
