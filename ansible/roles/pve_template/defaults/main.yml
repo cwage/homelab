@@ -1,0 +1,15 @@
+---
+pve_template_min_vmid: 9000
+pve_template_snippet_storage: local
+pve_template_snippets_dir: /var/lib/vz/snippets
+pve_template_image_dir: /var/lib/vz/template/iso
+pve_template_default_cloud_user: deploy
+pve_template_packages:
+  - qemu-guest-agent
+pve_template_wait_retries: 30
+pve_template_wait_delay: 10
+pve_template_deploy_pubkey_path: "{{ playbook_dir }}/../keys/deploy.pub"
+pve_template_force_recreate: false
+pve_template_shutdown_timeout: 180
+pve_template_shutdown_delay: 10
+pve_template_shutdown_retries: "{{ (pve_template_shutdown_timeout / pve_template_shutdown_delay) | round(0, 'ceil') | int }}"

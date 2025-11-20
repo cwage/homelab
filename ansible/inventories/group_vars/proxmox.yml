@@ -1,4 +1,15 @@
 ---
+pve_templates:
+  - name: debian12-cloud
+    vmid: 9000
+    image_file: debian-12-genericcloud-amd64.img
+    datastore: local-lvm
+    bridge: vmbr0
+    memory: 2048
+    cores: 2
+    ciuser: deploy
+    description: "Debian 12 cloud-init template with qemu-guest-agent (built by Ansible)"
+
 managed_users:
   - name: deploy
     shell: /bin/bash
@@ -8,7 +19,6 @@ managed_users:
   - name: cwage
     shell: /bin/bash
     groups: ["sudo"]
-    # Passwordless sudo is NOT desired for cwage; omit sudo_nopasswd or set false
     sudo_nopasswd: false
     ssh_pubkey_files:
       - "inventories/keys/cwage-portaplotz.pub"
