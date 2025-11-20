@@ -58,3 +58,16 @@
     name: ssh.socket
     enabled: true
     state: started
+
+- name: Disable dynamic MOTD scripts when requested (update-motd)
+  ansible.builtin.shell: chmod -x /etc/update-motd.d/*
+  when: disable_update_motd | default(false) | bool
+
+- name: Configure /etc/motd when motd_message is defined
+  ansible.builtin.copy:
+    content: "{{ motd_message | trim }}\n"
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: '0644'
+  when: motd_message is defined
