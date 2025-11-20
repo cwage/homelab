@@ -1,0 +1,6 @@
+---
+- name: Configure test VM
+  hosts: vm-test-01
+  become: true
+  roles:
+    - vm_test

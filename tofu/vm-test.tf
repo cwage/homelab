@@ -45,6 +45,7 @@ resource "proxmox_virtual_environment_vm" "test_vm" {
   network_device {
     bridge = var.pm_lan_bridge
     model  = "virtio"
+    mac_address = "02:00:10:10:0f:37"
   }
 
   initialization {

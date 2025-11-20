@@ -1,0 +1,4 @@
+---
+# VM test host bootstrapped via Proxmox cloud-init
+ansible_user: cwage
+ansible_become: true
