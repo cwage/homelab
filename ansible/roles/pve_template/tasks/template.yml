@@ -34,10 +34,10 @@
       #cloud-config
       hostname: {{ tpl.name }}
       manage_etc_hosts: true
-      fqdn: {{ tpl.name }}
+      fqdn: {{ tpl.fqdn | default(tpl.name) }}
       user: {{ tpl.ciuser | default(pve_template_default_cloud_user) }}
       ssh_authorized_keys:
-        - {{ pve_template_deploy_pubkey }}
+        - {{ pve_template_deploy_pubkey | quote }}
       package_update: true
       packages:
       {% for pkg in tpl.packages | default(pve_template_packages) %}
@@ -54,15 +54,38 @@
   changed_when: false
   become: true
 
+- name: Get existing config for VMID {{ tpl.vmid }}
+  command: "qm config {{ tpl.vmid }}"
+  register: tpl_config
+  failed_when: false
+  changed_when: false
+  become: true
+  when: tpl_status.rc == 0
+
+- name: Guard against destroying non-template VM {{ tpl.vmid }}
+  fail:
+    msg: "Existing VMID {{ tpl.vmid }} is not marked template; set pve_template_force_recreate to true to replace."
+  when:
+    - tpl_status.rc == 0
+    - "'template: 1' not in tpl_config.stdout"
+    - not pve_template_force_recreate
+
+- name: Allow recreation of existing VMID {{ tpl.vmid }}
+  set_fact:
+    tpl_can_recreate: true
+  when:
+    - tpl_status.rc == 0
+    - "'template: 1' in tpl_config.stdout" or pve_template_force_recreate
+
 - name: Stop existing VMID {{ tpl.vmid }} if running
   command: "qm stop {{ tpl.vmid }}"
-  when: tpl_status.rc == 0
-  ignore_errors: true
+  when: tpl_can_recreate | default(false)
+  failed_when: false
   become: true
 
 - name: Destroy existing VMID {{ tpl.vmid }}
   command: "qm destroy {{ tpl.vmid }} --purge"
-  when: tpl_status.rc == 0
+  when: tpl_can_recreate | default(false)
   become: true
 
 - name: Create VM shell for {{ tpl.name }}
@@ -75,7 +98,7 @@
     --scsihw virtio-scsi-single
     --serial0 socket
     --vga serial0
-    --description "{{ tpl.description | default('Template built by Ansible') }}"
+    --description "{{ tpl.description | default('Template built by Ansible') | replace('\"', '\\\"') | regex_replace('\\n', ' ') }}"
   become: true
 
 - name: Import disk image for {{ tpl.name }}
@@ -102,7 +125,7 @@
   become: true
 
 - name: Wait for guest agent and cloud-init on {{ tpl.name }}
-  command: "qm guest exec {{ tpl.vmid }} -- sudo cloud-init status --wait"
+  command: "qm guest exec {{ tpl.vmid }} -- cloud-init status --wait"
   register: tpl_cloudinit_wait
   retries: "{{ pve_template_wait_retries }}"
   delay: "{{ pve_template_wait_delay }}"
@@ -112,26 +135,27 @@
 - name: Verify qemu-guest-agent is active on {{ tpl.name }}
   command: "qm guest exec {{ tpl.vmid }} -- systemctl is-active --quiet qemu-guest-agent"
   register: tpl_qga_check
-  retries: 5
-  delay: 5
+  retries: "{{ pve_template_wait_retries }}"
+  delay: "{{ pve_template_wait_delay }}"
   until: tpl_qga_check.rc == 0
   become: true
 
 - name: Shut down VM {{ tpl.vmid }} cleanly
-  command: "qm shutdown {{ tpl.vmid }} --timeout 180"
+  command: "qm shutdown {{ tpl.vmid }} --timeout {{ pve_template_shutdown_timeout }}"
   become: true
 
 - name: Wait for VM {{ tpl.vmid }} to stop
   command: "qm status {{ tpl.vmid }}"
   register: tpl_shutdown_status
-  retries: 18
-  delay: 10
+  retries: "{{ pve_template_shutdown_retries }}"
+  delay: "{{ pve_template_shutdown_delay }}"
   until: "'status: stopped' in tpl_shutdown_status.stdout"
   changed_when: false
   become: true
 
 - name: Clear any temporary cloud-init password for {{ tpl.name }}
   command: "qm set {{ tpl.vmid }} --delete cipassword"
+  failed_when: false
   become: true
 
 - name: Convert VM {{ tpl.vmid }} to template

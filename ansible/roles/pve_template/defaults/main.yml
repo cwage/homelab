@@ -9,3 +9,7 @@ pve_template_packages:
 pve_template_wait_retries: 30
 pve_template_wait_delay: 10
 pve_template_deploy_pubkey_path: "{{ playbook_dir }}/../keys/deploy.pub"
+pve_template_force_recreate: false
+pve_template_shutdown_timeout: 180
+pve_template_shutdown_delay: 10
+pve_template_shutdown_retries: "{{ (pve_template_shutdown_timeout / pve_template_shutdown_delay) | round(0, 'ceil') | int }}"
