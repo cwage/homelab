@@ -1,0 +1,7 @@
+---
+# Handlers for synology_nfs role
+
+- name: Restart NFS service
+  ansible.builtin.command: /usr/syno/sbin/synoservice --restart nfs
+  become: true
+  listen: Restart NFS service

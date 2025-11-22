@@ -1,0 +1,12 @@
+---
+# Default variables for synology_nfs role
+
+# NFS shares to manage (override in host_vars)
+nfs_shares: []
+
+# NFS service configuration
+nfs_enable: true
+nfs_v4_enable: true
+
+# Discovery mode: when true, only gather facts without making changes
+discovery_mode: false

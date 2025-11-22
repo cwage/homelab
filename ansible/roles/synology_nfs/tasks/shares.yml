@@ -1,0 +1,27 @@
+---
+# NFS share management tasks
+
+- name: Check if NFS service is enabled
+  ansible.builtin.command: /usr/syno/sbin/synoservicecfg --list
+  become: true
+  register: synology_services
+  changed_when: false
+  check_mode: false
+
+- name: Enable NFS service
+  ansible.builtin.command: /usr/syno/sbin/synoservicecfg --enable nfs
+  become: true
+  when:
+    - nfs_enable | bool
+    - "'nfs' not in synology_services.stdout or 'disabled' in synology_services.stdout"
+  notify: Restart NFS service
+
+# Future: Add tasks for managing shares via synoshare command
+# - name: Manage NFS shares
+#   ansible.builtin.command: /usr/syno/sbin/synoshare ...
+#   loop: "{{ nfs_shares }}"
+#   when: nfs_shares | length > 0
+
+- name: Display configuration status
+  ansible.builtin.debug:
+    msg: "NFS share management tasks placeholder - to be implemented after discovery"

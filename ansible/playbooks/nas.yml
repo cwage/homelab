@@ -1,0 +1,7 @@
+---
+- name: Manage Synology NAS (portanas)
+  hosts: portanas
+  become: false
+  gather_facts: false
+  roles:
+    - synology_nfs
