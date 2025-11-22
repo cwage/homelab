@@ -5,5 +5,6 @@
 - **Containerized workflows**: Both stacks expect Docker/Compose; use provided Make targets for build/plan/apply/lint. Keep secrets in local `.env` files (gitignored) and never commit keys or state.
 - **DNS direction**: We standardized on NSD as the authoritative server (`lan.quietlife.net`), with Unbound on the firewall as recursive + stub to NSD. DHCP/DNS should be driven from a shared data model; include an `dhcp-<nn>.lan.quietlife.net` pool for ephemeral clients. See `docs/dns-plan.md`.
 - **Host data**: Inventories and templates live under `ansible/` (e.g., `inventories/hosts.yml`, `roles/openbsd_firewall`). Keep DHCP reservations, DNS records, and VM definitions consistent by editing shared host metadata when adding nodes.
+- **Networking**: Proxmox hosts only expose a single useful bridge (`vmbr0`). Assume VMs (even ones with multiple NICs) attach to that same bridge unless the user explicitly requests a different network.
 - **Testing/validation**: Run relevant Dockerized checks before changes: `make ansible-trufflehog`, `make tofu-validate/plan`, `make ansible-ping`/`ansible-firewall` dry runs as needed. Keep changes scoped; avoid large “deploy everything” unless required.
 - **No destructive ops**: Don’t use sudo; avoid wiping state or force pushes. If you must propose a destructive command, surface it to the user instead of running it.
