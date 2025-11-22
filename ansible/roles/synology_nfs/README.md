@@ -103,18 +103,52 @@ nfs_shares:
 - `synoservicecfg --enable nfs` - Enable NFS service
 - `synoservice --restart nfs` - Restart NFS service
 
+## Implementation Details
+
+### Share Creation
+Uses `synoshare --add` to create shares with:
+- Share name, description, and path
+- Empty access control lists (managed separately if needed)
+- Browsable in network (visible)
+- No advanced restrictions
+
+### NFS Export Management
+Manages a dedicated Ansible-controlled block in `/etc/exports`:
+- Clearly marked with `BEGIN/END ANSIBLE MANAGED BLOCK` comments
+- Uses `sed` to remove old block and append new one
+- Reloads exports with `exportfs -ra` after changes
+- **Trade-off**: Manual DSM GUI changes to these shares may be overwritten
+
+### Idempotency
+- Checks if share exists before creating (`synoshare --get`)
+- Only creates missing shares
+- Always updates `/etc/exports` block (intentional - ensures consistency)
+
 ## Implementation Status
 
 - [x] Discovery mode (gather current state)
 - [x] Inventory setup
-- [ ] Share creation/modification
-- [ ] NFS rule management
-- [ ] Idempotency checks
+- [x] Share creation via synoshare
+- [x] NFS export management via /etc/exports
+- [x] Idempotency checks for share creation
+- [x] NFS service enable/restart
 - [ ] User/group management
+
+## Important Notes
+
+**Managing NFS Exports:**
+- Ansible manages exports in a dedicated block in `/etc/exports`
+- Do NOT configure these specific shares via DSM web GUI, or changes will be lost
+- If DSM overwrites the file, simply re-run `make nas` to restore
+
+**Synology-Specific Behavior:**
+- DSM may regenerate `/etc/exports` during updates or service restarts
+- Our block will persist through normal operations but may need re-applying after DSM updates
+- The `synoshare` command creates shares that DSM recognizes and manages
 
 ## Future Enhancements
 
-- Parse `/etc/exports` to check current state before modifying
 - Support for SMB shares
 - User quota management
 - Snapshot/backup task management
+- More sophisticated /etc/exports parsing to detect conflicts

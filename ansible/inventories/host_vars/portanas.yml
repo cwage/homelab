@@ -2,23 +2,43 @@
 # DSM Version: 7.1.1-42962 Update 9
 
 # NFS Shares Configuration
-# To be populated after discovery phase
-# Run: ssh deploy@10.10.15.4 'synoshare --list'
-# Run: ssh deploy@10.10.15.4 'cat /etc/exports'
+# Discovered shares: backup, Books, bp, caitstuff, docker, Documents, Downloads,
+#   git, gitea-share, homes, Misc, Music, nextcloud, paperless-ngx, Pictures,
+#   Plex, PlexMediaServer, readynas, Recording, swirbobackup, syncthing-data,
+#   tb, usbshare1, Video
 
-nfs_shares: []
-  # Example structure:
-  # - name: share_name
-  #   description: "Share description"
-  #   path: /volume1/share_name
-  #   nfs_enabled: true
-  #   nfs_rules:
-  #     - host: "10.10.15.0/24"
-  #       privilege: "rw"
-  #       squash: "no_root_squash"
-  #       security: "sys"
+# Proxmox-specific NFS shares
+nfs_shares:
+  - name: pve-backups
+    description: "Proxmox VE backup storage"
+    path: /volume1/pve-backups
+    nfs_enabled: true
+    nfs_rules:
+      - host: "10.10.15.0/24"
+        privilege: "rw"
+        squash: "no_root_squash"
+        security: "sys"
+        # Backups run as root on Proxmox, files will be owned by root (0:0)
+        # no_root_squash allows Proxmox root to write as root on NAS
 
-# Users/Groups relevant to NFS
-# To be populated after discovery
+  - name: pve-templates
+    description: "Proxmox ISO and template storage"
+    path: /volume1/pve-templates
+    nfs_enabled: true
+    nfs_rules:
+      - host: "10.10.15.0/24"
+        privilege: "rw"
+        squash: "no_root_squash"
+        security: "sys"
+        # Template/ISO management also runs as root on Proxmox
+
+# Key users discovered:
+# - cwage (UID 1000, GID 100)
+# - deploy (UID 1030, GID 100) - automation user
+# - guest (UID 1025, GID 100) - anonymous NFS user
+#
+# Existing NFS exports use: anonuid=1025,anongid=100
+# This maps all "nobody" access to the guest user
+
 nas_users: []
 nas_groups: []
