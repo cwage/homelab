@@ -21,21 +21,24 @@
   ansible.builtin.raw: |
     if ! /usr/syno/sbin/synoshare --get {{ item.name }} >/dev/null 2>&1; then
       /usr/syno/sbin/synoshare --add {{ item.name }} "{{ item.description }}" {{ item.path }} "" "" "" 1 0
+      echo "SHARE_CREATED"
     fi
   become: true
   register: share_creation
-  changed_when: "'Share Name' not in share_creation.stdout"
+  changed_when: "'SHARE_CREATED' in share_creation.stdout"
   loop: "{{ nfs_shares }}"
   loop_control:
     label: "{{ item.name }}"
-  when: nfs_shares | length > 0
+  when:
+    - nfs_shares | length > 0
+    - item.nfs_enabled | default(true)
 
 - name: Build NFS export entries
   ansible.builtin.set_fact:
     nfs_export_lines: |
       {% for share in nfs_shares %}
       {% for rule in share.nfs_rules %}
-      {{ share.path }}  {{ rule.host }}({{ rule.privilege }},async,no_wdelay,{{ rule.squash }},insecure_locks,sec={{ rule.security }},anonuid=1025,anongid=100)
+      {{ share.path }}  {{ rule.host }}({{ rule.privilege }},async,no_wdelay,{{ rule.squash }},insecure_locks,sec={{ rule.security }},anonuid={{ rule.anonuid | default(share.anonuid | default(nfs_default_anonuid)) }},anongid={{ rule.anongid | default(share.anongid | default(nfs_default_anongid)) }})
       {% endfor %}
       {% endfor %}
   when: nfs_shares | length > 0
@@ -46,7 +49,8 @@
     # BEGIN ANSIBLE MANAGED BLOCK - portanas NFS exports
     # WARNING: This section is managed by Ansible. Manual edits will be lost.
     # Last updated: $(date -Iseconds)
-    {{ nfs_export_lines }}# END ANSIBLE MANAGED BLOCK
+    {{ nfs_export_lines }}
+    # END ANSIBLE MANAGED BLOCK
     EXPORTS_EOF
 
     # Remove old Ansible block if it exists
