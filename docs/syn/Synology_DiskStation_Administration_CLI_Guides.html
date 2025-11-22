@@ -1,0 +1,970 @@
+<!DOCTYPE html><html>
+<head>
+<title></title>
+<style type="text/css">
+<!--
+.xflip {
+    -moz-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: fliph;
+}
+.yflip {
+    -moz-transform: scaleY(-1);
+    -webkit-transform: scaleY(-1);
+    -o-transform: scaleY(-1);
+    transform: scaleY(-1);
+    filter: flipv;
+}
+.xyflip {
+    -moz-transform: scaleX(-1) scaleY(-1);
+    -webkit-transform: scaleX(-1) scaleY(-1);
+    -o-transform: scaleX(-1) scaleY(-1);
+    transform: scaleX(-1) scaleY(-1);
+    filter: fliph + flipv;
+}
+-->
+</style>
+</head>
+<body>
+<a name=1></a><img src="Synology_DiskStation_Administration_CLI_Guide-1_1.jpg"/><br/>
+<i><b>&#160;</b></i><br/>
+<b>CLI Administrator Guide for</b><br/>
+<b>Synology NAS</b><br/>
+<b>1</b><br/>
+<hr/>
+<a name=2></a>Table of Contents<br/>
+<a href="Synology_DiskStation_Administration_CLI_Guides.html#3">Chapter 1: Introduction&#160;&#160;</a><br/>
+<a href="Synology_DiskStation_Administration_CLI_Guides.html#3"><b>01</b></a><br/>
+<a href="Synology_DiskStation_Administration_CLI_Guides.html#4">Chapter 2: Synology NAS Administrative Commands&#160;&#160;</a><br/>
+<a href="Synology_DiskStation_Administration_CLI_Guides.html#4"><b>02</b></a><br/>
+<a href="Synology_DiskStation_Administration_CLI_Guides.html#4">Managing local users — synouser<br/></a><a href="Synology_DiskStation_Administration_CLI_Guides.html#7">Managing local groups — synogroup<br/></a><a href="Synology_DiskStation_Administration_CLI_Guides.html#8">Managing share folder information — synoshare<br/></a><a href="Synology_DiskStation_Administration_CLI_Guides.html#11">Managing network settings — synonet<br/></a><a href="Synology_DiskStation_Administration_CLI_Guides.html#13">Managing setting of services — synoservice<br/></a><a href="Synology_DiskStation_Administration_CLI_Guides.html#15">Managing workgroup or ADS domain setting — synowin</a><br/>
+<a href="Synology_DiskStation_Administration_CLI_Guides.html#16">Chapter 3: Synology Error Numbers&#160;&#160;</a><br/>
+<a href="Synology_DiskStation_Administration_CLI_Guides.html#16"><b>14</b></a><br/>
+<a href="Synology_DiskStation_Administration_CLI_Guides.html#20">Copyright and Disclaimer Notices&#160;&#160;</a><br/>
+<a href="Synology_DiskStation_Administration_CLI_Guides.html#20"><b>18</b></a><br/>
+THIS DOCUMENT CONTAINS PROPRIETARY TECHNICAL&#160;<br/>INFORMATION WHICH IS THE PROPERTY OF SYNOLOGY&#160;<br/>INCORPORATED&#160;AND&#160;SHALL&#160;NOT&#160;BE&#160;REPRODUCED,&#160;COPIED,&#160;<br/>OR USED AS THE BASIS FOR DESIGN, MANUFACTURING, OR&#160;<br/>SALE OF APPARATUS WITHOUT WRITTEN PERMISSION OF&#160;<br/>SYNOLOGY INCORPORATED.<br/>
+<hr/>
+<a name=3></a><i><b>Chapter 1: Introduction</b></i><br/>
+Chapter 1: Introduction<br/>
+This guide contains command tools that allow your applications to make use of the resources&#160;<br/>on Synology DiskStation and also includes a list of Synology Error Numbers for reference.<br/>
+<b>01</b><br/>
+<hr/>
+<a name=4></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+Chapter 2: Synology NAS Administrative&#160;<br/>Commands<br/>
+<b>Managing local users — synouser</b><br/>
+<b>Synopsis</b><br/>
+synouser {--help}&#160;<br/>synouser {--add} username passwd full name expired email app privilege&#160;<br/>synouser {--del} username...&#160;<br/>synouser {--rename} old username new username&#160;<br/>synouser {--modify} username passwd full name expired email<br/>
+<b>Description</b><br/>
+<b>--add</b><br/>
+Create one local user at a time.<br/>
+Delete existing local user with the username. A system, admin, and&#160;<br/>
+<b>--del</b><br/>
+guest account cannot be deleted.<br/>
+Rename a local user account from the old username to a new&#160;<br/>username. The new account name can not be renamed if it has&#160;<br/>
+<b>--rename</b><br/>
+already existed in the DiskStation. A system, admin, and guest&#160;<br/>account can not be renamed.<br/>
+<b>--modify</b><br/>
+Modify the information of a local user account username.<br/>
+The format or limitation of each argument is discussed in&#160;<b>Restrictions</b>. Only the super-user is&#160;<br/>permitted to run this utility.<br/>
+<b>02</b><br/>
+<hr/>
+<a name=5></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+<b>Restrictions</b><br/>
+The user name is not case sensitive and limited from 1 to 64 UTF-8&#160;<br/>characters, excluding the following symbols: ! &#34; # $ % &amp; ' ( ) * + , / : ; &lt;&#160;<br/>= &gt; ? @ [ ] \ ^ ` { } | ˜<br/>
+<b>username</b><br/>
+<b>Note:</b><br/>
+•&#160;&#160;The first character cannot be a minus sign or a space, and the last&#160;<br/>
+character cannot be a space.<br/>
+The password is case sensitive and limited up to 127 displayable&#160;<br/>characters, including letters, numbers, signs, and space.<br/>
+<b>passwd</b><br/>
+<b>Note:</b><br/>
+•&#160;&#160;You may choose a blank password or customize your own&#160;<br/>
+password, which will be encrypted before being stored in the user&#160;<br/>database.<br/>
+The user description can include up to 64 displayable UTF-8&#160;<br/>
+<b>full_name</b><br/>
+characters. This field may be left empty.<br/>
+It could be an expired account or not. You should specify 0 for an&#160;<br/>
+<b>expired</b><br/>
+unexpired account and 1 for an expired account.&#160;<br/>
+<b>email</b><br/>
+The email address of the user. This field may be left empty.<br/>
+Set a decimal number to assign user's privilege to access&#160;<br/>applications. You may choose 0 to prevent users from accessing any&#160;<br/>applications or choose a number constructed from the sum of the&#160;<br/>following values:<br/>
+<b>•&#160;&#160;FTP</b>&#160;Value 0x01<br/>
+<b>•&#160;&#160;File Station</b>&#160;Value 0x02<br/>
+<b>app_privilege</b><br/>
+<b>•&#160;&#160;Audio Station</b>&#160;Value 0x04<br/>
+<b>•&#160;&#160;Download Station</b>&#160;Value 0x08<br/>
+For example, the value of a user's privilege who is able to access FTP,&#160;<br/>Audio Station, and Surveillance Station is 21 (21 = 0x15 = 0x01 + 0x04&#160;<br/>+ 0x10).<br/>
+<b>03</b><br/>
+<hr/>
+<a name=6></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+<b>Exit Status</b><br/>
+The&#160;<b>synouser</b>&#160;utility returns 0 when exits successfully, or &gt;0 if any error occurs.<br/>
+<b>Limitation</b><br/>
+When user is created, no welcome email will be sent.<br/>
+<b>Examples</b><br/>
+The following example shows how to change the admin password to &#34;1&#34;.<br/>
+<b>Example</b>&#160;- Set admin's password<br/>
+DiskStation&gt; /usr/syno/sbin/synouser --setpw admin 1<br/>
+Create user <i>syno</i> with password <i>'1'</i> and full name <i>'Synology Inc.'</i>. Applications that this user can&#160;<br/>access are FTP, File Station, Audio Station, Download Station, and Surveillance Station.<br/>
+<b>Example</b>&#160;- Create user syno<br/>
+DiskStation&gt; /usr/syno/sbin/synouser --add syno 1 &#34;Synology Inc.&#34; 0&#160;<br/>
+synology@example.com 31<br/>
+<b>04</b><br/>
+<hr/>
+<a name=7></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+<b>Managing local groups — synogroup</b><br/>
+<b>Synopsis</b><br/>
+synogroup {--help}&#160;<br/>synogroup {--add} groupname username...&#160;<br/>synogroup {--del] groupname...&#160;<br/>synogroup {--rename} old_groupname new_groupname&#160;<br/>synogroup {--member} groupname username...<br/>
+<b>Description</b><br/>
+Create one local group at a time. The&#160;<i>username</i>&#160;will be added to the&#160;<br/>
+<b>--add</b><br/>
+newly created group named&#160;<i>groupname</i>.<br/>
+Delete existing local group&#160;<i>groupname</i>. System group users can not&#160;<br/>
+<b>--del</b><br/>
+be deleted.<br/>
+Rename a local group from&#160;<i>old_groupname</i>&#160;to&#160;<i>new_groupname</i>. The&#160;<br/>
+<b>--rename</b><br/>
+<i>new_groupname</i>&#160;can not be renamed if it has already existed in the&#160;<br/>DiskStation. System group users can not be renamed.<br/>
+Modify the member list of a local group&#160;<i>groupname</i>&#160;to the&#160;<i>username</i>&#160;<br/>
+<b>--member</b><br/>
+list.<br/>
+The format or limitation of each argument is discussed in&#160;<b>Restrictions</b>. Only the super-user is&#160;<br/>permitted to run this utility.<br/>
+<b>Restrictions</b><br/>
+The group name is not case sensitive and limited from 1 to 15 UTF-8&#160;<br/>characters, excluding the following symbols: ! &#34; # $ % &amp; ’ ( ) * + , / : ; &lt;&#160;<br/>= &gt; ? @ [ ] n ˆ ` { } | ˜<br/>
+<b>groupname</b><br/>
+<b>Note:</b><br/>
+•&#160;&#160;The first character cannot be a minus sign or space, and the last&#160;<br/>
+character cannot be a space.<br/>
+<b>Exit Status</b><br/>
+The <b>synogroup</b> utility returns 0 when exits successfully, or &gt;0 if any error occurs.&#160;<br/>
+<b>05</b><br/>
+<hr/>
+<a name=8></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+<b>Managing share folder information — synoshare</b><br/>
+<b>Synopsis</b><br/>
+synoshare {--help}&#160;<br/>synoshare {--add} sharename share_desc share_path user_list_na user_list_rw user_list_ro&#160;<br/>share_browsable adv_privilege&#160;<br/>synoshare {--del] {TRUE | FALSE} sharename...&#160;<br/>synoshare {--rename} old_sharename new_sharename&#160;<br/>synoshare {--setuser} sharename {NA | RO | RW} {+ | - | =} user_list<br/>
+<b>Description</b><br/>
+<b>--add</b><br/>
+Create a new share named&#160;<i>sharename</i>.<br/>
+Delete the share folder,&#160;<i>sharename</i>. --del must follow by a boolean&#160;<br/>value. TRUE,&#160;<b>synoshare</b>&#160;will delete all the configurations and data of&#160;<br/>this share. FALSE, it will only delete the configurations of this share,&#160;<br/>user will still have to remove this directory from file system manually,&#160;<br/>otherwise DiskStation will restore share with the default privilege&#160;<br/>
+<b>--del</b><br/>
+next time it restarts.&#160;<br/>
+<b>Note:</b><br/>
+•&#160;&#160;This command can only be used to delete normal shared folders,&#160;<br/>
+and cannot be used to delete Hybrid Share folders.<br/>
+Rename a share folder from&#160;<i>old_sharename</i>&#160;to&#160;<i>new_sharename</i>. The&#160;<br/>
+<b>--rename</b><br/>
+<i>new_sharename</i>&#160;can not be renamed if it has already existed in the&#160;<br/>DiskStation.<br/>
+Modify the list of access privilege to the share folder,&#160;<i>sharename</i>.&#160;<br/>The third parameter is the user list of access privilege which will be&#160;<br/>modified.<br/>
+<b>•&#160;&#160;NA</b>&#160;Modify the list of no access privilege.<br/>
+<b>•&#160;&#160;RO</b>&#160;Modify the list of read-only privilege.<br/>
+<b>--setuser</b><br/>
+<b>•&#160;&#160;RW</b>&#160;modify the list of read/write privilege.<br/>
+The fourth parameter is the action to the user list of access privilege.&#160;<br/>+ Append the user_list to the original user list of access privilege&#160;<br/>- Remove the user_list from the original user list of access privilege&#160;<br/>= Replace the original user list of access privilege with the new user_<br/>list.&#160;<br/>
+The format or limitation of each argument is discussed in&#160;<b>Restrictions</b>. Only the super-user is&#160;<br/>permitted to run this utility.<br/>
+<b>06</b><br/>
+<hr/>
+<a name=9></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+<b>Restrictions</b><br/>
+The shared folder names are not case sensitive and limited from 1 to&#160;<br/>32 UTF-8 characters, excluding the following symbols: ! &#34; # $ % &amp; ’ ( ) *&#160;<br/>+ , / : ; &lt;= &gt; ? @ [ ] n ˆ ` { } | ˜<br/>
+The first character of a shared folder name cannot be a minus sign or&#160;<br/>a space, and the last character cannot be a space character either.&#160;<br/>&#160;<br/>Shared folder names in the following are reserved for system use&#160;<br/>only:<br/>
+•&#160;&#160;global<br/>
+•&#160;&#160;homes<br/>
+<b>sharename</b><br/>
+•&#160;&#160;home<br/>
+•&#160;&#160;printers<br/>
+•&#160;&#160;.<br/>
+•&#160;&#160;..<br/>
+•&#160;&#160;surveillance<br/>
+•&#160;&#160;usbbackup<br/>
+•&#160;&#160;usbshare<br/>
+•&#160;&#160;esatashare<br/>
+The shared folder description is case sensitive and limited up to 64&#160;<br/>
+<b>share_description</b><br/>
+displayable Unicode characters. It can be an empty string.<br/>
+It has to be a valid directory to the shared folder. If the path is not&#160;<br/>
+<b>share_path</b><br/>
+existed, <b>synoshare</b> will create it automatically.<br/>
+Separate each username with a comma, &#34;,&#34;. It allows a groupname,&#160;<br/>but please add &#34;@&#34; in front of a groupname. There will be an error if&#160;<br/>
+<b>user_list</b><br/>
+either username or groupname does not exist.<br/>
+Ex. 'user1,user2,@group3'<br/>
+1, show a shared folder in &#34;My Network Places.&#34; 0, hide a shared&#160;<br/>folder in &#34;My Network Places.&#34;<br/>
+Hiding a shared folder in &#34;My Network Places&#34; does not affect its&#160;<br/>
+<b>share_browsable</b><br/>
+access right. The access right of the hidden shared folder will remain&#160;<br/>unchanged. Users who have the proper access rights to the shared&#160;<br/>folder can still access it by entering&#160;<b>&#34;\\server name\shared folder&#160;<br/>name&#34;</b>.<br/>
+<b>07</b><br/>
+<hr/>
+<a name=10></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+Configure the advanced privileges of the shared folder. When&#160;<br/>accessing this folder with FTP or File Station, the following settings&#160;<br/>will be applied in addition to the current shared folder privileges.<br/>
+You should specify this value in decimal. You may choose 0 or a&#160;<br/>
+<b>adv privilege</b><br/>
+number constructed from the sum of the following values:<br/>
+<b>•&#160;&#160;Disable directory</b>&#160;browsing Value: 0x1<br/>
+<b>•&#160;&#160;Disable modification</b>&#160;of existing files Value: 0x2<br/>
+<b>•&#160;&#160;Disable file downloading</b> Value: 0x4<br/>
+<b>Exit Status</b><br/>
+The <b>synoshare</b> utility returns 0 when exits successfully, or &gt;0 if any error occurs.<br/>
+<b>Examples</b><br/>
+Create share '<i>private</i>' with empty access list.<br/>
+<b>Example -&#160;</b>Create Share 'private'<br/>DiskStation&gt; /usr/syno/sbin/synoshare --add private &#34;Comment&#34; /volume1/&#160;&#160;<br/>private &#34;&#34; &#34;&#34; &#34;&#34; 1 0<br/>
+Add user syno and group stuff with read/write permission in share '<i>private</i>'.<br/>
+<b>Example -&#160;</b>Add User to Share Access Control List<br/>
+DiskStation&gt; /usr/syno/sbin/synoshare --setuser&#160;<i>private RW + syno,@stuff</i>&#160;<br/>
+<b>08</b><br/>
+<hr/>
+<a name=11></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+<b>Managing network settings — synonet</b><br/>
+<b>Synopsis</b><br/>
+synonet {--help}&#160;<br/>synonet {--dhcp} iface&#160;<br/>synonet {--manual} iface ip mask [--dont restart service]&#160;<br/>synonet {--set_gateway} gateway&#160;<br/>synonet {--set_dns} dns&#160;<br/>synonet {--set_mtu} iface MTU&#160;<br/>synonet {--set_hostname} hostname [--dont restart service]<br/>
+<b>Description</b><br/>
+<b>--dhcp</b><br/>
+Set network adapter and iface to DHCP.<br/>
+Set network adapter and iface to Manual IP followed by two&#160;<br/>
+<b>--manual</b><br/>
+parameters: IP and mask.<br/>
+Manually assign default gateway when all the network adapters are&#160;<br/>
+<b>--set_gateway</b><br/>
+set to Manual IP.<br/>
+Manually assign DNS server when all the network adapters are set to&#160;<br/>
+<b>--set_dns</b><br/>
+Manual IP.<br/>
+Set the MTU value of the network adapter. The default value is 1500.&#160;<br/>
+<b>--set_mtu</b><br/>
+The MTU will only take effect when the DiskStation is connected to&#160;<br/>Gigabits network.<br/>
+<b>--set_hostname</b><br/>
+Modify the server name on the DiskStation.<br/>
+The format or limitation of each argument is discussed in&#160;<b>Restrictions</b>. Only the super-user is&#160;<br/>permitted to run this utility.<br/>
+<b>Restrictions</b><br/>
+It is limited to the following two strings only:<br/>
+<b>iface</b><br/>
+•&#160;&#160;eth0<br/>
+•&#160;&#160;eth1 (Only supported on DiskStation with two LAN ports)<br/>
+<b>ip, mask,&#160;</b><br/>
+The inputs should be in the format of IPv4.<br/>
+<b>gateway, dns</b><br/>
+The server name is not case sensitive and limited from 1 to 15&#160;<br/>
+<b>hostname</b><br/>
+displayable characters, which may consist of letters, numbers,&#160;<br/>underscores, and minus signs. The first character must be a letter.<br/>
+<b>09</b><br/>
+<hr/>
+<a name=12></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+It is limited to the following values only:<br/>
+•&#160;&#160;1500<br/>
+•&#160;&#160;2000<br/>
+•&#160;&#160;3000<br/>
+•&#160;&#160;4000<br/>
+<b>MTU</b><br/>
+•&#160;&#160;5000<br/>
+•&#160;&#160;6000<br/>
+•&#160;&#160;7000<br/>
+•&#160;&#160;8000<br/>
+•&#160;&#160;9000<br/>
+<b>Exit Status</b><br/>
+The <b>synonet</b> utility returns 0 when exits successfully, and &gt;0 if any error occurs.<br/>
+<b>Examples</b><br/>
+The below example will show you how to manually assign eth0 with the following information:&#160;<br/><b>IP:</b> 192.168.14.64&#160;<br/><b>Netmask:</b> 255.255.0.0&#160;<br/><b>Default gateway:</b> 192.168.15.254&#160;<br/><b>DNS server:</b> 192.168.252.254<br/>
+<b>Example</b>&#160;- Set DiskStation to Manual IP<br/>
+DiskStation&gt; /usr/syno/sbin/synonet --manual&#160;<i>eth0 192.168.14.64 255.255.0.0&#160;<br/></i>DiskStation&gt; /usr/syno/sbin/synonet --set_gateway&#160;<i>192.168.15.254</i>&#160;<br/>DiskStation&gt; /usr/syno/sbin/synonet --set_dns&#160;<i>192.168.252.254</i><br/>
+The below example will show you how to set your DiskStation to the new Hostname, cn406e.<br/>
+<b>Example</b>&#160;- Set New Host Name to DiskStation<br/>
+DiskStation&gt; /usr/syno/sbin/synonet --set_hostname cn406e<br/>
+<b>10</b><br/>
+<hr/>
+<a name=13></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+<b>Managing setting of services — synoservice</b><br/>
+<b>Synopsis</b><br/>
+synoservice {--help}&#160;<br/>synoservice {--list} [running]&#160;<br/>synoservice {--enable | --disable} service...&#160;<br/>synoservice {--start | --stop | --restart} service...&#160;<br/>synoservice {--keyon | --keyoff} service...&#160;<br/>synoservice {--detail} service...<br/>
+<b>Description</b><br/>
+List of all the available services. It will only list the current running&#160;<br/>
+<b>--list</b><br/>
+service if the parameter running is being specified.<br/>
+Enable or disable the specified service. Not only the specified service&#160;<br/>will be saved to the current settings once the service has been&#160;<br/>
+<b>--enable, --disable</b><br/>
+enabled or disabled, the service will also be started or stopped&#160;<br/>immediately.<br/>
+Start, stop, or restart the specified service without modifying the&#160;<br/>
+<b>--start, --stop,&#160;</b><br/>
+settings. Before starting the service, it will check if the service has&#160;<br/>
+<b>--restart</b><br/>
+been enabled.<br/>
+Enable or disable the settings of the specified service. The settings&#160;<br/>
+<b>--keyon, --keyoff</b><br/>
+will be saved without interrupting the service.<br/>
+<b>--detail</b><br/>
+Display all the information related to the specific service.<br/>
+<b>Restrictions</b><br/>
+<b>•&#160;&#160;service</b> The settings of the following services are available to be set up:<br/>
+<b>•&#160;&#160;web</b> Web Station<br/>
+<b>•&#160;&#160;photo</b> Photo Station<br/>
+<b>•&#160;&#160;netbkp</b> Network backup service<br/>
+<b>•&#160;&#160;download</b> Download Station<br/>
+<b>•&#160;&#160;media</b> DLNA service<br/>
+<b>•&#160;&#160;audio</b> Audio Station<br/>
+<b>•&#160;&#160;itunes</b> iTunes service<br/>
+<b>•&#160;&#160;mysql</b> MySQL service<br/>
+<b>•&#160;&#160;printer</b> Printer service<br/>
+<b>•&#160;&#160;surveillance</b> Surveillance Station<br/>
+<b>•&#160;&#160;userhome</b> User Home Service<br/>
+<b>•&#160;&#160;ftp</b> FTP server<br/>
+<b>11</b><br/>
+<hr/>
+<a name=14></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+<b>•&#160;&#160;telnet</b> Telnet service<br/>
+<b>•&#160;&#160;ssh</b> SSH service<br/>
+<b>•&#160;&#160;nfs</b> NFS service<br/>
+<b>•&#160;&#160;afp</b> Apple File Protocol service<br/>
+<b>•&#160;&#160;samba</b> CIFS service<br/>
+<b>•&#160;&#160;filestation</b> File Station<br/>
+<b>•&#160;&#160;https</b> HTTPS service<br/>
+<b>Exit Status</b><br/>
+The <b>synoservice</b> utility returns 0 when exits successfully, or &gt;0 if any error occurs.<br/>
+<b>Examples</b><br/>
+To enable <i>ssh</i> service<br/>
+<b>Example</b>&#160;- Enable Service 'ssh'<br/>
+DiskStation&gt; /usr/syno/sbin/synoservice --enable ssh<br/>
+To enable ssh in ds_configure.sh when group install. Use --keyon instead of --enable, because&#160;<br/>the services are not started when ds_configure.sh is called.<br/>
+<b>Example&#160;</b>- Enable Service 'ssh' When Group Install<br/>
+# ds_configure.sh&#160;<br/># Enable service ssh&#160;<br/>/usr/syno/sbin/synoservice --keyon&#160;<i>ssh</i><br/>
+<b>12</b><br/>
+<hr/>
+<a name=15></a><i><b>Chapter 2: Synology NAS Administrative Commands</b></i><br/>
+<b>Managing workgroup&#160;or&#160;ADS&#160;domain&#160;setting&#160;—&#160;synowin</b><br/>
+<b>Synopsis</b><br/>
+synowin {--help}&#160;<br/>synowin {--joinWorkgroup} workgroup&#160;<br/>synowin {--joinDomai} {short_domain_name | full_domain_name} username password [-d&#160;<br/>dns_ip] [-i kdc_ip] [-n netbios_name] [-f fqdn_name]<br/>
+<b>Description</b><br/>
+<b>--joinWorkgroup</b><br/>
+Join workgroup. It will omit the ADS domain.<br/>
+Join ADS domain. User will have to provide the account with Domain&#160;<br/>
+<b>--joinDomain</b><br/>
+Administrator's privilege.<br/>
+<b>Restrictions</b><br/>
+The name of a Workgroup can contain 1 to 15 characters. Invalid&#160;<br/>characters include: [ ] ; : &#34; &lt; &gt; * + = n / | ? ,<br/>
+<b>workgroup</b><br/>
+<b>Note:&#160;</b><br/>
+•&#160;&#160;If your workgroup name includes the character '&amp;', users of Mac OS&#160;<br/>
+10.4.4 or earlier versions will not be able to connect to DiskStation&#160;<br/>via samba.<br/>
+If the input domain contains period, ”synology.com”, it will be treated&#160;<br/>
+<b>domain_name</b><br/>
+as full domain name. If it is &#34;synology&#34;, it will be treated as short&#160;<br/>domain name.<br/>
+The DC (Domain Controller) IP.<br/>
+Specify a DC IP and DiskStation will try to communicate with it. If&#160;<br/>
+<b>kdc_ip</b><br/>
+there is more than one IP, insert a comma in between each of them.&#160;<br/>
+Add an asterisk (*) after the last DC IP if you wish, and DiskStation will&#160;<br/>
+try to communicate with other DC when all specified ones failed. You&#160;<br/>
+will need to add a comma between the asterisk and the last IP.<br/>
+<b>netbios_name</b><br/>
+The NetBIOS name of the domain.<br/>
+<b>fqdn_name</b><br/>
+The FQDN (DNS name) of the domain.<br/>
+<b>Exit Status</b><br/>
+The <b>synowin</b> utility returns 0 when exits successfully, or &gt;0 if any error occurs.<br/>
+<b>13</b><br/>
+<hr/>
+<a name=16></a><i><b>Chapter 3: Synology Error Numbers</b></i><br/>
+Chapter 3: Synology Error Numbers<br/>
+Table 1: List of Synology Error Numbers<br/>
+<b>Symbol</b><br/>
+<b>Value</b><br/>
+<b>Description</b><br/>
+ERR SUCCESS<br/>
+0x0000<br/>
+The operation was successful.<br/>
+ERR NOT ENOUGH MEMORY<br/>
+0x0100<br/>
+Insufficient memory allocation.<br/>
+The operation ran out of the&#160;<br/>
+ERR OUT OF MEMORY<br/>
+0x0200<br/>
+memory.<br/>
+ERR ACCESS DENIED<br/>
+0x0300<br/>
+Access is denied.<br/>
+ERR LOCK FAILED<br/>
+0x0400<br/>
+Unable to lock a file.<br/>
+ERR UNLOCK FAILED<br/>
+0x0500<br/>
+Unable to unlock a file.<br/>
+ERR PATH NOT FOUND<br/>
+0x0600<br/>
+The path not found.<br/>
+ERR FILE NOT FOUND<br/>
+0x0700<br/>
+The file not found.<br/>
+ERR FILE EXISTS<br/>
+0x0800<br/>
+The file already exists.<br/>
+ERR OPEN FAILED<br/>
+0x0900<br/>
+Failed to open the file.<br/>
+Failed to read data from the&#160;<br/>
+ERR READ FAILED<br/>
+0x0A00<br/>
+specified device.<br/>
+Failed to write data to the specified&#160;<br/>
+ERR WRITE FAILED<br/>
+0x0B00<br/>
+device.<br/>
+ERR CREATE FAILED<br/>
+0x0C00<br/>
+Failed to create file or directory.<br/>
+ERR BAD PARAMETERS<br/>
+0x0D00<br/>
+The parameters are invalid.<br/>
+ERR INVALID SERVERNAME<br/>
+0x0E00<br/>
+The server name is invalid.<br/>
+ERR INVALID DOMAINNAME<br/>
+0x0F00<br/>
+The domain name is invalid.<br/>
+ERR INVALID NETNAME<br/>
+0x1000<br/>
+The format of IP address is invalid.<br/>
+Failed to locate Windows domain&#160;<br/>
+ERR SERVER UNREACHABLE<br/>
+0x1100<br/>
+controller.<br/>
+ERR INVALID SHARENAME<br/>
+0x1200<br/>
+The share name is invalid.<br/>
+ERR SHARE EXISTS<br/>
+0x1300<br/>
+The share is already existed.<br/>
+ERR NO SUCH SHARE<br/>
+0x1400<br/>
+The share does not exist.<br/>
+The maximum number of share&#160;<br/>
+ERR TOO MANY SHARES<br/>
+0x1500<br/>
+has been exceeded.<br/>
+ERR INVALID GROUPNAME<br/>
+0x1600<br/>
+The group name is invalid.<br/>
+ERR GROUP EXISTS<br/>
+0x1700<br/>
+The group name is already existed.<br/>
+ERR NO SUCH GROUP<br/>
+0x1800<br/>
+The group does not exist.<br/>
+The maximum number of group&#160;<br/>
+ERR TOO MANY GROUPS<br/>
+0x1900<br/>
+has been exceeded.<br/>
+ERR INVALID USERNAME<br/>
+0x1A00<br/>
+The user name is invalid.<br/>
+The format of the password is&#160;<br/>
+ERR INVALID PASSWORDNAME<br/>
+0x1B00<br/>
+invalid.<br/>
+ERR USER EXISTS<br/>
+0x1C00<br/>
+The user exists.<br/>
+ERR NO SUCH USER<br/>
+0x1D00<br/>
+The user does not exist.<br/>
+ERR WRONG PASSWORD<br/>
+0x1E00<br/>
+The password is incorrect.<br/>
+The maximum number of user has&#160;<br/>
+ERR TOO MANY USERS<br/>
+0x1F00<br/>
+been exceeded.<br/>
+Failed to find the specified&#160;<br/>
+ERR KEY NOT FOUND<br/>
+0x2000<br/>
+keyword.<br/>
+The specified keyword is already&#160;<br/>
+ERR KEY EXISTS<br/>
+0x2100<br/>
+existed.<br/>
+ERR SECTION NOT FOUND<br/>
+0x2200<br/>
+Failed to find the section.<br/>
+ERR SECTION EXISTS<br/>
+0x2300<br/>
+The section is already existed.<br/>
+Insufficient space with the user's&#160;<br/>
+ERR NOT ENOUGH QUOTA<br/>
+0x2400<br/>
+quota.<br/>
+Insufficient free space in the&#160;<br/>
+ERR NOT ENOUGH VOLUME SPACE<br/>
+0x2500<br/>
+volume.<br/>
+ERR SEEK FAILED<br/>
+0x2600<br/>
+Seek operation is failed.<br/>
+ERR STAT FAILED<br/>
+0x2700<br/>
+Stat operation is failed.<br/>
+<b>14</b><br/>
+<hr/>
+<a name=17></a><i><b>Chapter 3: Synology Error Numbers</b></i><br/>
+<b>Symbol</b><br/>
+<b>Value</b><br/>
+<b>Description</b><br/>
+ERR RENAME FAILED<br/>
+0x2800<br/>
+Failed to rename.<br/>
+Insufficient free space in the file&#160;<br/>
+ERR NOT ENOUGH SPACE<br/>
+0x2900<br/>
+system.<br/>
+Failed to execute the specified&#160;<br/>
+ERR OP FAILURE<br/>
+0x2A00<br/>
+operation.<br/>
+ERR DEV UNCONFIG<br/>
+0x2B00<br/>
+The device is not ready.<br/>
+ERR DEV UNMOUNTED<br/>
+0x2C00<br/>
+The device is not mounted.<br/>
+ERR OP UNREGISTERED<br/>
+0x2D00<br/>
+The operation is not allowed.<br/>
+ERR TIMER EXPIRED<br/>
+0x2E00<br/>
+The timer has expired.<br/>
+ERR USER BATCH CONFLICT<br/>
+0x2F00<br/>
+Duplicated names found.<br/>
+Failed to read geometry from the&#160;<br/>
+ERR READ GEO<br/>
+0x3000<br/>
+specified (disk) device.<br/>
+ERR USAGE<br/>
+0x3100<br/>
+Invalid usage of parameters.<br/>
+Illegal offset found while verifying&#160;<br/>
+ERR UPDATE OFFSET<br/>
+0x3200<br/>
+the checksum of patch files.<br/>
+ERR CHECKSUM<br/>
+0x3300<br/>
+Illegal checksum (of a patch file).<br/>
+ERR OPEN RAWDEVICE<br/>
+0x3400<br/>
+Failed to open the raw device.<br/>
+Failed to open the configuration&#160;<br/>
+ERR OPEN OPTFILE<br/>
+0x3500<br/>
+file of installation.<br/>
+Failed to read data from the raw&#160;<br/>
+ERR READ RAWDEVICE<br/>
+0x3600<br/>
+device.<br/>
+Failed to write data to the raw&#160;<br/>
+ERR WRITE RAWDEVICE<br/>
+0x3700<br/>
+device.<br/>
+ERR BADPATCH<br/>
+0x3800<br/>
+Illegal patch file.<br/>
+ERR REMOVE FAILED<br/>
+0x3900<br/>
+Failed to remove file.<br/>
+ERR MOVE FAILED<br/>
+0x3A00<br/>
+Failed to move file.<br/>
+ERR COPY FAILED<br/>
+0x3B00<br/>
+Failed to copy file.<br/>
+ERR MKDIR FAILED<br/>
+0x3C00<br/>
+Failed to create directory.<br/>
+ERR MMAP FAILED<br/>
+0x3D00<br/>
+Failed to map file to memory.<br/>
+ERR FORMAT ERROR<br/>
+0x4000<br/>
+Failed to make file system.<br/>
+ERR NO BACKUP SET<br/>
+0x5000<br/>
+The backup set does not exist.<br/>
+The dest ID in local (/etc/<br/>
+ERR NO DEST ID<br/>
+0x5100<br/>
+synolocalbkp.conf) does not exist.<br/>
+Fail to get backup info in the&#160;<br/>
+ERR BACKUP INFO FAIL<br/>
+0x5200<br/>
+shared memory.<br/>
+The format of local backup&#160;<br/>
+ERR BAD DEST PATH<br/>
+0x5300<br/>
+destination is invalid.<br/>
+Failed to remove the shared&#160;<br/>
+ERR RM SHM FAIL<br/>
+0x5400<br/>
+memory ID.<br/>
+ERR EXPORT APPLICATION<br/>
+0x5500<br/>
+Failed to export application.<br/>
+ERR IMPORT APPLICATION<br/>
+0x5600<br/>
+Failed to import application.<br/>
+ERR NO VOLUME ID<br/>
+0x6000<br/>
+The volume ID cannot be found.<br/>
+ERR NO DISK ID<br/>
+0x6100<br/>
+The disk ID cannot be found.<br/>
+ERR NOT ENOUGH SD<br/>
+0x6200<br/>
+Insufficient hard disks.<br/>
+The selected hard disks do not&#160;<br/>
+ERR SD SIZE NOT ALIGN<br/>
+0x6300<br/>
+have the same capacity.<br/>
+Failed to destroy the volume,&#160;<br/>
+ERR DEVICE BUSY<br/>
+0x6400<br/>
+because it is occupied by someone.<br/>
+ERR INVALID SD<br/>
+0x6500<br/>
+Invalid SD.<br/>
+ERR FORMAT FAIL<br/>
+0x6600<br/>
+Failed to reformat the disk.<br/>
+ERR CANNOT REBUILD DISK<br/>
+0x6700<br/>
+Failed to rebuild the disk.<br/>
+ERR BROKEN RAID CONF<br/>
+0x6800<br/>
+Incorrect RAID information.<br/>
+The capacity of the disk is too&#160;<br/>
+ERR DISK TOO SMALL<br/>
+0x6900<br/>
+small.<br/>
+ERR CANNOT GET MNTINFO<br/>
+0x6A00<br/>
+Failed to get mount information.<br/>
+ERR BROKEN DISK INFO<br/>
+0x6B00<br/>
+Incorrect disk information.<br/>
+ERR_DISK_IO_FAILED<br/>
+0x6C00<br/>
+Disk I/O fails.<br/>
+ERR_BAD_DISKSECTOR<br/>
+0x6D00<br/>
+Bad sectors found.<br/>
+ERR_UDPD_INVALID_HANDLE<br/>
+0x7100<br/>
+The specified handle is invalid.<br/>
+ERR_UDPD_RUNNING_HANDLE<br/>
+0x7200<br/>
+The specified handle is busy.<br/>
+ERR_UDPD_INVALID_EVENT<br/>
+0x7300<br/>
+The specified event is invalid.<br/>
+The specified parameters are&#160;<br/>
+ERR_UDPD_INVALID_PARAMETER<br/>
+0x7400<br/>
+illegal.<br/>
+ERR_UDPD_EXIT_ABNORMAL<br/>
+0x7500<br/>
+The daemon exits abnormally.<br/>
+ERR_UDPD_NOT_ENOUGH_SPACE<br/>
+0x7600<br/>
+The specified space is not enough.<br/>
+Time out before receiving complete&#160;<br/>
+ERR_UDPD_TIMEOUT<br/>
+0x7700<br/>
+packet.<br/>
+<b>15</b><br/>
+<hr/>
+<a name=18></a><i><b>Chapter 3: Synology Error Numbers</b></i><br/>
+<b>Symbol</b><br/>
+<b>Value</b><br/>
+<b>Description</b><br/>
+Failed to initialize the specified&#160;<br/>
+ERR_UDPD_INIT_FAIL<br/>
+0x7800<br/>
+handle.<br/>
+ERR_UDPD_SEND_FAIL<br/>
+0x7900<br/>
+Failed to send the specified data.<br/>
+ERR_UDPD_RECV_FAIL<br/>
+0x7A00<br/>
+Failed to receive the specified data.<br/>
+The specified burn-in function is&#160;<br/>
+ERR_MANUTIL_PERM<br/>
+0x7B00<br/>
+invalid.<br/>
+The error cannot be determined by&#160;<br/>
+ERR_UNKNOWN<br/>
+0x8000<br/>
+the function you called.<br/>
+System encounters an error, but&#160;<br/>
+ERR_SYS_UNKNOWN<br/>
+0x8100<br/>
+the function you called can't tell&#160;<br/>you the real error.<br/>
+The specified volume size exceeds&#160;<br/>
+ERR_VOLUME_SIZE_TOO_LARGE<br/>
+0x8200<br/>
+the limit.<br/>
+ERR_VOLUME_NOT_FOUND<br/>
+0x8300<br/>
+Failed to find the volume.<br/>
+ERR_VOLUME_READ_ONLY<br/>
+0x8400<br/>
+The volume is read only.<br/>
+Ypbind occurs error when you join&#160;<br/>
+ERR_YP_BIND<br/>
+0x9000<br/>
+NIS domain.<br/>
+The user has not been specified&#160;<br/>
+ERR_QUOTA_NOT_FOUND<br/>
+0x9100<br/>
+with the volume quota.<br/>
+Either the quota file is corrupted,&#160;<br/>
+ERR_QUOTA_PARAM_INVALID<br/>
+0x9200<br/>
+or the command or qouta type is&#160;<br/>invalid.<br/>
+Failed to remount the file system to&#160;<br/>
+ERR_QUOTA_MOUNTING<br/>
+0x9300<br/>
+enable user/group quota.<br/>
+ERR_QUOTA_QUOTACHECK<br/>
+0x9400<br/>
+Failed to execute quotacheck.<br/>
+ERR_QUOTA_QUOTAON<br/>
+0x9500<br/>
+Failed to execute quotaon.<br/>
+ERR_QUOTA_QUOTAOFF<br/>
+0x9501<br/>
+Failed to execute quotaoff.<br/>
+ERR_FORK_FAIL<br/>
+0x9600<br/>
+Failed to fork.<br/>
+Failed to enumerate system RAID&#160;<br/>
+ERR_RAID_ENUM_FAIL<br/>
+0x9700<br/>
+devices.<br/>
+ERR_ENUM_FAIL<br/>
+0x9800<br/>
+Failed to enumerate.<br/>
+ERR_INVALID_PATHNAME<br/>
+0x9900<br/>
+Invalid volume path.<br/>
+ERR_SERVICE_EXISTS<br/>
+0xA000<br/>
+The service is already existed.<br/>
+ERR_SERVICE_NOT_EXISTS<br/>
+0xA100<br/>
+The service does not exist.<br/>
+The path you specified is not a&#160;<br/>
+ERR_NOT_DIRECTORY<br/>
+0xA200<br/>
+directory.<br/>
+ERR_DIRECTORY_NOT_EXISTS<br/>
+0xA300<br/>
+The directory does not exist.<br/>
+ERR_SERVICE_NOT_SET<br/>
+0xA400<br/>
+The service has not been set.<br/>
+The path you specified is a&#160;<br/>
+ERR_IS_DIRECTORY<br/>
+0xA500<br/>
+directory.<br/>
+Source and destination file are&#160;<br/>
+ERR_PATH_CONFLICT<br/>
+0xA600<br/>
+identical (same file name or hard&#160;<br/>link).<br/>
+The file size exceeds 4GB in FAT file&#160;<br/>
+ERR_FAT_FILESIZE_TOO_LARGE<br/>
+0xA700<br/>
+system.<br/>
+The file contains illeagle char in FAT&#160;<br/>
+ERR_FAT_FILENAME_ILLEGAL<br/>
+0xA800<br/>
+file system.<br/>
+ERR_USER_CANCEL<br/>
+0xA900<br/>
+Action cancelled by user .<br/>
+ERR_INTERRUPTED<br/>
+0xAA00<br/>
+Interrupted by a signal.<br/>
+Share Encryption: Incorrect&#160;<br/>
+ERR_ENCKEY_VERIFY<br/>
+0xAB00<br/>
+encryption key.<br/>
+Share Encryption: Local copy of&#160;<br/>
+ERR_ENCKEY_LOST<br/>
+0xAC00<br/>
+encryption key lost.<br/>
+ERR_BDB_FILE_DEPRECATED<br/>
+0xB000<br/>
+The BDb file has been deprecated.<br/>
+The file opened for BDb is&#160;<br/>
+ERR_BDB_FILE_BAD_FORMAT<br/>
+0xB100<br/>
+incorrectly formatted.<br/>
+ERR_BDB_GET_FAILED<br/>
+0xB200<br/>
+The BDb get failed.<br/>
+ERR_BDB_SET_FAILED<br/>
+0xB300<br/>
+The BDb set failed.<br/>
+ERR_BDB_DELETE_FAILED<br/>
+0xB400<br/>
+The BDb delete failed.<br/>
+ERR_BDB_CURSOR_FINISH<br/>
+0xB500<br/>
+The BDb CursorGet has finished.<br/>
+ERR_NO_SUCH_FTYPE<br/>
+0xB600<br/>
+No scuh fType value.<br/>
+ERR_RESERVED_GROUP<br/>
+0xB700<br/>
+The gid is less than GID_MIN.<br/>
+ERR_RESERVED_USER<br/>
+0xB800<br/>
+The uid is less than UID_MIN.<br/>
+wbinfo -g timeout when building&#160;<br/>
+ERR_LOOKUP_DOMAIN_GROUP<br/>
+0xB900<br/>
+domain group db<br/>
+<b>16</b><br/>
+<hr/>
+<a name=19></a><i><b>Chapter 3: Synology Error Numbers</b></i><br/>
+<b>Symbol</b><br/>
+<b>Value</b><br/>
+<b>Description</b><br/>
+wbinfo -u timeout when building&#160;<br/>
+ERR_LOOKUP_DOMAIN_USER<br/>
+0xBA00<br/>
+domain user db<br/>
+The specified interface is already&#160;<br/>
+ERR_INTERFACE_EXISTS<br/>
+0xBB00<br/>
+existed.<br/>
+The specified interface does not&#160;<br/>
+ERR_NO_SUCH_INTERFACE<br/>
+0xBC00<br/>
+exist.<br/>
+The interfaces exceeds the&#160;<br/>
+ERR_TOO_MANY_INTERFACE<br/>
+0xBD00<br/>
+limitation.<br/>
+ERR_INVALID_PATH<br/>
+0xBE00<br/>
+Invalide path.<br/>
+The capacity of the disk is too&#160;<br/>
+ERR_SIZE_TOO_SMALL<br/>
+0xBF00<br/>
+small.<br/>
+ERR_NAME_EXISTS<br/>
+0xC000<br/>
+The name is already existed.<br/>
+The reserved size of iSCSI file&#160;<br/>
+ERR_EXCEED_ISCSI_SIZE_IN_VOLUME<br/>
+0xC100<br/>
+exceeds the limit.<br/>
+ERR_FS_NOT_FOUND<br/>
+0xC200<br/>
+Failed to find the file system.<br/>
+ERR_NAME_TOO_LONG<br/>
+0xC300<br/>
+File name is too long.<br/>
+<b>17</b><br/>
+<hr/>
+<a name=20></a><i><b>Copyright and Disclaimer Notices</b></i><br/>
+Copyright and Disclaimer Notices<br/>
+Synology Inc.&#160;<br/>® 2015-2021 Synology Inc.&#160;<br/>All rights reserved.<br/>
+No part of this publication may be reproduced, stored in a retrieval system, or transmitted,&#160;<br/>in any form or by any means, mechanical, electronic, photocopying, recording, or otherwise,&#160;<br/>without prior written permission of Synology Inc., with the following exceptions: Any person&#160;<br/>is hereby authorized to store documentation on a single computer for personal use only and&#160;<br/>to print copies of documentation for personal use provided that the documentation contains&#160;<br/>Synology’s copyright notice.<br/>
+The Synology logo is a trademark of Synology Inc.<br/>
+No licenses, express or implied, are granted with respect to any of the technology described in&#160;<br/>this document. Synology retains all intellectual property rights associated with the technology&#160;<br/>described in this document. This document is intended to assist application developers to&#160;<br/>develop applications only for Synology-labelled computers.<br/>
+Every effort has been made to ensure that the information in this document is accurate.&#160;<br/>Synology is not responsible for typographical errors.<br/>
+Synology Inc.&#160;<br/>9F, No. 1, Yuandong Rd.&#160;<br/>Banqiao Dist., New Taipei City 220632, Taiwan<br/>
+Synology and the Synology logo are trademarks of Synology Inc., registered in the United&#160;<br/>States and other countries.<br/>
+Marvell&#160;is&#160;registered&#160;trademarks&#160;of&#160;Marvell&#160;Semiconductor,&#160;Inc.&#160;or&#160;its&#160;subsidiaries&#160;in&#160;the&#160;United&#160;<br/>States and other countries.<br/>
+Freescale is registered trademarks of Freescale Semiconductor, Inc. or its subsidiaries in the&#160;<br/>United States and other countries.<br/>
+Other products and company names mentioned herein are trademarks of their respective&#160;<br/>holders.<br/>
+Even though Synology has reviewed this document, SYNOLOGY MAKES NO WARRANTY OR&#160;<br/>REPRESENTATION, EITHER EXPRESS OR IMPLIED, WITH RESPECT TO THIS DOCUMENT, ITS&#160;<br/>QUALITY, ACCURACY, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE. AS A&#160;<br/>RESULT, THIS DOCUMENT IS PROVIDED “AS IS,” AND YOU, THE READER, ARE ASSUMING THE&#160;<br/>
+<b>18</b><br/>
+<hr/>
+<a name=21></a><i><b>Copyright and Disclaimer Notices</b></i><br/>
+ENTIRE RISK AS TO ITS QUALITY AND ACCURACY. IN NO EVENT WILL SYNOLOGY BE LIABLE FOR&#160;<br/>DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES RESULTING FROM&#160;<br/>ANY DEFECT OR INACCURACY IN THIS DOCUMENT, even if advised of the possibility of such&#160;<br/>damages.<br/>
+THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE AND IN LIEU OF ALL&#160;<br/>OTHERS, ORAL OR WRITTEN, EXPRESS OR IMPLIED. No Synology dealer, agent, or employee is&#160;<br/>authorized to make any modification, extension, or addition to this warranty.<br/>
+Some states do not allow the exclusion or limitation of implied warranties or liability for&#160;<br/>incidental or consequential damages, so the above limitation or exclusion may not apply to&#160;<br/>you. This warranty gives you specific legal rights, and you may also have other rights which&#160;<br/>vary from state to state.<br/>
+<b>19</b><br/>
+<hr/>
+<a name=22></a><img src="Synology_DiskStation_Administration_CLI_Guide-22_1.jpg"/><br/>
+<i><b>Copyright and Disclaimer Notices</b></i><br/>
+<b>SYNOLOGY&#160;</b><br/>
+<b>INC.</b><br/>
+<b>9F, No. 1, Yuandong Rd.&#160;</b><br/>
+<b>Banqiao Dist., New Taipei City 220632</b><br/>
+<b>Taiwan&#160;&#160; &#160;</b><br/>
+<b>Tel: +886 2 2955 1814&#160;</b><br/>
+<b>SYNOLOGY</b><br/>
+<b>AMERICA CORP.</b><br/>
+<b>3535&#160;Factoria&#160;Blvd&#160;SE,&#160;Suite&#160;#200,&#160;</b><br/>
+<b>Bellevue, WA 98006</b><br/>
+<b>USA &#160;&#160;</b><br/>
+<b>Tel: +1 425 818 1587</b><br/>
+<b>SYNOLOGY&#160;</b><br/>
+<b>UK LTD.</b><br/>
+<b>Unit&#160;5&#160;Danbury&#160;Court,&#160;Linford&#160;Wood,&#160;</b><br/>
+<b>Milton Keynes, MK14 6PL</b><br/>
+<b>United Kingdom&#160;</b><br/>
+<b>Tel.: +44 (0)1908048029</b><br/>
+<b>SYNOLOGY&#160;</b><br/>
+<b>FRANCE</b><br/>
+<b>102 Terrasse Boieldieu (TOUR W)</b><br/>
+<b>92800 Puteaux</b><br/>
+<b>France</b><br/>
+<b>Tel: +33 147 176288</b><br/>
+<b>SYNOLOGY&#160;</b><br/>
+<b>GMBH</b><br/>
+<b>Grafenberger Allee 295</b><br/>
+<b>40237 Düsseldorf</b><br/>
+<b>Deutschland</b><br/>
+<b>Tel: +49 211 9666 9666</b><br/>
+<b>SYNOLOGY&#160;</b><br/>
+<b>SHANGHAI</b><br/>
+<b>200070, Room 201,</b><br/>
+<b>No. 511 Tianmu W. Rd.,&#160;</b><br/>
+<b>synology.com</b><br/>
+<b>Jingan Dist., Shanghai,&#160;</b><br/>
+<b>China</b><br/>
+<b>SYNOLOGY</b><br/>
+<b>JAPAN CO., LTD.</b><br/>
+Synology may make changes to specifications and product descriptions at any time, without notice. Copyright&#160;<br/>© 2021 Synology Inc. All rights reserved. ® Synology and other names of Synology Products are proprietary&#160;<br/>
+<b>4F, No. 3-1-2, Higashikanda,</b><br/>
+marks or registered trademarks of Synology Inc. Other products and company names mentioned herein are&#160;<br/>
+<b>Chiyoda-ku, Tokyo, 101-0031</b><br/>
+trademarks of their respective holders.&#160;<br/>
+<b>Japan</b><br/>
+<b>20</b><br/>
+<hr/>
+<a name="outline"></a><h1>Document Outline</h1>
+<ul>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#2">CLI Administrator Guide for Synology NAS</a>
+<ul>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#3">Chapter 1: Introduction</a></li>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#4">Chapter 2: Synology NAS Administrative Commands</a>
+<ul>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#4">Managing local users — synouser</a></li>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#7">Managing local groups — synogroup</a></li>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#8">Managing share folder information — synoshare</a></li>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#11">Managing network settings — synonet</a></li>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#13">Managing setting of services — synoservice</a></li>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#15">Managing workgroup or ADS domain setting — synowin</a></li>
+</ul>
+</li>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#16">Chapter 3: Synology Error Numbers</a></li>
+<li><a href="Synology_DiskStation_Administration_CLI_Guides.html#20">Copyright and Disclaimer Notices</a></li>
+</ul>
+</li>
+</ul>
+<hr/>
+</body>
+</html>
