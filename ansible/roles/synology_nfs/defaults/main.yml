@@ -1,0 +1,18 @@
+---
+# Default variables for synology_nfs role
+
+# NFS shares to manage (override in host_vars)
+nfs_shares: []
+
+# NFS service configuration
+nfs_enable: true
+nfs_v4_enable: true
+
+# Discovery mode: when true, only gather facts without making changes
+discovery_mode: false
+
+# Default anonymous user mapping for NFS exports
+# These match Synology's default guest user (UID 1025, GID 100)
+# Override per-share in nfs_rules if needed
+nfs_default_anonuid: 1025
+nfs_default_anongid: 100

@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check users users-check firewall firewall-check felix felix-check all check-all run adhoc sh build-tinyfugue trufflehog
+.PHONY: help init build galaxy version ping access_check users users-check firewall firewall-check felix felix-check nas nas-check nas-discover all check-all run adhoc sh build-tinyfugue trufflehog
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -48,6 +48,15 @@ felix: ## Apply felix VPS configuration (users)
 
 felix-check: ## Dry-run felix VPS configuration with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/vps.yml -vv --ask-become-pass --check --diff $(OPTS)
+
+nas: ## Apply NAS configuration (Synology NFS shares)
+	$(DC) run --rm ansible ansible-playbook playbooks/nas.yml -vv --ask-become-pass $(OPTS)
+
+nas-check: ## Dry-run NAS configuration with --check/--diff
+	$(DC) run --rm ansible ansible-playbook playbooks/nas.yml -vv --ask-become-pass --check --diff $(OPTS)
+
+nas-discover: ## Run discovery mode to gather current NAS configuration
+	$(DC) run --rm ansible ansible-playbook playbooks/nas.yml -vv --ask-become-pass -e discovery_mode=true --tags discovery $(OPTS)
 
 all: ## Run standard playbooks (users, firewall, felix)
 	$(MAKE) users

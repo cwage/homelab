@@ -1,0 +1,50 @@
+---
+# Discovery tasks - gather information about current NAS configuration
+
+- name: Get list of shares
+  ansible.builtin.raw: /usr/syno/sbin/synoshare --enum ALL
+  become: true
+  register: synology_shares_raw
+  changed_when: false
+  tags: ['discovery']
+
+- name: Display shares information
+  ansible.builtin.debug:
+    msg: "{{ synology_shares_raw.stdout }}"
+  tags: ['discovery']
+
+- name: Get NFS export configuration
+  ansible.builtin.raw: cat /etc/exports
+  become: true
+  register: synology_exports_raw
+  changed_when: false
+  failed_when: false
+  tags: ['discovery']
+
+- name: Display NFS exports
+  ansible.builtin.debug:
+    msg: "{{ synology_exports_raw.stdout }}"
+  when: synology_exports_raw.stdout is defined
+  tags: ['discovery']
+
+- name: Get list of users
+  ansible.builtin.raw: cat /etc/passwd
+  register: synology_users_raw
+  changed_when: false
+  tags: ['discovery']
+
+- name: Display local users
+  ansible.builtin.debug:
+    msg: "{{ synology_users_raw.stdout }}"
+  tags: ['discovery']
+
+- name: Get list of groups
+  ansible.builtin.raw: cat /etc/group
+  register: synology_groups_raw
+  changed_when: false
+  tags: ['discovery']
+
+- name: Display groups information
+  ansible.builtin.debug:
+    msg: "{{ synology_groups_raw.stdout }}"
+  tags: ['discovery']

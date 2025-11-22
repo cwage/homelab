@@ -1,0 +1,12 @@
+---
+# Handlers for synology_nfs role
+
+- name: Restart NFS service
+  ansible.builtin.raw: systemctl restart nfs-server
+  become: true
+  listen: Restart NFS service
+
+- name: Reload NFS exports
+  ansible.builtin.raw: /usr/sbin/exportfs -ra
+  become: true
+  listen: Reload NFS exports
