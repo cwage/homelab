@@ -1,0 +1,12 @@
+---
+# Main tasks for synology_nfs role
+
+- name: Include discovery tasks
+  ansible.builtin.include_tasks: discovery.yml
+  when: discovery_mode | bool
+  tags: ['discovery', 'never']
+
+- name: Include NFS share management tasks
+  ansible.builtin.include_tasks: shares.yml
+  when: not discovery_mode | bool
+  tags: ['shares']

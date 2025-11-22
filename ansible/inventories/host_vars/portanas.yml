@@ -1,0 +1,24 @@
+# Host-specific configuration for portanas (Synology DS1815+)
+# DSM Version: 7.1.1-42962 Update 9
+
+# NFS Shares Configuration
+# To be populated after discovery phase
+# Run: ssh deploy@10.10.15.4 'synoshare --list'
+# Run: ssh deploy@10.10.15.4 'cat /etc/exports'
+
+nfs_shares: []
+  # Example structure:
+  # - name: share_name
+  #   description: "Share description"
+  #   path: /volume1/share_name
+  #   nfs_enabled: true
+  #   nfs_rules:
+  #     - host: "10.10.15.0/24"
+  #       privilege: "rw"
+  #       squash: "no_root_squash"
+  #       security: "sys"
+
+# Users/Groups relevant to NFS
+# To be populated after discovery
+nas_users: []
+nas_groups: []
