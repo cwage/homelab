@@ -55,11 +55,13 @@ make nas-discover
 ```
 
 This will output:
-- List of existing shares (via `synoshare --list`)
+- List of existing shares (via `synoshare --enum ALL`)
 - NFS export rules (from `/etc/exports`)
 - Local users and groups
 
 Use this output to populate `inventories/host_vars/portanas.yml`.
+
+**Note:** `synoshare --enum ALL` is used instead of `--list` as it provides more detailed output. This command is not documented in the official Synology CLI guide but is present in DSM 7.
 
 ### Check Mode (Dry Run)
 
@@ -96,12 +98,21 @@ nfs_shares:
 
 ## Synology CLI Commands Reference
 
-- `synoshare --list` - List all shares
-- `synoshare --add <name> <description> <path>` - Create share
-- `synoshare --del <name>` - Delete share
-- `synoservicecfg --list` - List services status
-- `synoservicecfg --enable nfs` - Enable NFS service
-- `synoservice --restart nfs` - Restart NFS service
+### Share Management
+- `synoshare --enum ALL` - List all shares with details (undocumented DSM 7 command)
+- `synoshare --get <name>` - Get share details
+- `synoshare --add <name> <description> <path> "" "" "" 1 0` - Create share
+- `synoshare --del TRUE <name>` - Delete share and its data
+- `synoshare --del FALSE <name>` - Delete share configuration only
+
+### NFS Service Management (DSM 7)
+- `systemctl status nfs-server` - Check NFS service status
+- `systemctl is-active nfs-server` - Check if NFS is running
+- `systemctl enable --now nfs-server` - Enable and start NFS service
+- `systemctl restart nfs-server` - Restart NFS service
+- `exportfs -ra` - Reload NFS exports from /etc/exports
+
+**Note:** DSM 7 uses `systemctl` for service management. Old DSM 6 commands (`synoservicecfg`, `synoservice`) do not exist in DSM 7.
 
 ## Implementation Details
 
