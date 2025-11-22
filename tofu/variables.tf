@@ -31,3 +31,9 @@ variable "pm_vm_datastore_id" {
   type        = string
   default     = "local-lvm"
 }
+
+variable "pm_template_id" {
+  description = "VM template ID to clone from (created by Ansible pve-templates role)"
+  type        = number
+  default     = 9000 # debian12-cloud template
+}
