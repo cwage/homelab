@@ -1,16 +1,36 @@
 ---
+- name: Check tinyfugue package artifact exists locally
+  ansible.builtin.stat:
+    path: "{{ tinyfugue_deb_local_path }}"
+  register: tinyfugue_deb_local
+  delegate_to: localhost
+  become: false
+  run_once: true
+
+- name: Fail if tinyfugue package is missing
+  ansible.builtin.assert:
+    that:
+      - tinyfugue_deb_local.stat.exists
+    fail_msg: "Tinyfugue package missing at {{ tinyfugue_deb_local_path }}; build it with `make -C ansible build-tinyfugue` before deploying."
+  delegate_to: localhost
+  become: false
+  run_once: true
+
 - name: Copy tinyfugue .deb package to remote host
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/../files/packages/tinyfugue_5.0-widechar-2_amd64.deb"
-    dest: /tmp/tinyfugue_5.0-widechar-2_amd64.deb
+    src: "{{ tinyfugue_deb_local_path }}"
+    dest: "{{ tinyfugue_deb_remote_path }}"
     mode: '0644'
+  when: not ansible_check_mode
 
 - name: Install tinyfugue package (static binary, no dependencies)
   ansible.builtin.apt:
-    deb: /tmp/tinyfugue_5.0-widechar-2_amd64.deb
+    deb: "{{ tinyfugue_deb_remote_path }}"
     state: present
+  when: not ansible_check_mode
 
 - name: Remove temporary .deb file
   ansible.builtin.file:
-    path: /tmp/tinyfugue_5.0-widechar-2_amd64.deb
+    path: "{{ tinyfugue_deb_remote_path }}"
     state: absent
+  when: not ansible_check_mode

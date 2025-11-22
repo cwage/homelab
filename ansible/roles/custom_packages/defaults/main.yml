@@ -1,0 +1,4 @@
+---
+tinyfugue_deb_filename: tinyfugue_5.0-widechar-2_amd64.deb
+tinyfugue_deb_local_path: "{{ role_path }}/../../files/packages/{{ tinyfugue_deb_filename }}"
+tinyfugue_deb_remote_path: "/tmp/{{ tinyfugue_deb_filename }}"
