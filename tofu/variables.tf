@@ -25,3 +25,9 @@ variable "pm_image_datastore_id" {
   type        = string
   default     = "local"
 }
+
+variable "pm_vm_datastore_id" {
+  description = "Datastore ID used for VM disks and cloud-init drives (typically an LVM/ZFS store like 'local-lvm')"
+  type        = string
+  default     = "local-lvm"
+}
