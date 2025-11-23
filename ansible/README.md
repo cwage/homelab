@@ -1,103 +1,254 @@
 # Homelab Ansible
 
-Minimal Ansible setup to manage a Proxmox host.
+Ansible configuration management for homelab infrastructure including OpenBSD firewalls, Proxmox hosts, VPS, and NAS devices.
 
-## Setup
+## Documentation
 
-- Requires Ansible installed locally (ansible-core or ansible).
-- Inventory defines a `proxmox` group with host alias `pve1` at `10.10.15.18`.
+- **[Getting Started Guide](../docs/getting-started.md)** — Complete setup instructions
+- **[Inventory Guide](docs/inventory-guide.md)** — Configuring hosts and variables
+- **[Role Documentation](roles/)** — See individual role READMEs
 
-### SSH key placement
+## Overview
 
-- Put the private key for the `deploy` user at: `keys/deploy/id_ed25519`
-  - Ensure permissions are `0600` on the file.
-  - The corresponding public key must be in `/home/deploy/.ssh/authorized_keys` on the Proxmox node.
-- `ansible.cfg` is preconfigured to use:
-  - `remote_user = deploy`
-  - `private_key_file = keys/deploy/id_ed25519`
-  - `inventory = inventories/hosts.yml`
+This component manages the configuration of all hosts in the homelab. All operations run via Docker — no local Ansible installation required.
 
-### Proxmox host
+**Managed hosts:**
+- Proxmox VE servers (Debian-based)
+- OpenBSD firewalls (PF, DHCP, DNS, WireGuard)
+- Linux VPS (web servers, applications)
+- Synology NAS (NFS shares)
 
-- Inventory file: `inventories/hosts.yml`
-  - Group: `proxmox`
-  - Host alias: `pve1` -> `10.10.15.18`
+## Quick Reference
 
-### Test connectivity
+### Common Commands
 
-Once the `deploy` user exists on the Proxmox host with passwordless sudo and the SSH key is installed, test with either command:
-
-```
-ansible -i inventories/hosts.yml proxmox -m ping
-```
-
-or
-
-```
-ansible-playbook playbooks/ping.yml
+```bash
+make init              # Initialize .env file with UID/GID
+make build             # Build Ansible Docker image
+make ping              # Test connectivity to all hosts
+make users             # Apply user management
+make firewall          # Configure OpenBSD firewall (PF, DHCP, DNS)
+make templates         # Build Proxmox VM templates
+make felix             # Configure VPS
+make nas               # Configure Synology NAS
 ```
 
-Notes:
-- Host key checking is disabled in `ansible.cfg` for convenience during bootstrap. Consider enabling it later.
-- Privilege escalation (`become: true` with `sudo`) is enabled by default.
-
-## Run via Docker/Compose (no local Ansible)
-
-1) Copy `.env.example` to `.env` and set your UID/GID (Linux/macOS):
-
-```
-cp .env.example .env
-id -u | xargs -I{} sed -i "s/^UID=.*/UID={}/" .env
-id -g | xargs -I{} sed -i "s/^GID=.*/GID={}/" .env
+Add `-check` suffix for dry-run mode:
+```bash
+make firewall-check    # Preview firewall changes (no modifications)
+make users-check       # Preview user changes
 ```
 
-2) Build the Ansible image:
+See `make help` for complete list of targets.
 
-```
-docker compose build --pull
-```
+## Initial Setup
 
-3) Verify Ansible inside the container:
+**For detailed setup instructions, see [Getting Started Guide](../docs/getting-started.md).**
 
-```
-docker compose run --rm ansible ansible --version
-```
+### 1. Initialize Environment
 
-4) Test connectivity to Proxmox:
-
-```
-docker compose run --rm ansible ansible-playbook playbooks/ping.yml -vv
+```bash
+make init
 ```
 
-The container mounts this repo at `/work`, uses `/work/ansible.cfg`, and reads the key at `keys/deploy`.
+Creates `.env` and sets your UID/GID for proper Docker permissions.
 
-SELinux note
-- The compose volume uses `./:/work:Z`. The `:Z` option relabels the bind mount with a private SELinux label so the container can access it on SELinux systems (Fedora/RHEL). It is ignored on non‑SELinux hosts.
+### 2. Build Container
 
-## Secret scanning and pre-commit hook
+```bash
+make build
+```
 
-TruffleHog runs inside Docker (service `trufflehog` defined in `docker-compose.yml`) to keep scans reproducible and avoid installing it locally.
+Builds the Ansible Docker image with all required collections.
 
-### One-off scans
+### 3. SSH Key Setup
+
+Generate SSH keys for the deploy user:
+
+```bash
+mkdir -p keys/deploy
+ssh-keygen -t ed25519 -f keys/deploy/id_ed25519 -C "ansible-deploy" -N ""
+chmod 600 keys/deploy/id_ed25519
+
+# Copy to target hosts
+ssh-copy-id -i keys/deploy/id_ed25519.pub deploy@<host-ip>
+
+# Create symlink for templates
+cd keys
+ln -s deploy/id_ed25519.pub deploy.pub
+```
+
+See [Getting Started Guide](../docs/getting-started.md) for creating the deploy user on target hosts.
+
+### 4. Configure Inventory
+
+Edit `inventories/hosts.yml` to match your infrastructure:
+
+```yaml
+all:
+  children:
+    proxmox:
+      hosts:
+        pve1:
+          ansible_host: 10.10.15.18
+          ansible_port: 22
+```
+
+See [Inventory Guide](docs/inventory-guide.md) for details.
+
+### 5. Test Connectivity
+
+```bash
+make ping
+```
+
+Expected: Green `pong` responses from all hosts.
+
+## Configuration
+
+### Inventory Structure
 
 ```
+inventories/
+├── hosts.yml          # Host definitions
+├── group_vars/        # Variables per group
+│   ├── all.yml
+│   ├── proxmox.yml
+│   └── openbsd_firewalls.yml
+└── host_vars/         # Variables per host
+    ├── pve1.yml
+    └── fw1.yml
+```
+
+See [Inventory Guide](docs/inventory-guide.md) for complete documentation.
+
+### Ansible Configuration
+
+Configured in `ansible.cfg`:
+- Remote user: `deploy`
+- Private key: `keys/deploy/id_ed25519`
+- Inventory: `inventories/hosts.yml`
+- Host key checking: Disabled (for bootstrap convenience)
+
+## Available Playbooks
+
+- `playbooks/ping.yml` — Test connectivity
+- `playbooks/access_check.yml` — Verify SSH and sudo access
+- `playbooks/users.yml` — Manage user accounts
+- `playbooks/firewall.yml` — Configure OpenBSD firewall (PF, DHCP, DNS, WireGuard)
+- `playbooks/pve-templates.yml` — Build Proxmox VM templates
+- `playbooks/vps.yml` — Configure VPS (felix)
+- `playbooks/nas.yml` — Configure Synology NAS
+
+## Available Roles
+
+Each role has comprehensive documentation in its directory:
+
+- [openbsd_firewall](roles/openbsd_firewall/README.md) — PF, DHCP, Unbound DNS
+- [wireguard_server](roles/wireguard_server/README.md) — WireGuard VPN server
+- [synology_nfs](roles/synology_nfs/README.md) — NFS share management
+- [users](roles/users/README.md) — User account management
+- [system](roles/system/README.md) — Hostname, SSH configuration
+- [packages](roles/packages/README.md) — System package installation
+- [custom_packages](roles/custom_packages/README.md) — Custom .deb packages
+- [nginx](roles/nginx/README.md) — Web server configuration
+- [pve_template](roles/pve_template/README.md) — VM template creation
+
+## Docker Container Details
+
+All operations run in a Docker container:
+- Base image: Python with Ansible
+- Volume mount: `./:/work:Z` (with SELinux support)
+- Working directory: `/work`
+- Ansible configuration: Loaded from `ansible.cfg`
+- SSH keys: Mounted from `keys/`
+
+**SELinux note:** The docker-compose volume uses `:Z` which relabels the bind mount for SELinux systems (Fedora/RHEL). Ignored on non-SELinux hosts.
+
+## Advanced Usage
+
+### Run Arbitrary Playbook
+
+```bash
+make run PLAY=playbooks/custom.yml
+```
+
+With options:
+```bash
+make run PLAY=playbooks/users.yml LIMIT=pve1 OPTS="--check --diff"
+```
+
+### Ad-Hoc Commands
+
+```bash
+# Run shell command
+make adhoc HOSTS=pve1 MODULE=shell ARGS='uptime'
+
+# Use raw module (no Python required, for OpenBSD)
+make adhoc HOSTS=fw1 MODULE=raw ARGS='pfctl -sr'
+```
+
+### Interactive Shell
+
+```bash
+make sh
+# Now inside container with ansible-playbook, ansible, etc.
+```
+
+### Install Collections
+
+```bash
+make galaxy
+```
+
+Installs Ansible collections from `requirements.yml` into `collections/`.
+
+## Secret Scanning
+
+TruffleHog runs in Docker to scan for accidentally committed secrets.
+
+### One-off Scan
+
+```bash
 make trufflehog
 ```
 
-The target wraps `docker compose run --rm trufflehog filesystem /work --fail --no-update` with a repo-specific exclude file to skip vendored collections and secrets you already manage out-of-band (e.g., `keys/deploy`). Override the command via `TRUFFLEHOG_ARGS` if you need additional flags:
+Uses root-level scanner that excludes known safe paths (like `keys/`).
 
-```
-make trufflehog TRUFFLEHOG_ARGS="filesystem /work --fail --only-verified"
-```
+### Pre-commit Hook
 
-### Installing the git pre-commit hook
-
-To catch leaks before the CI pipeline, install the repo-managed hook into `.git/hooks/pre-commit`:
-
-```
-./scripts/install-precommit-hook.sh
+Install at repository root:
+```bash
+cd ..
+make install-precommit-hook
 ```
 
-After installation, every `git commit` runs the same Dockerized scan. Set `SKIP_TRUFFLEHOG=1` to bypass temporarily or `TRUFFLEHOG_PRECOMMIT_ARGS="..."` to customize the hook invocation (use sparingly and document why).
+After installation, every `git commit` runs TruffleHog automatically. Bypass temporarily with:
+```bash
+SKIP_TRUFFLEHOG=1 git commit -m "message"
+```
 
-Make sure CI mirrors `make trufflehog` (recommended) so pushes and PRs are blocked if the scan fails, even when someone skips the local hook.
+## Troubleshooting
+
+See [Getting Started Guide](../docs/getting-started.md) for common issues and solutions.
+
+**Quick checks:**
+```bash
+# Test SSH connectivity
+ssh -i keys/deploy/id_ed25519 deploy@<host-ip>
+
+# Verify ansible can reach hosts
+make ping
+
+# Check sudo access
+make access_check
+
+# View inventory configuration
+ansible-inventory --host <hostname> --yaml
+```
+
+## Related Documentation
+
+- [Getting Started Guide](../docs/getting-started.md) — Complete setup walkthrough
+- [Inventory Guide](docs/inventory-guide.md) — Host and variable configuration
+- [Root README](../README.md) — Repository overview and make targets

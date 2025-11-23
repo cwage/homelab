@@ -2,17 +2,52 @@
 
 OpenTofu-based infrastructure management for Proxmox homelab VMs.
 
+## Documentation
+
+- **[Getting Started Guide](../docs/getting-started.md)** — Complete setup instructions
+- **[Variables Guide](docs/variables-guide.md)** — Configuration reference
+- **[PVE Templates Workflow](../docs/pve-templates.md)** — VM template creation
+
 ## Overview
 
-This repository manages VM infrastructure on Proxmox using OpenTofu (Terraform fork). All operations run via Docker for consistency and portability across development machines.
+This component provisions VMs on Proxmox VE using OpenTofu (Terraform fork). All operations run via Docker for consistency and portability.
 
-**Companion Repository**: [homelab-ansible](https://github.com/cwage/homelab-ansible) handles VM configuration after provisioning.
+**What this manages:**
+- VM provisioning on Proxmox VE
+- Cloud image downloads
+- VM templates (in conjunction with Ansible)
+- Network and storage configuration
+
+**What this doesn't manage:**
+- VM configuration after provisioning → Use Ansible
+- OS updates → Use Ansible
+- Service management → Use Ansible
+
+## Quick Reference
+
+### Common Commands
+
+```bash
+make build      # Build OpenTofu Docker image
+make init       # Initialize OpenTofu backend
+make plan       # Preview infrastructure changes
+make apply      # Apply changes to Proxmox
+make destroy    # Destroy infrastructure (careful!)
+make shell      # Interactive shell in container
+make validate   # Validate configuration
+```
+
+See `make help` for complete list.
 
 ## Prerequisites
 
+## Prerequisites
+
+**For detailed setup instructions, see [Getting Started Guide](../docs/getting-started.md).**
+
 - Docker and Docker Compose
-- Access to Proxmox host at 10.15.15.18
-- Proxmox API token (see below)
+- Access to Proxmox host
+- Proxmox API token (see setup below)
 
 ## Initial Setup
 
@@ -53,41 +88,45 @@ PM_IMAGE_DATASTORE_ID=local          # Datastore for downloaded cloud images
 make build
 ```
 
-## Usage
+### 4. Initialize OpenTofu
 
-All OpenTofu operations use the Makefile:
+### 4. Initialize OpenTofu
 
 ```bash
-make help       # Show available commands
-make init       # Initialize OpenTofu (run once)
-make plan       # Preview infrastructure changes
-make apply      # Apply changes
-make destroy    # Destroy infrastructure
-make shell      # Open interactive shell in container
-```
-
-### Common Workflows
-
-**First time setup:**
-```bash
-make build
 make init
 ```
 
-**Make infrastructure changes:**
+This downloads the Proxmox provider and initializes the backend.
+
+## Usage
+
+### Preview Changes
+
 ```bash
-make plan      # Review changes
-make apply     # Apply if everything looks good
+make plan
 ```
 
-**Interactive development:**
+Shows what will be created, modified, or destroyed.
+
+### Apply Changes
+
 ```bash
-make shell     # Opens bash in container with tofu available
+make apply
 ```
 
-## Base images (Debian bookworm)
+Creates or updates infrastructure. Type `yes` when prompted.
 
-The configuration downloads the current Debian stable cloud image to the `PM_IMAGE_DATASTORE_ID` datastore on `PM_NODE_NAME`. Run `make plan`/`make apply` to pull or refresh the file (`debian-12-genericcloud-amd64.img` stored under `template/iso`). The upstream image is qcow2; the filename uses `.img` because the Proxmox download API only accepts `.img/.iso` extensions, but the content remains qcow2. Future VM/template resources can reference this downloaded image ID directly.
+### Destroy Infrastructure
+
+```bash
+make destroy
+```
+
+**Dangerous!** Removes all managed resources. Use with caution.
+
+## What Gets Created
+
+On first apply:
 
 ## Secret scanning and pre-commit hook
 
