@@ -35,36 +35,36 @@ make apply      # Apply changes to Proxmox
 make destroy    # Destroy infrastructure (careful!)
 make shell      # Interactive shell in container
 make validate   # Validate configuration
+make fmt        # Format .tf files
 ```
 
 See `make help` for complete list.
 
 ## Prerequisites
 
-## Prerequisites
-
 **For detailed setup instructions, see [Getting Started Guide](../docs/getting-started.md).**
 
 - Docker and Docker Compose
-- Access to Proxmox host
-- Proxmox API token (see setup below)
+- Access to Proxmox VE host
+- Proxmox API token (see Initial Setup below)
 
 ## Initial Setup
 
 ### 1. Generate Proxmox API Token
 
-Log into your Proxmox web interface and create an API token:
+Log into your Proxmox web interface:
 
 1. Navigate to **Datacenter → Permissions → API Tokens**
 2. Click **Add** to create a new token
-3. User: `root@pam` (or your preferred user)
-4. Token ID: `tofu-token` (or your preferred name)
-5. **Uncheck** "Privilege Separation" for full permissions (or set specific privileges as needed)
-6. Save the token secret - you won't be able to view it again
+3. Set:
+   - **User**: `root@pam` (or your preferred user)
+   - **Token ID**: `tofu-token` (or any name)
+   - **Privilege Separation**: Uncheck for full permissions
+4. **Save the token secret** - you can't view it again
 
 ### 2. Configure Environment
 
-Copy the example environment file and fill in your values:
+Copy the example file and fill in your values:
 
 ```bash
 cp .env.example .env
@@ -73,14 +73,17 @@ cp .env.example .env
 Edit `.env` with your Proxmox credentials:
 
 ```bash
-PM_API_URL=https://10.15.15.18:8006/api2/json
+PM_API_URL=https://10.10.15.18:8006/api2/json
 PM_API_TOKEN_ID=root@pam!tofu-token
 PM_API_TOKEN_SECRET=your-secret-here
-PM_NODE_NAME=pve                     # Proxmox node to manage images/VMs
-PM_IMAGE_DATASTORE_ID=local          # Datastore for downloaded cloud images
+PM_NODE_NAME=pve
+PM_IMAGE_DATASTORE_ID=local
+PM_VM_DATASTORE_ID=local-lvm
 ```
 
 **Important**: The `.env` file is gitignored and should never be committed.
+
+See [Variables Guide](docs/variables-guide.md) for details on each variable.
 
 ### 3. Build Docker Image
 
@@ -90,13 +93,11 @@ make build
 
 ### 4. Initialize OpenTofu
 
-### 4. Initialize OpenTofu
-
 ```bash
 make init
 ```
 
-This downloads the Proxmox provider and initializes the backend.
+Downloads the Proxmox provider and initializes the backend.
 
 ## Usage
 
@@ -122,91 +123,221 @@ Creates or updates infrastructure. Type `yes` when prompted.
 make destroy
 ```
 
-**Dangerous!** Removes all managed resources. Use with caution.
+**Dangerous!** Removes all managed resources. Use with extreme caution.
 
 ## What Gets Created
 
-On first apply:
+### On First Apply
 
-## Secret scanning and pre-commit hook
+**Cloud Images:**
+- Debian 12 (Bookworm) cloud image downloaded to Proxmox
+- Stored in `PM_IMAGE_DATASTORE_ID` (default: `local`)
+- File: `debian-12-genericcloud-amd64.img`
+- Format: qcow2 (despite `.img` extension — Proxmox API requirement)
 
-TruffleHog runs inside Docker (service `trufflehog` in `docker-compose.yml`) so everyone uses the same scanner version without installing anything locally.
+**VM Templates (via Ansible):**
 
-### One-off scans
-
-```
-make trufflehog
-```
-
-The target wraps `docker compose run --rm trufflehog filesystem /workspace --fail --no-update` and automatically loads `.trufflehog-exclude.txt` to ignore local-only artifacts like `.terraform/` or `.env`. Override the command with `TRUFFLEHOG_ARGS` when you need extra flags:
-
-```
-make trufflehog TRUFFLEHOG_ARGS="filesystem /workspace --fail --only-verified"
+After OpenTofu downloads images, use Ansible to create templates:
+```bash
+cd ../ansible
+make templates
 ```
 
-### Installing the git pre-commit hook
+See [PVE Templates Workflow](../docs/pve-templates.md) for the complete process.
 
-Install the repo-managed hook into `.git/hooks/pre-commit` to block accidental secret commits:
+**VMs (Optional):**
 
-```
-./scripts/install-precommit-hook.sh
-```
+VM definitions in `main.tf` are created/managed. By default, only images are downloaded — VM creation code is commented out. Uncomment and customize as needed.
 
-Every `git commit` then runs the same Dockerized scan. Set `SKIP_TRUFFLEHOG=1` to bypass temporarily or pass hook-specific options with `TRUFFLEHOG_PRECOMMIT_ARGS="..."` (document why if used). Mirror `make trufflehog` in CI to ensure pushes/PRs fail if the scan finds a problem.
+## Configuration
+
+### Environment Variables
+
+All configuration is in `.env` file (gitignored):
+
+- `PM_API_URL` — Proxmox API endpoint
+- `PM_API_TOKEN_ID` — API token identifier (user@realm!tokenid)
+- `PM_API_TOKEN_SECRET` — API token secret
+- `PM_NODE_NAME` — Proxmox node for resources (e.g., "pve")
+- `PM_IMAGE_DATASTORE_ID` — Storage for cloud images
+- `PM_VM_DATASTORE_ID` — Storage for VM disks
+
+See [Variables Guide](docs/variables-guide.md) for complete reference.
+
+### Variable Mapping
+
+Environment variables are automatically mapped to OpenTofu variables via `docker-compose.yml`:
+- `PM_API_URL` → `var.pm_api_url`
+- `PM_API_TOKEN_ID` → `var.pm_api_token_id`
+- etc.
 
 ## Project Structure
 
 ```
-.
-├── Dockerfile           # OpenTofu Docker environment
-├── docker-compose.yml   # Container orchestration
-├── Makefile            # Command shortcuts
-├── .env.example        # Environment template
-└── AGENTS.md           # Development guidelines
+tofu/
+├── Dockerfile              # OpenTofu container definition
+├── docker-compose.yml      # Container orchestration
+├── Makefile               # Command wrapper
+├── .env                   # Configuration (gitignored!)
+├── .env.example           # Configuration template
+├── variables.tf           # Variable definitions
+├── images.tf              # Cloud image downloads
+├── main.tf                # VM definitions (optional)
+├── outputs.tf             # Output values
+└── docs/
+    └── variables-guide.md # Configuration reference
 ```
+
+## Integration with Ansible
+
+OpenTofu and Ansible work together in a two-phase approach:
+
+### Phase 1: OpenTofu (Infrastructure)
+
+- Downloads cloud images to Proxmox
+- (Optional) Provisions VMs from templates
+
+### Phase 2: Ansible (Configuration)
+
+- Creates VM templates from cloud images
+- Configures running VMs (users, packages, services)
+
+### Typical Workflow
+
+```bash
+# 1. Download cloud images
+cd tofu
+make apply
+
+# 2. Create templates from images
+cd ../ansible
+make templates
+
+# 3. (Optional) Provision VMs from templates
+cd ../tofu
+# Edit main.tf to add VM definitions
+make apply
+
+# 4. Configure VMs
+cd ../ansible
+# Add VMs to inventory
+make ping
+make users
+# ... apply other roles
+```
+
+See [Getting Started Guide](../docs/getting-started.md) for detailed workflow.
 
 ## State Management
 
 **Current**: Local state files (`.tfstate`) in working directory.
 
-**Future**: State backend migration planned. Options under consideration:
-- S3-compatible storage (Minio on NAS)
-- HTTP backend
-- Terraform Cloud
+**⚠️ State files contain sensitive data:**
+- Resource IDs and names
+- IP addresses
+- Configuration details
 
-Local state is temporary due to multi-machine development workflow.
+**Best practices:**
+- ✅ Keep `.tfstate` in `.gitignore`
+- ✅ Back up state files securely
+- ✅ Don't share state files publicly
+- ⚠️ Multi-machine workflows need coordination
 
-## Security Notes
+**Future**: State backend migration planned (S3-compatible, HTTP backend, or Terraform Cloud).
 
-- Never commit `.env` files or API tokens
-- State files may contain sensitive data - review before sharing
-- API tokens should have minimum required permissions
-- Consider using `sops` or similar for secrets management (future)
+## Security
 
-## Integration with Ansible
+### API Token Best Practices
 
-1. OpenTofu provisions VMs with cloud-init
-2. Cloud-init bootstraps SSH access
-3. Ansible (from homelab-ansible repo) handles configuration
-4. Updates happen via Ansible, not OpenTofu rebuilds
+- ✅ Use API tokens, not root password
+- ✅ Create dedicated user for OpenTofu if possible
+- ✅ Use minimum required permissions
+- ✅ Rotate tokens periodically
+- ❌ Never commit `.env` to git
+- ❌ Never share token secrets via insecure channels
+
+### Secret Scanning
+
+TruffleHog automatically scans for accidentally committed secrets.
+
+**One-off scan:**
+```bash
+make trufflehog
+```
+
+Uses root-level scanner that excludes known safe paths (`.terraform/`, `.env`).
+
+**Pre-commit hook:**
+
+Install at repository root:
+```bash
+cd ..
+make install-precommit-hook
+```
+
+Every `git commit` then runs TruffleHog. Bypass temporarily:
+```bash
+SKIP_TRUFFLEHOG=1 git commit -m "message"
+```
 
 ## Troubleshooting
 
+See [Getting Started Guide](../docs/getting-started.md) for common issues.
+
+### Quick Checks
+
 **Docker build fails:**
-- Check internet connectivity
-- Verify OpenTofu version in Dockerfile is available
-- Try `make clean` then `make build`
+```bash
+make clean
+make build
+```
 
 **Proxmox API connection fails:**
 - Verify `.env` file exists and has correct values
-- Check Proxmox API token is valid and not expired
-- Confirm network access to 10.15.15.18:8006
-- Check SSL certificate issues (may need to configure TLS verification)
+- Test API manually: `curl -k https://<proxmox-ip>:8006/api2/json/version`
+- Check network access to Proxmox
+- Verify API token hasn't expired
+
+**"Resource already exists":**
+- Check Proxmox web UI for conflicts
+- Review state file for drift: `make plan`
 
 **State lock issues:**
-- If using local state, ensure no other processes are running
-- Check for `.terraform.tfstate.lock.info` files
+- Ensure no other OpenTofu processes are running
+- Check for `.terraform.tfstate.lock.info` file
 
-## Development Guidelines
+## Advanced Usage
 
-See [AGENTS.md](./AGENTS.md) for comprehensive development guidelines and project conventions.
+### Interactive Development
+
+```bash
+make shell
+# Inside container:
+tofu plan
+tofu console
+# etc.
+```
+
+### Format Code
+
+```bash
+make fmt
+```
+
+Formats all `.tf` files recursively.
+
+### Validate Configuration
+
+```bash
+make validate
+```
+
+Checks configuration syntax without contacting Proxmox.
+
+## Related Documentation
+
+- [Getting Started Guide](../docs/getting-started.md) — Complete setup walkthrough
+- [Variables Guide](docs/variables-guide.md) — Configuration reference
+- [PVE Templates Workflow](../docs/pve-templates.md) — VM template creation
+- [Root README](../README.md) — Repository overview
+- [Ansible README](../ansible/README.md) — VM configuration management
