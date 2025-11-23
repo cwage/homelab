@@ -50,7 +50,7 @@ environment:
   - TF_VAR_pm_api_token_secret=${PM_API_TOKEN_SECRET}
   - TF_VAR_pm_node_name=${PM_NODE_NAME}
   - TF_VAR_pm_image_datastore_id=${PM_IMAGE_DATASTORE_ID}
-  - TF_VAR_pm_vm_datastore_id=${PM_VM_VM_DATASTORE_ID}
+  - TF_VAR_pm_vm_datastore_id=${PM_VM_DATASTORE_ID}
 ```
 
 ## Variable Definitions
