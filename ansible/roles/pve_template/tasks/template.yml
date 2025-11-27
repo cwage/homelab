@@ -75,7 +75,7 @@
     tpl_can_recreate: true
   when:
     - tpl_status.rc == 0
-    - "'template: 1' in tpl_config.stdout" or pve_template_force_recreate
+    - "('template: 1' in tpl_config.stdout) or pve_template_force_recreate"
 
 - name: Stop existing VMID {{ tpl.vmid }} if running
   command: "qm stop {{ tpl.vmid }}"
