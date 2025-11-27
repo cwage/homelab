@@ -9,4 +9,4 @@ nfs_mounts:
   - name: templates
     src: 10.10.15.4:/volume1/pve-templates
     path: /mnt/pve-templates
-    opts: "rw,_netdev,vers=3"
+    opts: "rw,_netdev,hard,vers=3,noatime"
