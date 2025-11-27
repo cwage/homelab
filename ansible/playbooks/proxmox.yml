@@ -1,0 +1,8 @@
+---
+- name: Configure Proxmox hosts
+  hosts: proxmox
+  become: true
+  gather_facts: true
+  roles:
+    - role: users
+    - role: nfs_mounts

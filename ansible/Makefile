@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check users users-check firewall firewall-check felix felix-check nas nas-check nas-discover all check-all run adhoc sh build-tinyfugue trufflehog
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover all check-all run adhoc sh build-tinyfugue trufflehog
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -28,11 +28,11 @@ ping: ## Run the ping playbook (connectivity)
 access_check: ## Verify SSH user and sudo via whoami/id
 	$(DC) run --rm ansible ansible-playbook playbooks/access_check.yml -vv $(OPTS)
 
-users: ## Apply users role (deploy and others)
-	$(DC) run --rm ansible ansible-playbook playbooks/users.yml -vv $(OPTS)
+proxmox: ## Configure Proxmox hosts (users, mounts, etc.)
+	$(DC) run --rm ansible ansible-playbook playbooks/proxmox.yml -vv $(OPTS)
 
-users-check: ## Dry-run users playbook with --check/--diff
-	$(DC) run --rm ansible ansible-playbook playbooks/users.yml -vv --check --diff $(OPTS)
+proxmox-check: ## Dry-run Proxmox playbook with --check/--diff
+	$(DC) run --rm ansible ansible-playbook playbooks/proxmox.yml -vv --check --diff $(OPTS)
 
 firewall: ## Apply firewall configuration (pf.conf, dhcpd.conf)
 	$(DC) run --rm ansible ansible-playbook playbooks/firewall.yml -vv --ask-become-pass $(OPTS)
@@ -58,13 +58,13 @@ nas-check: ## Dry-run NAS configuration with --check/--diff
 nas-discover: ## Run discovery mode to gather current NAS configuration
 	$(DC) run --rm ansible ansible-playbook playbooks/nas.yml -vv --ask-become-pass -e discovery_mode=true --tags discovery $(OPTS)
 
-all: ## Run standard playbooks (users, firewall, felix)
-	$(MAKE) users
+all: ## Run standard playbooks (proxmox, firewall, felix)
+	$(MAKE) proxmox
 	$(MAKE) firewall
 	$(MAKE) felix
 
-check-all: ## Dry-run standard playbooks (users, firewall, felix)
-	$(MAKE) users-check
+check-all: ## Dry-run standard playbooks (proxmox, firewall, felix)
+	$(MAKE) proxmox-check
 	$(MAKE) firewall-check
 	$(MAKE) felix-check
 
