@@ -1,0 +1,25 @@
+---
+# Default configuration for nfs_mounts role
+
+nfs_mounts_enabled: true
+
+# List of shares to mount. Each item should define `src` (server:/path) and `path`.
+nfs_mounts: []
+
+# Install NFS client packages for each supported OS family.
+nfs_mounts_manage_packages: true
+nfs_mounts_package_map:
+  Debian:
+    - nfs-common
+  RedHat:
+    - nfs-utils
+
+# Defaults applied to each mount item
+nfs_mounts_default_state: mounted
+nfs_mounts_default_fstype: nfs
+nfs_mounts_default_opts: "rw,_netdev"
+nfs_mounts_default_dump: 0
+nfs_mounts_default_passno: 0
+nfs_mounts_default_owner: root
+nfs_mounts_default_group: root
+nfs_mounts_default_mode: "0755"

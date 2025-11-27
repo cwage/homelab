@@ -1,0 +1,65 @@
+---
+# Configure client-side NFS mounts by managing fstab entries and mount points.
+
+- name: "Gather OS-specific package list"
+  ansible.builtin.set_fact:
+    nfs_mounts_packages: "{{ nfs_mounts_package_map[ansible_facts.os_family] | default([]) }}"
+  when: nfs_mounts_enabled | bool
+
+- name: "Install NFS client packages"
+  ansible.builtin.package:
+    name: "{{ nfs_mounts_packages }}"
+    state: present
+  become: true
+  when:
+    - nfs_mounts_enabled | bool
+    - nfs_mounts_manage_packages | bool
+    - nfs_mounts_packages | length > 0
+  tags: ['packages', 'nfs']
+
+- name: "Ensure mount definitions are valid"
+  ansible.builtin.assert:
+    that:
+      - item.src is defined
+      - item.path is defined
+    fail_msg: "Each NFS mount must define 'src' and 'path'."
+  loop: "{{ nfs_mounts }}"
+  loop_control:
+    label: "{{ item.name | default(item.path) }}"
+  when:
+    - nfs_mounts_enabled | bool
+    - nfs_mounts | length > 0
+
+- name: "Create mount directories"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner | default(nfs_mounts_default_owner) }}"
+    group: "{{ item.group | default(nfs_mounts_default_group) }}"
+    mode: "{{ item.mode | default(nfs_mounts_default_mode) }}"
+  become: true
+  loop: "{{ nfs_mounts }}"
+  loop_control:
+    label: "{{ item.name | default(item.path) }}"
+  when:
+    - nfs_mounts_enabled | bool
+    - nfs_mounts | length > 0
+  tags: ['nfs', 'fstab']
+
+- name: "Configure NFS mounts"
+  ansible.posix.mount:
+    path: "{{ item.path }}"
+    src: "{{ item.src }}"
+    fstype: "{{ item.fstype | default(nfs_mounts_default_fstype) }}"
+    opts: "{{ item.opts | default(nfs_mounts_default_opts) }}"
+    state: "{{ item.state | default(nfs_mounts_default_state) }}"
+    dump: "{{ item.dump | default(nfs_mounts_default_dump) }}"
+    passno: "{{ item.passno | default(nfs_mounts_default_passno) }}"
+  become: true
+  loop: "{{ nfs_mounts }}"
+  loop_control:
+    label: "{{ item.name | default(item.path) }}"
+  when:
+    - nfs_mounts_enabled | bool
+    - nfs_mounts | length > 0
+  tags: ['nfs', 'fstab']
