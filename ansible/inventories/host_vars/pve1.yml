@@ -1,2 +1,12 @@
 # Host-specific variables for 10.10.15.18 (Proxmox)
 proxmox_hostname: pve1
+
+nfs_mounts:
+  - name: backup
+    src: 10.10.15.4:/volume1/pve-backups
+    path: /mnt/pve-backups
+    opts: "rw,_netdev,hard,vers=3,noatime"
+  - name: templates
+    src: 10.10.15.4:/volume1/pve-templates
+    path: /mnt/pve-templates
+    opts: "rw,_netdev,hard,vers=3,noatime"

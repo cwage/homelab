@@ -24,7 +24,7 @@ All Ansible operations via Makefile targets (runs in containers):
 
 - `make ping` - Test connectivity to all hosts
 - `make access_check` - Verify SSH and sudo access
-- `make users` - Deploy user configurations
+- `make proxmox` - Configure the Proxmox hosts (users, mounts, baseline)
 - `make firewall` - Configure OpenBSD firewall (requires `--ask-become-pass`)
 - `make felix` - Configure VPS (felix) users
 - `make version` - Show Ansible version in container
@@ -72,7 +72,8 @@ Three host groups defined in `inventories/hosts.yml`:
 
 ### Playbook-Role Mapping
 
-- `playbooks/users.yml` → `proxmox` hosts → `users` role
+- `playbooks/proxmox.yml` → `proxmox` hosts → `users` + `nfs_mounts` roles
+- `playbooks/users.yml` → `proxmox` hosts → `users` role (limited run)
 - `playbooks/firewall.yml` → `openbsd_firewalls` hosts → `wireguard_server` + `openbsd_firewall` roles
 - `playbooks/vps.yml` → `linode_vps` hosts → `users` role
 - `playbooks/ping.yml` - Connectivity test

@@ -1,8 +1,7 @@
 ---
-- name: Manage local users (Proxmox)
+- name: Manage local users on Proxmox
   hosts: proxmox
   become: true
   gather_facts: false
   roles:
     - users
-
