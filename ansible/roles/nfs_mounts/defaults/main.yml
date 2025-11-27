@@ -11,13 +11,7 @@ nfs_mounts_manage_packages: true
 nfs_mounts_package_map:
   Debian:
     - nfs-common
-  Ubuntu:
-    - nfs-common
   RedHat:
-    - nfs-utils
-  Rocky:
-    - nfs-utils
-  AlmaLinux:
     - nfs-utils
 
 # Defaults applied to each mount item
@@ -26,7 +20,6 @@ nfs_mounts_default_fstype: nfs
 nfs_mounts_default_opts: "rw,_netdev"
 nfs_mounts_default_dump: 0
 nfs_mounts_default_passno: 0
-nfs_mounts_default_boot: true
 nfs_mounts_default_owner: root
 nfs_mounts_default_group: root
 nfs_mounts_default_mode: "0755"

@@ -21,7 +21,7 @@ nfs_mounts:
   - name: backup
     src: portanas:/volume1/pve-backups
     path: /mnt/backup
-    opts: "rw,_netdev,hard,intr,vers=3,noatime"
+    opts: "rw,_netdev,hard,vers=3,noatime"
   - name: templates
     src: portanas:/volume1/pve-templates
     path: /mnt/pve-templates
