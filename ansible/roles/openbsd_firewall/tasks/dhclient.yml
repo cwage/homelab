@@ -25,14 +25,14 @@
   when: dhclient_diff.rc != 0
 
 - name: Disable resolvd (we manage resolv.conf via Ansible)
-  ansible.builtin.raw: rcctl disable resolvd
+  ansible.builtin.raw: /usr/sbin/rcctl disable resolvd
   become: true
   register: resolvd_disable
   changed_when: "'already disabled' not in resolvd_disable.stderr"
   failed_when: false
 
 - name: Stop resolvd if running
-  ansible.builtin.raw: rcctl stop resolvd
+  ansible.builtin.raw: /usr/sbin/rcctl stop resolvd
   become: true
   register: resolvd_stop
   changed_when: resolvd_stop.rc == 0
