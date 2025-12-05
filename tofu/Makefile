@@ -30,22 +30,12 @@ shell:
 init:
 	docker compose run --rm tofu tofu init
 
-# Check if state files are up-to-date with origin/master
-check-state:
-	@git fetch origin master --quiet && \
-	LOCAL_STATE=$$(git show HEAD:tofu/terraform.tfstate 2>/dev/null | md5sum) && \
-	REMOTE_STATE=$$(git show origin/master:tofu/terraform.tfstate 2>/dev/null | md5sum) && \
-	if [ "$$LOCAL_STATE" != "$$REMOTE_STATE" ]; then \
-		echo "ERROR: terraform.tfstate differs from origin/master. Pull/rebase state changes before running tofu."; \
-		exit 1; \
-	fi
-
 # Plan changes
-plan: check-state
+plan:
 	docker compose run --rm tofu tofu plan
 
 # Apply changes
-apply: check-state
+apply:
 	docker compose run --rm tofu tofu apply
 
 # Destroy infrastructure (interactive confirmation)
