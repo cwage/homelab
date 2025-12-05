@@ -1,0 +1,17 @@
+---
+# Minimal hostname configuration for VMs
+# Requires: domain_name variable
+# Uses: inventory_hostname_short (automatic from Ansible)
+
+- name: Set system hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname_short }}.{{ domain_name }}"
+  when: domain_name is defined
+
+- name: Update /etc/hosts with hostname
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s+'
+    line: "127.0.1.1\t{{ inventory_hostname_short }}.{{ domain_name }} {{ inventory_hostname_short }}"
+    state: present
+  when: domain_name is defined
