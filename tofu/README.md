@@ -128,14 +128,11 @@ Every `git commit` then runs the same Dockerized scan. Set `SKIP_TRUFFLEHOG=1` t
 
 ## State Management
 
-**Current**: Local state files (`.tfstate`) in working directory.
+State files (`terraform.tfstate`) are tracked in git for simplicity. This is a single-developer workflow, so the locking concerns with remote backends don't apply.
 
-**Future**: State backend migration planned. Options under consideration:
-- S3-compatible storage (Minio on NAS)
-- HTTP backend
-- Terraform Cloud
-
-Local state is temporary due to multi-machine development workflow.
+**Workflow notes:**
+- After running `make apply`, commit and push the updated state files
+- When switching machines, pull before running `plan` or `apply`
 
 ## Security Notes
 
