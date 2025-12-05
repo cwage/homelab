@@ -30,12 +30,14 @@ shell:
 init:
 	docker compose run --rm tofu tofu init
 
-# Plan changes
+# Plan changes (pulls latest state first)
 plan:
+	@git pull --rebase --autostash
 	docker compose run --rm tofu tofu plan
 
-# Apply changes
+# Apply changes (pulls latest state first)
 apply:
+	@git pull --rebase --autostash
 	docker compose run --rm tofu tofu apply
 
 # Destroy infrastructure (interactive confirmation)
