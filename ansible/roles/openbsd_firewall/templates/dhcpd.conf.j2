@@ -3,6 +3,7 @@
 
 option  domain-name "quietlife.net";
 option  domain-name-servers 10.10.15.1, {{ unbound_forwarders[0] }};
+option  domain-search "lan.quietlife.net";
 
 subnet 10.10.15.0 netmask 255.255.255.0 {
         option routers 10.10.15.1;

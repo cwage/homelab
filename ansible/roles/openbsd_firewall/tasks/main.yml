@@ -7,6 +7,10 @@
   ansible.builtin.include_tasks: dhcpd.yml
   tags: ['dhcpd', 'firewall']
 
+- name: Include dhclient.conf management tasks
+  ansible.builtin.include_tasks: dhclient.yml
+  tags: ['dhclient', 'dns', 'firewall']
+
 - name: Include unbound DNS resolver tasks
   ansible.builtin.include_tasks: unbound.yml
   tags: ['unbound', 'dns', 'firewall']

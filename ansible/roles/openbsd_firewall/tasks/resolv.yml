@@ -3,6 +3,7 @@
   ansible.builtin.raw: |
     cat > /tmp/resolv.conf.new << 'RESOLV_EOF'
     # Managed by Ansible
+    search lan.quietlife.net
     nameserver 127.0.0.1
     nameserver {{ unbound_forwarders[0] }}
     lookup file bind
