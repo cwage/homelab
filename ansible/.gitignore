@@ -9,6 +9,7 @@ venv/
 .venv/
 .env
 .env.*
+!.env.example
 
 # Keys (keep directory, ignore contents)
 keys/*
