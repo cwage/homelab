@@ -35,7 +35,7 @@ make install-precommit-hook  # install root pre-commit hook (trufflehog)
 - **Dry-run all standard playbooks**: `make ansible-check-all`
 
 ### Secrets and local state
-- OpenTofu API creds live in `tofu/.env` (gitignored). Copy from your old checkout if needed.
+- OpenTofu API creds live in `tofu/.env` (gitignored).
 - Ansible deploy keys live in `ansible/keys/` (gitignored).
 - Other local artifacts (.tfstate, .terraform, etc.) remain gitignored via component `.gitignore` files.
 
