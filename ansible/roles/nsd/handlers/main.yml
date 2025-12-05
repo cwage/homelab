@@ -1,0 +1,11 @@
+---
+- name: Restart NSD
+  ansible.builtin.systemd:
+    name: nsd
+    state: restarted
+  when: nsd_binary.stat.exists | default(false)
+
+- name: Reload NSD
+  ansible.builtin.command: nsd-control reload
+  changed_when: true
+  when: nsd_binary.stat.exists | default(false)

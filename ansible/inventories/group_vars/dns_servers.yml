@@ -1,0 +1,38 @@
+---
+# DNS server group configuration
+
+# Domain name for hostname configuration
+domain_name: lan.quietlife.net
+
+# System packages for DNS servers
+system_packages:
+  - dnsutils  # provides dig, nslookup, etc.
+
+# Users to manage on DNS servers
+managed_users:
+  - name: deploy
+    shell: /bin/bash
+    groups: ["sudo"]
+    sudo_nopasswd: true
+    ssh_pubkey_file: "keys/deploy.pub"
+  - name: cwage
+    shell: /bin/bash
+    groups: ["sudo"]
+    sudo_nopasswd: false
+    ssh_pubkey_files:
+      - "inventories/keys/cwage-portaplotz.pub"
+      - "inventories/keys/cwage-portaptty.pub"
+
+# NSD configuration
+nsd_zones:
+  - name: lan.quietlife.net
+    type: primary
+  - name: 15.10.10.in-addr.arpa
+    type: primary
+
+# Zone parameters
+nsd_default_ttl: 300
+nsd_soa_refresh: 3600
+nsd_soa_retry: 600
+nsd_soa_expire: 604800
+nsd_soa_minimum: 300

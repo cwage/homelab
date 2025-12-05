@@ -1,0 +1,63 @@
+---
+- name: Disable systemd-resolved (conflicts with NSD on port 53)
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    enabled: false
+    state: stopped
+
+- name: Configure static resolv.conf
+  ansible.builtin.copy:
+    content: |
+      # Managed by Ansible - static DNS config for NSD server
+      nameserver 10.10.15.1
+      search lan.quietlife.net
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install NSD
+  ansible.builtin.apt:
+    name: nsd
+    state: present
+    update_cache: true
+
+- name: Create NSD configuration
+  ansible.builtin.template:
+    src: nsd.conf.j2
+    dest: /etc/nsd/nsd.conf
+    owner: root
+    group: nsd
+    mode: "0640"
+    validate: "nsd-checkconf %s"
+  notify: Restart NSD
+
+- name: Create forward zone file
+  ansible.builtin.template:
+    src: lan.quietlife.net.zone.j2
+    dest: "{{ nsd_zones_dir }}/lan.quietlife.net.zone"
+    owner: root
+    group: nsd
+    mode: "0644"
+  notify: Reload NSD
+
+- name: Create reverse zone file
+  ansible.builtin.template:
+    src: 15.10.10.in-addr.arpa.zone.j2
+    dest: "{{ nsd_zones_dir }}/15.10.10.in-addr.arpa.zone"
+    owner: root
+    group: nsd
+    mode: "0644"
+  notify: Reload NSD
+
+- name: Check if NSD is installed
+  ansible.builtin.stat:
+    path: /usr/sbin/nsd
+  register: nsd_binary
+
+- name: Ensure NSD is enabled and running
+  ansible.builtin.systemd:
+    name: nsd
+    enabled: true
+    state: started
+  when: nsd_binary.stat.exists
