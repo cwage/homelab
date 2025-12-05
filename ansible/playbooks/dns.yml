@@ -1,0 +1,10 @@
+---
+- name: Configure DNS servers
+  hosts: dns_servers
+  become: true
+  gather_facts: true
+  roles:
+    - hostname
+    - users
+    - packages
+    - nsd

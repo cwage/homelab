@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+# NSD configuration for authoritative DNS
+
+server:
+    server-count: {{ nsd_server_count }}
+    ip-address: 0.0.0.0
+    port: {{ nsd_port }}
+    do-ip4: yes
+    do-ip6: no
+    verbosity: {{ nsd_verbosity }}
+    hide-version: yes
+    zonesdir: "{{ nsd_zones_dir }}"
+
+remote-control:
+    control-enable: yes
+
+{% for zone in nsd_zones %}
+zone:
+    name: "{{ zone.name }}"
+    zonefile: "{{ zone.name }}.zone"
+{% endfor %}

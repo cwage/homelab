@@ -1,0 +1,21 @@
+---
+# NSD role defaults
+
+# Zone defaults
+nsd_default_ttl: 300
+nsd_soa_refresh: 3600
+nsd_soa_retry: 600
+nsd_soa_expire: 604800
+nsd_soa_minimum: 300
+
+# NSD server settings
+nsd_server_count: 1
+nsd_port: 53
+nsd_verbosity: 1
+
+# Zone file location
+nsd_zones_dir: /etc/nsd
+
+# Primary nameserver for SOA
+nsd_primary_ns: dns1.lan.quietlife.net
+nsd_hostmaster: hostmaster.lan.quietlife.net

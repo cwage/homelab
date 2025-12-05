@@ -106,10 +106,20 @@ The `openbsd_firewall` role uses `ansible.builtin.raw` module exclusively (no Py
 
 ### SSH Key Management
 
-- Private keys: `keys/deploy/` directory (gitignored)
-- Public keys: `keys/deploy.pub` (committed to repo)
-- SSH key paths in ansible.cfg: `private_key_file = keys/deploy`
-- Users role supports both `ssh_pubkey` (literal string) and `ssh_pubkey_file` (path) formats
+Two separate key directories exist:
+
+- **`keys/`** - Deploy key only (for Ansible automation)
+  - `keys/deploy` - Private key (gitignored)
+  - `keys/deploy.pub` - Public key (committed)
+  - Reserved for eventual Vault/OpenBao integration
+  - Do NOT add user pubkeys here
+
+- **`inventories/keys/`** - User SSH public keys for deployment to hosts
+  - Reference these in `managed_users` with `ssh_pubkey_file: "keys/username.pub"`
+  - Path is relative to inventory directory
+
+SSH key path in ansible.cfg: `private_key_file = keys/deploy`
+Users role supports both `ssh_pubkey` (literal string) and `ssh_pubkey_file` (path) formats
 
 ### Docker Configuration
 

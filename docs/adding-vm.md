@@ -41,7 +41,7 @@ resource "proxmox_virtual_environment_vm" "dns1" {
 
     ip_config {
       ipv4 {
-        address = "10.10.15.2/24"
+        address = "10.10.15.10/24"
         gateway = "10.10.15.1"
       }
     }
@@ -83,7 +83,7 @@ Edit `ansible/inventories/hosts.yml` to add the new host:
 dns_servers:
   hosts:
     dns1:
-      ansible_host: 10.10.15.2
+      ansible_host: 10.10.15.10
 ```
 
 If the VM needs host-specific variables, create `ansible/inventories/host_vars/dns1.yml`.

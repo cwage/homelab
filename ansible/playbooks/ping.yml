@@ -1,8 +1,16 @@
 ---
-- name: Connectivity check
-  hosts: all
+- name: Connectivity check (Python hosts)
+  hosts: all:!openbsd_firewalls
   gather_facts: false
   become: false
   tasks:
     - name: Ping host
       ansible.builtin.ping:
+
+- name: Connectivity check (OpenBSD)
+  hosts: openbsd_firewalls
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Ping host (raw)
+      ansible.builtin.raw: echo pong
