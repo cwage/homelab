@@ -131,9 +131,8 @@ Every `git commit` then runs the same Dockerized scan. Set `SKIP_TRUFFLEHOG=1` t
 State files (`terraform.tfstate`) are tracked in git for simplicity. This is a single-developer workflow, so the locking concerns with remote backends don't apply.
 
 **Workflow notes:**
-- The `make plan` and `make apply` targets automatically run `git pull --rebase --autostash` before executing to ensure you have the latest state
 - After running `make apply`, commit and push the updated state files
-- Always pull before planning on a different machine
+- When switching machines, pull before running `plan` or `apply`
 
 ## Security Notes
 
