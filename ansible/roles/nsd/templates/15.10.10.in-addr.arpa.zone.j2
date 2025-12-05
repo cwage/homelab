@@ -1,0 +1,30 @@
+; {{ ansible_managed }}
+; Reverse zone for 10.10.15.0/24
+
+$ORIGIN 15.10.10.in-addr.arpa.
+$TTL {{ nsd_default_ttl }}
+
+@       IN      SOA     {{ nsd_primary_ns }}. {{ nsd_hostmaster }}. (
+                        {{ ansible_date_time.epoch }}  ; serial (epoch timestamp)
+                        {{ nsd_soa_refresh }}          ; refresh
+                        {{ nsd_soa_retry }}            ; retry
+                        {{ nsd_soa_expire }}           ; expire
+                        {{ nsd_soa_minimum }}          ; minimum
+                        )
+
+; Nameservers
+@               IN      NS      dns1.lan.quietlife.net.
+
+; PTR records
+1               IN      PTR     fw1.lan.quietlife.net.
+2               IN      PTR     wap.lan.quietlife.net.
+3               IN      PTR     portaplotz.lan.quietlife.net.
+4               IN      PTR     portanas.lan.quietlife.net.
+5               IN      PTR     portaptty.lan.quietlife.net.
+6               IN      PTR     portapttyeth.lan.quietlife.net.
+10              IN      PTR     dns1.lan.quietlife.net.
+13              IN      PTR     nintendoswitch.lan.quietlife.net.
+18              IN      PTR     pve1.lan.quietlife.net.
+20              IN      PTR     lattepanda.lan.quietlife.net.
+115             IN      PTR     remarkable.lan.quietlife.net.
+130             IN      PTR     lattepandaeth.lan.quietlife.net.

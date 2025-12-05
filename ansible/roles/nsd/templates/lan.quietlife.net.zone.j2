@@ -1,0 +1,35 @@
+; {{ ansible_managed }}
+; Forward zone for lan.quietlife.net
+
+$ORIGIN lan.quietlife.net.
+$TTL {{ nsd_default_ttl }}
+
+@       IN      SOA     {{ nsd_primary_ns }}. {{ nsd_hostmaster }}. (
+                        {{ ansible_date_time.epoch }}  ; serial (epoch timestamp)
+                        {{ nsd_soa_refresh }}          ; refresh
+                        {{ nsd_soa_retry }}            ; retry
+                        {{ nsd_soa_expire }}           ; expire
+                        {{ nsd_soa_minimum }}          ; minimum
+                        )
+
+; Nameservers
+@               IN      NS      dns1
+
+; Infrastructure
+fw1             IN      A       10.10.15.1
+wap             IN      A       10.10.15.2
+portaplotz      IN      A       10.10.15.3
+portanas        IN      A       10.10.15.4
+portaptty       IN      A       10.10.15.5
+portapttyeth    IN      A       10.10.15.6
+dns1            IN      A       10.10.15.10
+nintendoswitch  IN      A       10.10.15.13
+pve1            IN      A       10.10.15.18
+lattepanda      IN      A       10.10.15.20
+remarkable      IN      A       10.10.15.115
+lattepandaeth   IN      A       10.10.15.130
+
+; Aliases
+firewall        IN      CNAME   fw1
+nas             IN      CNAME   portanas
+proxmox         IN      CNAME   pve1
