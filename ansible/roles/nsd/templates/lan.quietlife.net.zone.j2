@@ -5,7 +5,7 @@ $ORIGIN lan.quietlife.net.
 $TTL {{ nsd_default_ttl }}
 
 @       IN      SOA     {{ nsd_primary_ns }}. {{ nsd_hostmaster }}. (
-                        {{ ansible_date_time.epoch }}  ; serial (epoch timestamp)
+                        {{ nsd_zone_serial }}  ; serial (YYYYMMDDNN)
                         {{ nsd_soa_refresh }}          ; refresh
                         {{ nsd_soa_retry }}            ; retry
                         {{ nsd_soa_expire }}           ; expire

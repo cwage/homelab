@@ -39,6 +39,7 @@
     owner: root
     group: nsd
     mode: "0644"
+    validate: "nsd-checkzone lan.quietlife.net %s"
   notify: Reload NSD
 
 - name: Create reverse zone file
@@ -48,6 +49,7 @@
     owner: root
     group: nsd
     mode: "0644"
+    validate: "nsd-checkzone 15.10.10.in-addr.arpa %s"
   notify: Reload NSD
 
 - name: Check if NSD is installed
