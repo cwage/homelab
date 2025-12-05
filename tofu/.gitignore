@@ -1,6 +1,7 @@
 # OpenTofu / Terraform
-*.tfstate
-*.tfstate.*
+# State files are tracked in git for simplicity (single-developer workflow)
+# *.tfstate
+# *.tfstate.*
 *.tfvars
 .terraform/
 .terraform.lock.hcl
