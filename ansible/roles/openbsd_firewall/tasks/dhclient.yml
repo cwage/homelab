@@ -1,0 +1,39 @@
+---
+- name: Write dhclient.conf to temporary location
+  ansible.builtin.raw: |
+    cat > /tmp/dhclient.conf.new << 'DHCLIENT_EOF'
+    {{ lookup('template', 'dhclient.conf.j2') }}
+    DHCLIENT_EOF
+  changed_when: false
+  check_mode: false
+
+- name: Check if current dhclient.conf differs from new config
+  ansible.builtin.raw: |
+    if [ -f /etc/dhclient.conf ]; then
+      diff -q /etc/dhclient.conf /tmp/dhclient.conf.new
+    else
+      exit 1
+    fi
+  register: dhclient_diff
+  changed_when: dhclient_diff.rc != 0
+  failed_when: false
+  check_mode: false
+
+- name: Deploy dhclient.conf
+  ansible.builtin.raw: cat /tmp/dhclient.conf.new | /usr/bin/tee /etc/dhclient.conf > /dev/null
+  become: true
+  when: dhclient_diff.rc != 0
+
+- name: Disable resolvd (we manage resolv.conf via Ansible)
+  ansible.builtin.raw: rcctl disable resolvd
+  become: true
+  register: resolvd_disable
+  changed_when: "'already disabled' not in resolvd_disable.stderr"
+  failed_when: false
+
+- name: Stop resolvd if running
+  ansible.builtin.raw: rcctl stop resolvd
+  become: true
+  register: resolvd_stop
+  changed_when: resolvd_stop.rc == 0
+  failed_when: false

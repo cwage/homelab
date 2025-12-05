@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+# dhclient configuration for OpenBSD firewall
+
+# Ignore DNS settings from DHCP on external interface (em0)
+# We manage DNS via Ansible and local Unbound resolver
+interface "em0" {
+  ignore domain-name-servers;
+  ignore domain-name;
+  ignore domain-search;
+}
