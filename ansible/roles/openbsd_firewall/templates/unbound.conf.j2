@@ -58,15 +58,18 @@ server:
     prefetch: yes
     prefetch-key: yes
 
+# Stub zones for local authoritative DNS (NSD on dns1)
+stub-zone:
+    name: "lan.quietlife.net"
+    stub-addr: 10.10.15.10
+
+stub-zone:
+    name: "15.10.10.in-addr.arpa"
+    stub-addr: 10.10.15.10
+
 # Forward queries to upstream resolvers
 forward-zone:
     name: "."
 {% for forwarder in unbound_forwarders %}
     forward-addr: {{ forwarder }}
 {% endfor %}
-
-# Stub zone for local domain (currently commented out)
-# Uncomment and configure when bind instance is ready
-# stub-zone:
-#     name: "lan.quietlife.net"
-#     stub-addr: <bind-server-ip>
