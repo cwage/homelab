@@ -7,3 +7,8 @@ output "dns1_ip" {
   description = "IP address of dns1 VM"
   value       = "10.10.15.10"
 }
+
+output "containers_ip" {
+  description = "IP address of containers VM"
+  value       = "10.10.15.12"
+}
