@@ -55,6 +55,8 @@ resource "proxmox_virtual_environment_vm" "dns1" {
     enabled = true
   }
 
+  boot_order = ["scsi0"]
+
   lifecycle {
     ignore_changes = [initialization]
   }
