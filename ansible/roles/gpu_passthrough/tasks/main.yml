@@ -6,6 +6,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
+  become: true
   loop:
     - /etc/modprobe.d/blacklist-nvidia.conf
   notify:
@@ -25,6 +26,7 @@
     owner: root
     group: root
     mode: '0644'
+  become: true
   when: gpu_passthrough_enabled | bool
   notify:
     - Update initramfs
@@ -34,6 +36,7 @@
   ansible.builtin.file:
     path: /etc/modprobe.d/vfio.conf
     state: absent
+  become: true
   when: not (gpu_passthrough_enabled | bool)
   notify:
     - Update initramfs
@@ -45,6 +48,7 @@
     owner: root
     group: root
     mode: '0644'
+  become: true
   when: gpu_passthrough_enabled | bool
   notify:
     - Update initramfs
@@ -54,6 +58,7 @@
   ansible.builtin.file:
     path: /etc/modprobe.d/blacklist-gpu.conf
     state: absent
+  become: true
   when: not (gpu_passthrough_enabled | bool)
   notify:
     - Update initramfs
