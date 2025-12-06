@@ -23,6 +23,7 @@ portanas        IN      A       10.10.15.4
 portaptty       IN      A       10.10.15.5
 portapttyeth    IN      A       10.10.15.6
 dns1            IN      A       10.10.15.10
+containers      IN      A       10.10.15.12
 nintendoswitch  IN      A       10.10.15.13
 pve1            IN      A       10.10.15.18
 lattepanda      IN      A       10.10.15.20
@@ -33,3 +34,6 @@ lattepandaeth   IN      A       10.10.15.130
 firewall        IN      CNAME   fw1
 nas             IN      CNAME   portanas
 proxmox         IN      CNAME   pve1
+
+; Container services
+jellyfin        IN      CNAME   containers
