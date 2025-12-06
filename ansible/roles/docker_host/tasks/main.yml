@@ -1,0 +1,70 @@
+---
+# Install and configure Docker on Debian-based systems
+
+- name: Install prerequisites for Docker repo
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+    update_cache: true
+  become: true
+
+- name: Ensure keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Add Docker GPG key
+  ansible.builtin.get_url:
+    url: "{{ docker_apt_key_url }}"
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+  become: true
+
+- name: Add Docker APT repository
+  ansible.builtin.apt_repository:
+    repo: "{{ docker_apt_repo }}"
+    state: present
+    filename: docker
+  become: true
+
+- name: Remove old Docker packages if present
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - docker-compose
+    state: absent
+  become: true
+
+- name: Install Docker packages
+  ansible.builtin.apt:
+    name: "{{ docker_packages }}"
+    state: present
+    update_cache: true
+  become: true
+
+- name: Ensure Docker service is enabled and started
+  ansible.builtin.systemd:
+    name: docker
+    enabled: "{{ docker_enabled }}"
+    state: started
+  become: true
+  when:
+    - docker_enabled | bool
+    - not ansible_check_mode
+
+- name: Add users to docker group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  become: true
+  loop: "{{ docker_users | default([]) }}"
+  when:
+    - docker_users is defined
+    - docker_users | length > 0
+    - not ansible_check_mode

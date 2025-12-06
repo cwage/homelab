@@ -1,0 +1,31 @@
+---
+# Container hosts group configuration
+
+# Domain name for hostname configuration
+domain_name: lan.quietlife.net
+
+# System packages for container hosts
+system_packages:
+  - curl
+  - htop
+  - tmux
+
+# Users to manage on container hosts
+managed_users:
+  - name: deploy
+    shell: /bin/bash
+    groups: ["sudo"]
+    sudo_nopasswd: true
+    ssh_pubkey_file: "keys/deploy.pub"
+  - name: cwage
+    shell: /bin/bash
+    groups: ["sudo"]
+    sudo_nopasswd: false
+    ssh_pubkey_files:
+      - "inventories/keys/cwage-portaplotz.pub"
+      - "inventories/keys/cwage-portaptty.pub"
+
+# Users to add to the docker group (handled by docker_host role after docker is installed)
+docker_users:
+  - deploy
+  - cwage

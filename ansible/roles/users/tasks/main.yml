@@ -56,6 +56,7 @@
   ansible.posix.authorized_key:
     user: "{{ item.name }}"
     key: "{{ item.ssh_pubkey }}"
+    path: "/home/{{ item.name }}/.ssh/authorized_keys"
     state: present
     manage_dir: false
   when: item.ssh_pubkey is defined
@@ -67,6 +68,7 @@
   ansible.posix.authorized_key:
     user: "{{ item.name }}"
     key: "{{ lookup('file', (item.ssh_pubkey_file if (item.ssh_pubkey_file is regex('^/')) else (inventory_dir ~ '/../' ~ item.ssh_pubkey_file))) }}"
+    path: "/home/{{ item.name }}/.ssh/authorized_keys"
     state: present
     manage_dir: false
   when: item.ssh_pubkey_file is defined
@@ -78,6 +80,7 @@
   ansible.posix.authorized_key:
     user: "{{ item.0.name }}"
     key: "{{ lookup('file', (item.1 if (item.1 is regex('^/')) else (inventory_dir ~ '/../' ~ item.1))) }}"
+    path: "/home/{{ item.0.name }}/.ssh/authorized_keys"
     state: present
     manage_dir: false
   when: item.0.ssh_pubkey_files is defined
