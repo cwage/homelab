@@ -8,3 +8,28 @@
     - users
     - packages
     - docker_host
+
+  tasks:
+    - name: Create stacks directory
+      ansible.builtin.file:
+        path: /opt/stacks
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: '0755'
+
+    - name: Copy docker-compose file
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../files/stacks/docker-compose.yml"
+        dest: /opt/stacks/docker-compose.yml
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      register: compose_file
+
+    - name: Start containers
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: /opt/stacks
+      become_user: deploy
+      when: compose_file.changed or (force_restart | default(false))
