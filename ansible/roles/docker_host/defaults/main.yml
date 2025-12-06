@@ -1,0 +1,16 @@
+---
+# Docker host role defaults
+
+# Whether to enable and start Docker service
+docker_enabled: true
+
+# Docker APT repository settings
+docker_apt_key_url: https://download.docker.com/linux/debian/gpg
+docker_apt_repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+
+# Packages to install for Docker (from official Docker repo)
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-compose-plugin

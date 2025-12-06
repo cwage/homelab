@@ -1,0 +1,10 @@
+---
+- name: Configure container hosts
+  hosts: container_hosts
+  become: true
+  gather_facts: true
+  roles:
+    - hostname
+    - users
+    - packages
+    - docker_host
