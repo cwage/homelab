@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+# Bind specified PCI devices to vfio-pci driver for VM passthrough
+# Device IDs: {{ gpu_passthrough_device_ids | join(', ') }}
+
+options vfio-pci ids={{ gpu_passthrough_device_ids | join(',') }}

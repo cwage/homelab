@@ -1,0 +1,70 @@
+---
+# Install NVIDIA drivers and container toolkit for GPU passthrough
+
+- name: Install kernel headers
+  ansible.builtin.apt:
+    name:
+      - "linux-headers-{{ ansible_kernel }}"
+    state: present
+    update_cache: true
+  become: true
+  when: nvidia_container_enabled | bool
+
+- name: Add contrib and non-free repositories for NVIDIA driver
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian {{ ansible_distribution_release }} main contrib non-free non-free-firmware"
+    state: present
+    filename: debian-nonfree
+  become: true
+  when: nvidia_container_enabled | bool
+
+- name: Install NVIDIA driver
+  ansible.builtin.apt:
+    name: "{{ nvidia_driver_packages }}"
+    state: present
+    update_cache: true
+  become: true
+  when: nvidia_container_enabled | bool
+  notify: Reboot for NVIDIA driver
+
+- name: Add NVIDIA container toolkit GPG key
+  ansible.builtin.get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /etc/apt/keyrings/nvidia-container-toolkit.asc
+    mode: '0644'
+  become: true
+  when: nvidia_container_enabled | bool
+
+- name: Add NVIDIA container toolkit repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/nvidia-container-toolkit.asc] https://nvidia.github.io/libnvidia-container/stable/deb/{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }} /"
+    state: present
+    filename: nvidia-container-toolkit
+  become: true
+  when: nvidia_container_enabled | bool
+
+- name: Install NVIDIA container toolkit
+  ansible.builtin.apt:
+    name: "{{ nvidia_container_packages }}"
+    state: present
+    update_cache: true
+  become: true
+  when: nvidia_container_enabled | bool
+
+- name: Check if NVIDIA runtime is already configured
+  ansible.builtin.shell:
+    cmd: grep -q '"nvidia"' /etc/docker/daemon.json
+  register: nvidia_runtime_check
+  failed_when: false
+  changed_when: false
+  become: true
+  when: nvidia_container_enabled | bool
+
+- name: Configure Docker to use NVIDIA runtime
+  ansible.builtin.command:
+    cmd: nvidia-ctk runtime configure --runtime=docker
+  become: true
+  when:
+    - nvidia_container_enabled | bool
+    - nvidia_runtime_check.rc != 0
+  notify: Restart Docker

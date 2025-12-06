@@ -10,3 +10,11 @@ nfs_mounts:
     src: 10.10.15.4:/volume1/pve-templates
     path: /mnt/pve-templates
     opts: "rw,_netdev,hard,vers=3,noatime"
+
+# GPU passthrough configuration for GTX 1050 Ti
+# IOMMU Group 14: GPU (07:00.0) + Audio (07:00.1)
+# NIC is safely in separate Group 13
+gpu_passthrough_enabled: true
+gpu_passthrough_device_ids:
+  - "10de:1c82"  # NVIDIA GTX 1050 Ti
+  - "10de:0fb9"  # NVIDIA Audio Controller

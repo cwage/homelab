@@ -1,12 +1,12 @@
 # Container host VM - Docker host for running containerized apps
-# GPU passthrough can be added later for transcoding workloads
+# With GTX 1050 Ti GPU passthrough for hardware transcoding
 
 resource "proxmox_virtual_environment_vm" "containers" {
   name      = "containers"
   node_name = var.pm_node_name
   vm_id     = 102
 
-  description = "Docker host for containerized applications"
+  description = "Docker host for containerized applications with GPU passthrough"
 
   clone {
     vm_id = var.pm_template_id
@@ -17,6 +17,8 @@ resource "proxmox_virtual_environment_vm" "containers" {
     type  = "host"
   }
 
+  machine = "q35"
+
   memory {
     dedicated = 8192
   }
@@ -25,6 +27,15 @@ resource "proxmox_virtual_environment_vm" "containers" {
     datastore_id = var.pm_vm_datastore_id
     interface    = "scsi0"
     size         = 64
+  }
+
+  # GTX 1050 Ti GPU passthrough (IOMMU Group 14)
+  # Uses PCI mapping defined in /etc/pve/mapping/pci.cfg
+  hostpci {
+    device  = "hostpci0"
+    mapping = "gpu-gtx1050ti"
+    pcie    = true
+    rombar  = true
   }
 
   network_device {

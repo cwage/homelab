@@ -34,9 +34,6 @@
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
-    owner: "{{ item.owner | default(nfs_mounts_default_owner) }}"
-    group: "{{ item.group | default(nfs_mounts_default_group) }}"
-    mode: "{{ item.mode | default(nfs_mounts_default_mode) }}"
   become: true
   loop: "{{ nfs_mounts }}"
   loop_control:

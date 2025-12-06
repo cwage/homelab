@@ -1,0 +1,13 @@
+---
+# NVIDIA Container Toolkit configuration
+
+nvidia_container_enabled: true
+
+# Driver packages to install
+nvidia_driver_packages:
+  - nvidia-driver
+  - nvidia-smi
+
+# Container toolkit packages
+nvidia_container_packages:
+  - nvidia-container-toolkit
