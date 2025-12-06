@@ -1,0 +1,14 @@
+---
+- name: Deploy netplan DNS search domain override
+  ansible.builtin.template:
+    src: 99-dns-search.yaml.j2
+    dest: /etc/netplan/99-dns-search.yaml
+    owner: root
+    group: root
+    mode: "0600"
+  register: netplan_dns
+
+- name: Apply netplan changes
+  ansible.builtin.command:
+    cmd: netplan apply
+  when: netplan_dns.changed

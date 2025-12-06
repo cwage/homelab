@@ -42,6 +42,7 @@ resource "proxmox_virtual_environment_vm" "dns1" {
     }
 
     dns {
+      domain  = "lan.quietlife.net"
       servers = ["10.10.15.1"]
     }
 
