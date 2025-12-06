@@ -2,6 +2,8 @@
 - name: Update initramfs
   ansible.builtin.command:
     cmd: update-initramfs -u -k all
+  become: true
+  changed_when: false
   listen: "Update initramfs"
 
 - name: Flag reboot required

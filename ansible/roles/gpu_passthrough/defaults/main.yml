@@ -12,3 +12,6 @@ gpu_passthrough_device_ids: []
 gpu_passthrough_blacklist_drivers:
   - nouveau
   - nvidiafb
+  - nvidia
+  - nvidia_drm
+  - nvidia_modeset
