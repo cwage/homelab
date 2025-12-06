@@ -5,6 +5,7 @@
   gather_facts: true
   roles:
     - hostname
+    - dns_client
     - users
     - packages
     - nfs_mounts
