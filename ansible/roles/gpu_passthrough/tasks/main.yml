@@ -1,0 +1,59 @@
+---
+# Configure GPU passthrough for Proxmox VE hosts
+# Binds specified GPU to vfio-pci driver for VM passthrough
+
+- name: Remove legacy manual blacklist files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/modprobe.d/blacklist-nvidia.conf
+  notify:
+    - Update initramfs
+
+- name: Validate GPU passthrough configuration
+  ansible.builtin.assert:
+    that:
+      - gpu_passthrough_device_ids | length > 0
+    fail_msg: "gpu_passthrough_device_ids must be set when gpu_passthrough_enabled is true"
+  when: gpu_passthrough_enabled | bool
+
+- name: Configure vfio-pci device binding
+  ansible.builtin.template:
+    src: vfio.conf.j2
+    dest: /etc/modprobe.d/vfio.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: gpu_passthrough_enabled | bool
+  notify:
+    - Update initramfs
+    - Flag reboot required
+
+- name: Remove vfio-pci config when disabled
+  ansible.builtin.file:
+    path: /etc/modprobe.d/vfio.conf
+    state: absent
+  when: not (gpu_passthrough_enabled | bool)
+  notify:
+    - Update initramfs
+
+- name: Configure GPU driver blacklist
+  ansible.builtin.template:
+    src: blacklist-gpu.conf.j2
+    dest: /etc/modprobe.d/blacklist-gpu.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: gpu_passthrough_enabled | bool
+  notify:
+    - Update initramfs
+    - Flag reboot required
+
+- name: Remove GPU blacklist when disabled
+  ansible.builtin.file:
+    path: /etc/modprobe.d/blacklist-gpu.conf
+    state: absent
+  when: not (gpu_passthrough_enabled | bool)
+  notify:
+    - Update initramfs
