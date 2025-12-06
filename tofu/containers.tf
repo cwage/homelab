@@ -66,6 +66,8 @@ resource "proxmox_virtual_environment_vm" "containers" {
     enabled = true
   }
 
+  boot_order = ["scsi0"]
+
   lifecycle {
     ignore_changes = [initialization]
   }
