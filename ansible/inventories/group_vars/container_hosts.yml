@@ -29,3 +29,10 @@ managed_users:
 docker_users:
   - deploy
   - cwage
+
+# NFS mounts for media access
+nfs_mounts:
+  - name: media
+    src: 10.10.15.4:/volume1/Video
+    path: /mnt/media
+    opts: "ro,_netdev,hard,vers=3,noatime"
