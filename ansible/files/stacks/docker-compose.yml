@@ -27,8 +27,7 @@ services:
     volumes:
       - jellyfin_config:/config
       - jellyfin_cache:/cache
-      # TODO: Add NFS media mount
-      # - /mnt/media:/media:ro
+      - /mnt/media:/media:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.lan.quietlife.net`)"
