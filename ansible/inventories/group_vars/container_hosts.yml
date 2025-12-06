@@ -30,6 +30,9 @@ docker_users:
   - deploy
   - cwage
 
+# NVIDIA container toolkit for GPU transcoding
+nvidia_container_enabled: true
+
 # NFS mounts for media access
 nfs_mounts:
   - name: media

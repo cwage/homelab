@@ -1,0 +1,17 @@
+---
+# GPU passthrough configuration for Proxmox hosts
+# Set gpu_passthrough_enabled: true in host_vars to enable
+
+gpu_passthrough_enabled: false
+
+# List of PCI device IDs to bind to vfio-pci (vendor:device format)
+# Example: ["10de:1c82", "10de:0fb9"] for GTX 1050 Ti + audio
+gpu_passthrough_device_ids: []
+
+# Drivers to blacklist (prevents host from using the GPU)
+gpu_passthrough_blacklist_drivers:
+  - nouveau
+  - nvidiafb
+  - nvidia
+  - nvidia_drm
+  - nvidia_modeset

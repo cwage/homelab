@@ -9,6 +9,7 @@
     - packages
     - nfs_mounts
     - docker_host
+    - nvidia_container
 
   tasks:
     - name: Create stacks directory

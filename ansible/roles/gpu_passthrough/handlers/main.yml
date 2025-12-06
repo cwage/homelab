@@ -1,0 +1,12 @@
+---
+- name: Update initramfs
+  ansible.builtin.command:
+    cmd: update-initramfs -u -k all
+  become: true
+  changed_when: false
+  listen: "Update initramfs"
+
+- name: Flag reboot required
+  ansible.builtin.debug:
+    msg: "REBOOT REQUIRED: GPU passthrough config changed. Reboot the host to apply."
+  listen: "Flag reboot required"

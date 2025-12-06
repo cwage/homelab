@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+# Blacklist GPU drivers to prevent host from using the GPU
+# This allows vfio-pci to bind to the GPU for VM passthrough
+
+{% for driver in gpu_passthrough_blacklist_drivers %}
+blacklist {{ driver }}
+{% endfor %}
