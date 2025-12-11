@@ -1,0 +1,23 @@
+# OpenBao version and checksums
+openbao_version: "2.4.4"
+openbao_deb_checksum: "sha256:1b366f800087e6b4deafd0bde02990d43d10e1023499da47499fc47ddb46bf16"
+
+# Hostname for TLS cert and API address
+openbao_hostname: "bao.lan.quietlife.net"
+
+# Service configuration
+openbao_api_addr: "https://{{ openbao_hostname }}:8200"
+openbao_cluster_addr: "https://{{ openbao_hostname }}:8201"
+
+# TLS configuration (matches .deb package paths)
+openbao_tls_cert_file: "/opt/openbao/tls/tls.crt"
+openbao_tls_key_file: "/opt/openbao/tls/tls.key"
+
+# Config file location (matches .deb package)
+openbao_config_file: "/etc/openbao/openbao.hcl"
+
+# Storage configuration (integrated Raft)
+openbao_data_dir: "/opt/openbao/data"
+
+# UI enabled by default for initial setup
+openbao_ui_enabled: true

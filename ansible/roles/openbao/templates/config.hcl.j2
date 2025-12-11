@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+# OpenBao server configuration
+
+ui = {{ openbao_ui_enabled | lower }}
+
+listener "tcp" {
+  address       = "0.0.0.0:8200"
+  tls_cert_file = "{{ openbao_tls_cert_file }}"
+  tls_key_file  = "{{ openbao_tls_key_file }}"
+}
+
+storage "raft" {
+  path    = "{{ openbao_data_dir }}"
+  node_id = "{{ inventory_hostname }}"
+}
+
+api_addr     = "{{ openbao_api_addr }}"
+cluster_addr = "{{ openbao_cluster_addr }}"
+
+# Disable memory locking (requires mlock capability otherwise)
+disable_mlock = true

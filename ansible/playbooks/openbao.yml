@@ -1,0 +1,7 @@
+---
+# Configure OpenBao secrets management server
+- name: Configure OpenBao
+  hosts: secrets_servers
+  become: true
+  roles:
+    - openbao
