@@ -1,0 +1,88 @@
+---
+# OpenBao installation and configuration
+
+- name: Install prerequisites
+  ansible.builtin.apt:
+    name:
+      - openssl
+      - gpg
+    state: present
+    update_cache: true
+
+- name: Download OpenBao deb package
+  ansible.builtin.get_url:
+    url: "https://github.com/openbao/openbao/releases/download/v{{ openbao_version }}/bao_{{ openbao_version }}_linux_amd64.deb"
+    dest: "/tmp/bao_{{ openbao_version }}_linux_amd64.deb"
+    checksum: "{{ openbao_deb_checksum }}"
+    mode: "0644"
+
+- name: Install OpenBao deb package
+  ansible.builtin.apt:
+    deb: "/tmp/bao_{{ openbao_version }}_linux_amd64.deb"
+    state: present
+
+- name: Ensure directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: openbao
+    group: openbao
+    mode: "0750"
+  loop:
+    - /opt/openbao/tls
+    - /opt/openbao/snapshots
+
+- name: Check if TLS certificate exists
+  ansible.builtin.stat:
+    path: "{{ openbao_tls_cert_file }}"
+  register: tls_cert_stat
+
+- name: Generate self-signed TLS certificate
+  when: not tls_cert_stat.stat.exists
+  block:
+    - name: Generate private key
+      ansible.builtin.command:
+        cmd: >
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out {{ openbao_tls_key_file }}
+        creates: "{{ openbao_tls_key_file }}"
+
+    - name: Generate self-signed certificate
+      ansible.builtin.command:
+        cmd: >
+          openssl req -new -x509
+          -key {{ openbao_tls_key_file }}
+          -out {{ openbao_tls_cert_file }}
+          -days 3650
+          -subj "/CN={{ openbao_hostname }}"
+          -addext "subjectAltName=DNS:{{ openbao_hostname }},DNS:{{ inventory_hostname }},IP:{{ ansible_host }}"
+        creates: "{{ openbao_tls_cert_file }}"
+
+    - name: Set TLS key permissions
+      ansible.builtin.file:
+        path: "{{ openbao_tls_key_file }}"
+        owner: openbao
+        group: openbao
+        mode: "0600"
+
+    - name: Set TLS cert permissions
+      ansible.builtin.file:
+        path: "{{ openbao_tls_cert_file }}"
+        owner: openbao
+        group: openbao
+        mode: "0644"
+
+- name: Deploy OpenBao configuration
+  ansible.builtin.template:
+    src: config.hcl.j2
+    dest: "{{ openbao_config_file }}"
+    owner: openbao
+    group: openbao
+    mode: "0640"
+  notify: restart openbao
+
+- name: Enable and start OpenBao service
+  ansible.builtin.systemd:
+    name: openbao
+    enabled: true
+    state: started
+    daemon_reload: true
