@@ -1,0 +1,7 @@
+# Host-specific configuration for openbao VM
+
+# NFS mounts for backup storage
+nfs_mounts:
+  - name: homelab-backups
+    src: "10.10.15.4:/volume1/homelab-backups"
+    path: /mnt/backups
