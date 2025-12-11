@@ -45,7 +45,8 @@
 
 - name: Manage Ansible-controlled section in /etc/exports
   ansible.builtin.raw: |
-    cat > /tmp/exports_block << EXPORTS_EOF
+    cat > /tmp/exports_block << 'EXPORTS_EOF'
+
     # BEGIN ANSIBLE MANAGED BLOCK - portanas NFS exports
     # WARNING: This section is managed by Ansible. Manual edits will be lost.
     # Last updated: $(date -Iseconds)
@@ -53,7 +54,10 @@
     # END ANSIBLE MANAGED BLOCK
     EXPORTS_EOF
 
-    # Remove old Ansible block if it exists
+    # Remove old Ansible block if it exists (including any preceding blank line)
+    sed -i '/^$/N;/\n# BEGIN ANSIBLE MANAGED BLOCK/,/# END ANSIBLE MANAGED BLOCK/d' /etc/exports
+
+    # Also remove simple block match in case the blank line pattern didn't match
     sed -i '/# BEGIN ANSIBLE MANAGED BLOCK/,/# END ANSIBLE MANAGED BLOCK/d' /etc/exports
 
     # Append new block

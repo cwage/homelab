@@ -100,10 +100,39 @@ Key files on the server:
 
 ## Backups
 
-Raft snapshots can be taken with:
+Automated daily Raft snapshots are stored on NFS:
+- **NFS Share**: `10.10.15.4:/volume1/homelab-backups`
+- **Mount Point**: `/mnt/backups`
+- **Backup Directory**: `/mnt/backups/vm/openbao`
+- **Retention**: 30 days
+- **Schedule**: Daily (with up to 1 hour random delay)
+
+The backup is managed by a systemd timer:
 
 ```bash
-bao operator raft snapshot save /opt/openbao/snapshots/backup-$(date +%Y%m%d).snap
+# Check timer status
+systemctl status openbao-backup.timer
+
+# View next scheduled run
+systemctl list-timers openbao-backup.timer
+
+# Manually trigger a backup
+systemctl start openbao-backup.service
+
+# View backup logs
+journalctl -u openbao-backup.service
+```
+
+Manual snapshots can also be taken:
+
+```bash
+bao operator raft snapshot save /mnt/backups/vm/openbao/manual-$(date +%Y%m%d).snap
+```
+
+To restore from a snapshot:
+
+```bash
+bao operator raft snapshot restore /mnt/backups/vm/openbao/openbao-YYYYMMDD-HHMMSS.snap
 ```
 
 The VM is also backed up via Proxmox VM backups.

@@ -32,6 +32,17 @@ nfs_shares:
         security: "sys"
         # Template/ISO management also runs as root on Proxmox
 
+  - name: homelab-backups
+    description: "Centralized backup storage for homelab VMs and containers"
+    path: /volume1/homelab-backups
+    nfs_enabled: true
+    nfs_rules:
+      - host: "10.10.15.0/24"
+        privilege: "rw"
+        squash: "no_root_squash"
+        security: "sys"
+        # VMs/containers create their own subdirs (vm/<hostname>/, container/<hostname>/)
+
 # Key users discovered:
 # - cwage (UID 1000, GID 100)
 # - deploy (UID 1030, GID 100) - automation user

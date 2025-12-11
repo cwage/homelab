@@ -8,4 +8,5 @@
     - hostname
     - users
     - packages
+    - nfs_mounts
     - openbao
