@@ -6,9 +6,7 @@ wireguard_peers:
     public_key: "mgkSd6pEkIWK8HlJlkYkoBZltckI1RegJeVbOMi+mFA="
     allowed_ips: "10.10.16.2/32"
     persistent_keepalive: 0
-
-  # Uncomment and add real public key when ready
-  # - name: android
-  #   public_key: "REPLACE_WITH_ANDROID_PUBLIC_KEY"
-  #   allowed_ips: "10.10.16.3/32"
-  #   persistent_keepalive: 0
+  - name: portaphone
+    public_key: "/Moaa5jW3PvvEhW1TnBNVye7OFzPToi5OJkNmbZGECw="
+    allowed_ips: "10.10.16.3/32"
+    persistent_keepalive: 0
