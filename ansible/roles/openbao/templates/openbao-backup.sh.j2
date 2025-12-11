@@ -10,13 +10,14 @@ TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 SNAPSHOT_FILE="${BACKUP_DIR}/openbao-${TIMESTAMP}.snap"
 
 # Use localhost since we're running on the same machine
+# BAO_SKIP_VERIFY is acceptable here - localhost connection with no network exposure
 export BAO_ADDR="https://127.0.0.1:8200"
 export BAO_SKIP_VERIFY=true
 
 # Load backup token
 TOKEN_FILE="/etc/openbao/backup-token"
 if [[ -f "${TOKEN_FILE}" ]]; then
-    export BAO_TOKEN=$(cat "${TOKEN_FILE}")
+    export BAO_TOKEN="$(cat "${TOKEN_FILE}")"
 else
     echo "Backup token file not found: ${TOKEN_FILE}"
     exit 1
@@ -28,8 +29,9 @@ if ! bao status 2>/dev/null | grep -q "Sealed.*false"; then
     exit 0
 fi
 
-# Create backup directory if it doesn't exist
+# Create backup directory if it doesn't exist (with secure permissions)
 mkdir -p "${BACKUP_DIR}"
+chmod 0750 "${BACKUP_DIR}"
 
 # Take Raft snapshot
 echo "Taking Raft snapshot to ${SNAPSHOT_FILE}"

@@ -98,6 +98,43 @@ Key files on the server:
 - `/opt/openbao/tls/tls.key` - TLS private key
 - `/opt/openbao/data/` - Raft data directory
 
+## Backup Token Setup (One-Time)
+
+The backup system requires a dedicated token with minimal permissions. After initial setup:
+
+```bash
+ssh deploy@10.10.15.11
+
+export BAO_ADDR="https://127.0.0.1:8200"
+export BAO_SKIP_VERIFY=true
+bao login
+# Enter root token
+
+# Enable KV secrets engine (if not already done)
+bao secrets enable -path=kv kv-v2
+
+# Create backup policy with minimal permissions
+bao policy write backup - <<EOF
+path "sys/storage/raft/snapshot" {
+  capabilities = ["read"]
+}
+EOF
+
+# Create long-lived backup token
+bao token create -policy=backup -no-default-policy -orphan -period=8760h -display-name="backup-automation"
+# Save the token!
+
+# Store token in KV for future Ansible retrieval (issue #67)
+bao kv put kv/backup/openbao token="<token-from-above>"
+
+# Create the token file for the backup script
+sudo tee /etc/openbao/backup-token > /dev/null <<EOF
+<token-from-above>
+EOF
+sudo chmod 600 /etc/openbao/backup-token
+sudo chown root:root /etc/openbao/backup-token
+```
+
 ## Backups
 
 Automated daily Raft snapshots are stored on NFS:
