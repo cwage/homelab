@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check all check-all run adhoc sh build-tinyfugue trufflehog
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check all check-all run adhoc sh build-tinyfugue trufflehog
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -69,6 +69,12 @@ containers: ## Configure container hosts (Docker)
 
 containers-check: ## Dry-run container hosts configuration with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/containers.yml -vv --check --diff $(OPTS)
+
+openbao: ## Configure OpenBao secrets server
+	$(DC) run --rm ansible ansible-playbook playbooks/openbao.yml -vv $(OPTS)
+
+openbao-check: ## Dry-run OpenBao configuration with --check/--diff
+	$(DC) run --rm ansible ansible-playbook playbooks/openbao.yml -vv --check --diff $(OPTS)
 
 all: ## Run standard playbooks (proxmox, firewall, felix)
 	$(MAKE) proxmox
