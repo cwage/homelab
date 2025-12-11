@@ -73,7 +73,10 @@ To interact with OpenBao from your local machine:
 
 ```bash
 export BAO_ADDR="https://bao.lan.quietlife.net:8200"
-export BAO_CACERT=/path/to/cert.pem  # or use BAO_SKIP_VERIFY=true for self-signed
+
+# Copy the server's self-signed cert for verification
+scp deploy@10.10.15.11:/opt/openbao/tls/tls.crt ~/.config/openbao-ca.crt
+export BAO_CACERT=~/.config/openbao-ca.crt
 
 bao login
 # Paste root token (or other token)
@@ -81,6 +84,11 @@ bao login
 bao status
 bao secrets list
 ```
+
+> **Security Note:** Avoid using `BAO_SKIP_VERIFY=true` for routine access as it disables
+> TLS certificate verification, allowing potential man-in-the-middle attacks. Only use
+> it for initial setup when you cannot yet copy the certificate. For regular use, always
+> configure `BAO_CACERT` with the server's certificate.
 
 ## Configuration
 

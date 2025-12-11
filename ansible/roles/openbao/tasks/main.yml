@@ -21,13 +21,16 @@
     deb: "/tmp/bao_{{ openbao_version }}_linux_amd64.deb"
     state: present
 
-- name: Ensure TLS directory exists
+- name: Ensure directories exist
   ansible.builtin.file:
-    path: /opt/openbao/tls
+    path: "{{ item }}"
     state: directory
     owner: openbao
     group: openbao
     mode: "0750"
+  loop:
+    - /opt/openbao/tls
+    - /opt/openbao/snapshots
 
 - name: Check if TLS certificate exists
   ansible.builtin.stat:
@@ -40,7 +43,7 @@
     - name: Generate private key
       ansible.builtin.command:
         cmd: >
-          openssl genrsa -out {{ openbao_tls_key_file }} 4096
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out {{ openbao_tls_key_file }}
         creates: "{{ openbao_tls_key_file }}"
 
     - name: Generate self-signed certificate
