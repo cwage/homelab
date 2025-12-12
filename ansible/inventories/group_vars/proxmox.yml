@@ -10,16 +10,4 @@ pve_templates:
     ciuser: deploy
     description: "Debian 12 cloud-init template with qemu-guest-agent (built by Ansible)"
 
-managed_users:
-  - name: deploy
-    shell: /bin/bash
-    groups: ["sudo"]
-    sudo_nopasswd: true
-    ssh_pubkey_file: "keys/deploy.pub"
-  - name: cwage
-    shell: /bin/bash
-    groups: ["sudo"]
-    sudo_nopasswd: false
-    ssh_pubkey_files:
-      - "inventories/keys/cwage-portaplotz.pub"
-      - "inventories/keys/cwage-portaptty.pub"
+# managed_users inherited from group_vars/all.yml

@@ -1,27 +1,11 @@
 ---
 # DNS server group configuration
 
-# Domain name for hostname configuration
-domain_name: lan.quietlife.net
+# domain_name and managed_users inherited from group_vars/all.yml
 
 # System packages for DNS servers
 system_packages:
   - dnsutils  # provides dig, nslookup, etc.
-
-# Users to manage on DNS servers
-managed_users:
-  - name: deploy
-    shell: /bin/bash
-    groups: ["sudo"]
-    sudo_nopasswd: true
-    ssh_pubkey_file: "keys/deploy.pub"
-  - name: cwage
-    shell: /bin/bash
-    groups: ["sudo"]
-    sudo_nopasswd: false
-    ssh_pubkey_files:
-      - "inventories/keys/cwage-portaplotz.pub"
-      - "inventories/keys/cwage-portaptty.pub"
 
 # NSD configuration
 nsd_zones:
