@@ -120,17 +120,25 @@ Note: KV v2 paths use `kv/data/` for the API but `kv/` for the CLI.
 Use the `community.hashi_vault.vault_kv2_get` lookup plugin:
 
 ```yaml
-- name: Example secret retrieval
+# Store secret in a variable (recommended - avoids logging)
+- name: Retrieve Proxmox API token
+  set_fact:
+    proxmox_secret: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                        'infra/proxmox',
+                        engine_mount_point='kv',
+                        url=openbao_addr,
+                        token=openbao_token,
+                        validate_certs=openbao_validate_certs).secret }}"
+
+# Use the secret (mask in any debug output)
+- name: Verify secret retrieved (masked)
   debug:
-    msg: "{{ lookup('community.hashi_vault.vault_kv2_get',
-             'infra/proxmox',
-             engine_mount_point='kv',
-             url=openbao_addr,
-             token=openbao_token,
-             validate_certs=openbao_validate_certs).secret.api_token_secret }}"
+    msg: "Retrieved API token: {{ proxmox_secret.api_token_secret[:4] }}****"
 ```
 
 The lookup returns an object with a `.secret` attribute containing the secret data as a dict.
+
+**Important**: Never log full secret values. Use `set_fact` to store secrets in variables, and mask/truncate when debugging.
 
 The `openbao_addr`, `openbao_token`, and `openbao_validate_certs` variables are defined in `ansible/inventories/group_vars/all.yml` and populated from environment variables (`BAO_ADDR`, `BAO_TOKEN`, `BAO_SKIP_VERIFY`).
 

@@ -17,7 +17,9 @@
     # OpenBao connection settings (duplicated from group_vars/all.yml for localhost)
     openbao_addr: "{{ lookup('env', 'BAO_ADDR') | default('https://bao.lan.quietlife.net:8200', true) }}"
     openbao_token: "{{ lookup('env', 'BAO_TOKEN') }}"
-    openbao_validate_certs: "{{ not (lookup('env', 'BAO_SKIP_VERIFY') | default(false, true) | bool) }}"
+    # BAO_SKIP_VERIFY=true means "skip verification", so we invert it for validate_certs
+    openbao_skip_verify: "{{ lookup('env', 'BAO_SKIP_VERIFY') | default(false, true) | bool }}"
+    openbao_validate_certs: "{{ not openbao_skip_verify }}"
     openbao_kv_mount: "kv"
     # Aliases for the lookup plugin
     vault_url: "{{ openbao_addr }}"
@@ -41,17 +43,22 @@
           - "OpenBao URL: {{ vault_url }}"
           - "Validate certs: {{ vault_validate_certs }}"
 
-    - name: Test secret retrieval (backup token)
+    - name: Retrieve backup token from OpenBao
+      ansible.builtin.set_fact:
+        secret_result: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                                'backup/openbao',
+                                engine_mount_point=openbao_kv_mount,
+                                url=openbao_addr,
+                                token=openbao_token,
+                                validate_certs=openbao_validate_certs) }}"
+
+    - name: Display retrieved backup token (masked)
       ansible.builtin.debug:
-        msg: "Retrieved backup token: {{ secret[:8] }}..."
-      vars:
-        secret: "{{ lookup('community.hashi_vault.vault_kv2_get',
-                    'backup/openbao',
-                    engine_mount_point=openbao_kv_mount,
-                    url=openbao_addr,
-                    token=openbao_token,
-                    validate_certs=openbao_validate_certs).secret.token }}"
-      ignore_errors: true
+        msg: "Retrieved backup token: {{ secret_result.secret.token[:8] }}..."
+      failed_when: >
+        secret_result is not mapping or
+        ('secret' not in secret_result) or
+        ('token' not in secret_result.secret)
 
     - name: Show lookup pattern for playbooks
       ansible.builtin.debug:
