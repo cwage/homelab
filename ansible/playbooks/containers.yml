@@ -21,6 +21,53 @@
         group: deploy
         mode: '0755'
 
+    - name: Create certs directory
+      ansible.builtin.file:
+        path: /opt/stacks/certs
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: '0700'
+
+    - name: Retrieve TLS certificates from OpenBao
+      ansible.builtin.set_fact:
+        tls_certs: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                        'infra/certs/lan.quietlife.net',
+                        engine_mount_point='kv',
+                        url=openbao_addr,
+                        token=openbao_token,
+                        validate_certs=openbao_validate_certs).secret }}"
+      no_log: true
+
+    - name: Deploy TLS certificate
+      ansible.builtin.copy:
+        content: "{{ tls_certs.certificate }}"
+        dest: /opt/stacks/certs/lan.quietlife.net.crt
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      register: tls_cert_changed
+      no_log: true
+
+    - name: Deploy TLS private key
+      ansible.builtin.copy:
+        content: "{{ tls_certs.private_key }}"
+        dest: /opt/stacks/certs/lan.quietlife.net.key
+        owner: deploy
+        group: deploy
+        mode: '0600'
+      register: tls_key_changed
+      no_log: true
+
+    - name: Copy Traefik TLS configuration
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../files/stacks/traefik-tls.yml"
+        dest: /opt/stacks/traefik-tls.yml
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      register: traefik_tls_config
+
     - name: Copy docker-compose file
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../files/stacks/docker-compose.yml"
@@ -35,4 +82,4 @@
         cmd: docker compose up -d
         chdir: /opt/stacks
       become_user: deploy
-      when: compose_file.changed or (force_restart | default(false))
+      when: compose_file.changed or traefik_tls_config.changed or tls_cert_changed.changed or tls_key_changed.changed or (force_restart | default(false))
