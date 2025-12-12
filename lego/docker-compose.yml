@@ -1,0 +1,17 @@
+---
+# Lego ACME client for Let's Encrypt certificate management
+# Uses Cloudflare DNS-01 challenge for *.lan.quietlife.net wildcard cert
+#
+# Usage: Run via root Makefile targets (make lego-renew, make lego-run, etc.)
+# The Makefile retrieves CF_DNS_API_TOKEN from OpenBao at runtime
+
+services:
+  lego:
+    image: goacme/lego:latest
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /work
+    volumes:
+      - ./certs:/work/.lego
+    # CF_DNS_API_TOKEN and CF_ZONE_ID are passed via -e flags at runtime (fetched from OpenBao)
+    # Default command shows help; override via docker compose run
+    command: ["--help"]

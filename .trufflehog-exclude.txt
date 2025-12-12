@@ -9,3 +9,5 @@
 ^/repo/tofu/\.env$
 ^/repo/tofu/\.env\..*
 ^/repo/tofu/secrets/
+# Exclude generated Let's Encrypt certificates (lego)
+^/repo/lego/certs/
