@@ -10,7 +10,9 @@ All secrets are stored in the `kv` secrets engine (KV v2) with the following hie
 kv/
 ├── infra/                    # Infrastructure/provisioning secrets
 │   ├── proxmox/              # Proxmox API tokens
+│   │   └── api_token_id, api_token_secret
 │   ├── cloudflare/           # DNS/Let's Encrypt API tokens
+│   │   └── api_token         # Zone:DNS:Edit token for DNS-01 challenges
 │   └── ssh/                  # SSH keys (if stored here)
 │
 ├── services/                 # Application/service secrets
@@ -114,6 +116,20 @@ bao kv get kv/infra/proxmox
 ```
 
 Note: KV v2 paths use `kv/data/` for the API but `kv/` for the CLI.
+
+### Cloudflare API Token (for Let's Encrypt)
+
+The Cloudflare API token is used by the `lego` container for DNS-01 ACME challenges to obtain wildcard certificates for `*.lan.quietlife.net`.
+
+1. Create a token at https://dash.cloudflare.com/profile/api-tokens
+2. Required permissions: **Zone:DNS:Edit** for the `quietlife.net` zone
+3. Store in OpenBao:
+
+```bash
+bao kv put kv/infra/cloudflare api_token="your-cloudflare-api-token"
+```
+
+The `make lego-renew` command will automatically retrieve this token from OpenBao.
 
 ## Retrieving Secrets in Ansible
 
