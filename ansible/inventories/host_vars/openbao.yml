@@ -1,5 +1,8 @@
 # Host-specific configuration for openbao VM
 
+# Hostname override - DNS record is 'bao', not 'openbao'
+hostname_override: bao
+
 # NFS mounts for backup storage
 nfs_mounts:
   - name: homelab-backups
