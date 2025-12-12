@@ -4,6 +4,16 @@
 # Domain name for hostname configuration
 domain_name: lan.quietlife.net
 
+# OpenBao secrets management configuration
+# These defaults are used by the community.hashi_vault lookup plugin
+# Override BAO_ADDR/BAO_TOKEN via environment variables or .env
+openbao_addr: "{{ lookup('env', 'BAO_ADDR') | default('https://bao.lan.quietlife.net:8200', true) }}"
+openbao_token: "{{ lookup('env', 'BAO_TOKEN') }}"
+# BAO_SKIP_VERIFY=true means "skip verification", so we invert it for validate_certs
+openbao_skip_verify: "{{ lookup('env', 'BAO_SKIP_VERIFY') | default(false, true) | bool }}"
+openbao_validate_certs: "{{ not openbao_skip_verify }}"
+openbao_kv_mount: "kv"  # KV v2 secrets engine mount point
+
 # Base users for all homelab hosts
 # Override managed_users in group-specific files if different users are needed (e.g., linode_vps)
 managed_users:

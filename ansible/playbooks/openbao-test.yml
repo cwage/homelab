@@ -1,0 +1,76 @@
+---
+# Test playbook for OpenBao integration
+# Verifies connectivity and demonstrates secret retrieval patterns
+#
+# Usage:
+#   export BAO_TOKEN="hvs.xxxxx"
+#   make run PLAY=playbooks/openbao-test.yml
+#
+# Or add BAO_TOKEN to your .env file
+
+- name: Test OpenBao connectivity and secret retrieval
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    # OpenBao connection settings (duplicated from group_vars/all.yml for localhost)
+    openbao_addr: "{{ lookup('env', 'BAO_ADDR') | default('https://bao.lan.quietlife.net:8200', true) }}"
+    openbao_token: "{{ lookup('env', 'BAO_TOKEN') }}"
+    # BAO_SKIP_VERIFY=true means "skip verification", so we invert it for validate_certs
+    openbao_skip_verify: "{{ lookup('env', 'BAO_SKIP_VERIFY') | default(false, true) | bool }}"
+    openbao_validate_certs: "{{ not openbao_skip_verify }}"
+    openbao_kv_mount: "kv"
+    # Aliases for the lookup plugin
+    vault_url: "{{ openbao_addr }}"
+    vault_token: "{{ openbao_token }}"
+    vault_validate_certs: "{{ openbao_validate_certs }}"
+
+  tasks:
+    - name: Check BAO_TOKEN is set
+      ansible.builtin.assert:
+        that:
+          - vault_token | length > 0
+        fail_msg: |
+          BAO_TOKEN environment variable is not set.
+          Export it in your shell or add to .env file:
+            export BAO_TOKEN="hvs.xxxxx"
+        success_msg: "BAO_TOKEN is configured"
+
+    - name: Display OpenBao connection info
+      ansible.builtin.debug:
+        msg:
+          - "OpenBao URL: {{ vault_url }}"
+          - "Validate certs: {{ vault_validate_certs }}"
+
+    - name: Retrieve backup token from OpenBao
+      ansible.builtin.set_fact:
+        secret_result: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                                'backup/openbao',
+                                engine_mount_point=openbao_kv_mount,
+                                url=openbao_addr,
+                                token=openbao_token,
+                                validate_certs=openbao_validate_certs) }}"
+
+    - name: Display retrieved backup token (masked)
+      ansible.builtin.debug:
+        msg: "Retrieved backup token: {{ secret_result.secret.token[:8] }}..."
+      failed_when: >
+        secret_result is not mapping or
+        ('secret' not in secret_result) or
+        ('token' not in secret_result.secret)
+
+    - name: Show lookup pattern for playbooks
+      ansible.builtin.debug:
+        msg: |
+          To retrieve secrets in your playbooks, use the vault_kv2_get lookup:
+
+          vars:
+            my_secret: "{% raw %}{{ lookup('community.hashi_vault.vault_kv2_get',
+                          'path/to/secret',
+                          engine_mount_point='kv',
+                          url=openbao_addr,
+                          token=openbao_token,
+                          validate_certs=openbao_validate_certs).secret.field_name }}{% endraw %}"
+
+          The .secret attribute contains the secret data as a dict.

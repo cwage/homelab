@@ -10,7 +10,7 @@ RUN apt-get update \
       ca-certificates git \
  && python3 -m venv /opt/venv \
  && /opt/venv/bin/pip install --no-cache-dir --upgrade pip \
- && /opt/venv/bin/pip install --no-cache-dir ansible-core==2.16.* \
+ && /opt/venv/bin/pip install --no-cache-dir ansible-core==2.16.* hvac==2.4.0 \
  && ln -s /opt/venv/bin/ansible /usr/local/bin/ansible \
  && ln -s /opt/venv/bin/ansible-playbook /usr/local/bin/ansible-playbook \
   && ln -s /opt/venv/bin/ansible-galaxy /usr/local/bin/ansible-galaxy \

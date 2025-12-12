@@ -1,20 +1,6 @@
 # OpenBao secrets management VM
 # See issue #62 for architecture details
-
-# Cloud-init meta data for hostname configuration
-resource "proxmox_virtual_environment_file" "openbao_meta_data" {
-  content_type = "snippets"
-  datastore_id = "local"
-  node_name    = var.pm_node_name
-
-  source_raw {
-    data = <<-EOF
-      instance-id: bao
-      local-hostname: bao
-    EOF
-    file_name = "openbao-meta-data.yaml"
-  }
-}
+# Hostname is managed by Ansible (hostname role), not cloud-init
 
 resource "proxmox_virtual_environment_vm" "openbao" {
   name      = "openbao"
@@ -65,8 +51,6 @@ resource "proxmox_virtual_environment_vm" "openbao" {
       username = "deploy"
       keys     = [trimspace(file("${path.module}/../ansible/keys/deploy.pub"))]
     }
-
-    meta_data_file_id = proxmox_virtual_environment_file.openbao_meta_data.id
   }
 
   agent {
