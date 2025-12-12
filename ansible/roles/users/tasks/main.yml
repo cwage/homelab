@@ -24,6 +24,7 @@
     groups: "{{ (item.groups | default([])) | join(',') }}"
     append: true
     create_home: true
+    password: "{{ item.password_hash | default(omit) }}"
     state: present
   loop: "{{ managed_users }}"
   loop_control:
