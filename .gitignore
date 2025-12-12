@@ -1,0 +1,4 @@
+# Root-level secrets
+.env
+.env.*
+!.env.example
