@@ -1,5 +1,12 @@
 # Homelab monorepo agent guide
 
+## BEFORE MAKING ANY CODE CHANGES
+- [ ] Check current branch with `git branch --show-current`
+- [ ] If on `master`, STOP and alert the user to create/switch to a feature branch first
+- [ ] Only proceed with code changes once on a non-master branch
+
+---
+
 - **Layout**: `ansible/` (host config, formerly homelab-ansible), `tofu/` (OpenTofu VM provisioning, formerly homelab-tofu), `docs/` (design notes like `docs/dns-plan.md`).
 - **Make wrappers**: From repo root use `make ansible-<target>` and `make tofu-<target>` to call component Makefiles (see `make ansible-help`, `make tofu-help`). Avoid running `ansible-playbook` or `tofu` directly; prefer the Dockerized targets.
 - **Containerized workflows**: Both stacks expect Docker/Compose; use provided Make targets for build/plan/apply/lint. Keep secrets in local `.env` files (gitignored) and never commit keys or state.
