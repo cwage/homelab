@@ -1,5 +1,6 @@
 .PHONY: help build shell init plan apply destroy fmt validate trufflehog clean
 
+DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /workspace --fail --no-update --exclude-paths /workspace/.trufflehog-exclude.txt
 
 # Default target - show help
@@ -20,35 +21,35 @@ help:
 
 # Build the Docker image
 build:
-	docker compose build
+	$(DC) build
 
 # Open an interactive shell in the container
 shell:
-	docker compose run --rm tofu /bin/bash
+	$(DC) run --rm tofu /bin/bash
 
 # Initialize OpenTofu
 init:
-	docker compose run --rm tofu tofu init
+	$(DC) run --rm tofu tofu init
 
 # Plan changes
 plan:
-	docker compose run --rm tofu tofu plan
+	$(DC) run --rm tofu tofu plan
 
 # Apply changes
 apply:
-	docker compose run --rm tofu tofu apply
+	$(DC) run --rm tofu tofu apply
 
 # Destroy infrastructure (interactive confirmation)
 destroy:
-	docker compose run --rm tofu tofu destroy
+	$(DC) run --rm tofu tofu destroy
 
 # Format OpenTofu files
 fmt:
-	docker compose run --rm tofu tofu fmt -recursive
+	$(DC) run --rm tofu tofu fmt -recursive
 
 # Validate configuration
 validate:
-	docker compose run --rm tofu tofu validate
+	$(DC) run --rm tofu tofu validate
 
 # Run TruffleHog secrets scan (root-level scanner)
 trufflehog:
@@ -56,5 +57,5 @@ trufflehog:
 
 # Clean up Docker resources
 clean:
-	docker compose down
+	$(DC) down
 	docker rmi homelab-tofu:latest 2>/dev/null || true
