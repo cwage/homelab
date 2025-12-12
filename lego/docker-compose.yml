@@ -12,6 +12,6 @@ services:
     working_dir: /work
     volumes:
       - ./certs:/work/.lego
-    # CF_DNS_API_TOKEN is passed via -e flag at runtime (fetched from OpenBao)
+    # CF_DNS_API_TOKEN and CF_ZONE_ID are passed via -e flags at runtime (fetched from OpenBao)
     # Default command shows help; override via docker compose run
     command: ["--help"]

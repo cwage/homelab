@@ -33,17 +33,24 @@ help: ## Show this help
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
 
 # Fetch Cloudflare credentials from OpenBao
-# Uses curl to call OpenBao API directly (no extra dependencies)
+# Uses curl piped directly to jq to avoid shell injection risks
 define fetch_cf_creds
-	$(eval CF_SECRET_JSON := $(shell \
+	$(eval CF_TOKEN := $(shell \
 		. ../.env 2>/dev/null; \
 		curl -sf \
 			-H "X-Vault-Token: $${BAO_TOKEN}" \
 			$${BAO_SKIP_VERIFY:+--insecure} \
-			"$${BAO_ADDR}/v1/$(BAO_CF_SECRET_PATH)" \
+			"$${BAO_ADDR}/v1/$(BAO_CF_SECRET_PATH)" | \
+		jq -r '.data.data.api_token // empty' \
 	))
-	$(eval CF_TOKEN := $(shell echo '$(CF_SECRET_JSON)' | jq -r '.data.data.api_token // empty'))
-	$(eval CF_ZONE_ID := $(shell echo '$(CF_SECRET_JSON)' | jq -r '.data.data.zone_id // empty'))
+	$(eval CF_ZONE_ID := $(shell \
+		. ../.env 2>/dev/null; \
+		curl -sf \
+			-H "X-Vault-Token: $${BAO_TOKEN}" \
+			$${BAO_SKIP_VERIFY:+--insecure} \
+			"$${BAO_ADDR}/v1/$(BAO_CF_SECRET_PATH)" | \
+		jq -r '.data.data.zone_id // empty' \
+	))
 	@if [ -z "$(CF_TOKEN)" ] || [ -z "$(CF_ZONE_ID)" ]; then \
 		echo "ERROR: Failed to retrieve Cloudflare credentials from OpenBao"; \
 		echo "Ensure BAO_TOKEN is set and kv/infra/cloudflare exists with 'api_token' and 'zone_id' fields"; \
@@ -117,16 +124,20 @@ store: ## Store local certificates in OpenBao
 	fi
 	@echo "Storing certificates in OpenBao at kv/infra/certs/$(DOMAIN)..."
 	@. ../.env 2>/dev/null; \
-	CERT=$$(cat $(CERT_FILE) | jq -sR .); \
-	KEY=$$(cat $(KEY_FILE) | jq -sR .); \
-	ISSUER=$$(cat $(ISSUER_FILE) | jq -sR .); \
 	EXPIRES=$$(openssl x509 -in $(CERT_FILE) -noout -enddate | cut -d= -f2); \
-	curl -sf \
+	jq -n \
+		--arg certificate "$$(cat $(CERT_FILE))" \
+		--arg private_key "$$(cat $(KEY_FILE))" \
+		--arg issuer "$$(cat $(ISSUER_FILE))" \
+		--arg expires "$$EXPIRES" \
+		--arg domain "$(DOMAIN)" \
+		'{data: {certificate: $$certificate, private_key: $$private_key, issuer: $$issuer, expires: $$expires, domain: $$domain}}' \
+	| curl -sf \
 		-X POST \
 		-H "X-Vault-Token: $${BAO_TOKEN}" \
 		-H "Content-Type: application/json" \
 		$${BAO_SKIP_VERIFY:+--insecure} \
-		-d "{\"data\": {\"certificate\": $${CERT}, \"private_key\": $${KEY}, \"issuer\": $${ISSUER}, \"expires\": \"$${EXPIRES}\", \"domain\": \"$(DOMAIN)\"}}" \
+		-d @- \
 		"$${BAO_ADDR}/v1/$(BAO_CERT_SECRET_PATH)" \
 	&& echo "Certificates stored successfully!" \
 	|| (echo "ERROR: Failed to store certificates in OpenBao"; exit 1)
@@ -135,20 +146,21 @@ retrieve: ## Retrieve certificates from OpenBao to local files
 	@echo "Retrieving certificates from OpenBao..."
 	@mkdir -p $(CERT_DIR)
 	@. ../.env 2>/dev/null; \
+	TMPFILE=$$(mktemp); \
+	trap "rm -f $$TMPFILE" EXIT; \
 	curl -sf \
 		-H "X-Vault-Token: $${BAO_TOKEN}" \
 		$${BAO_SKIP_VERIFY:+--insecure} \
-		"$${BAO_ADDR}/v1/$(BAO_CERT_SECRET_PATH)" > /tmp/bao_cert_response.json; \
-	if [ ! -s /tmp/bao_cert_response.json ]; then \
+		"$${BAO_ADDR}/v1/$(BAO_CERT_SECRET_PATH)" > "$$TMPFILE"; \
+	if [ ! -s "$$TMPFILE" ]; then \
 		echo "ERROR: Failed to retrieve certificates from OpenBao"; \
 		exit 1; \
 	fi; \
-	jq -r '.data.data.certificate' /tmp/bao_cert_response.json > $(CERT_FILE); \
-	jq -r '.data.data.private_key' /tmp/bao_cert_response.json > $(KEY_FILE); \
-	jq -r '.data.data.issuer' /tmp/bao_cert_response.json > $(ISSUER_FILE); \
+	jq -r '.data.data.certificate' "$$TMPFILE" > $(CERT_FILE); \
+	jq -r '.data.data.private_key' "$$TMPFILE" > $(KEY_FILE); \
+	jq -r '.data.data.issuer' "$$TMPFILE" > $(ISSUER_FILE); \
 	chmod 600 $(KEY_FILE); \
-	EXPIRES=$$(jq -r '.data.data.expires' /tmp/bao_cert_response.json); \
-	rm -f /tmp/bao_cert_response.json; \
+	EXPIRES=$$(jq -r '.data.data.expires' "$$TMPFILE"); \
 	if [ -s $(CERT_FILE) ]; then \
 		echo "Certificates retrieved successfully!"; \
 		echo "  Expires: $$EXPIRES"; \
