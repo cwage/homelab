@@ -9,7 +9,9 @@ domain_name: lan.quietlife.net
 # Override BAO_ADDR/BAO_TOKEN via environment variables or .env
 openbao_addr: "{{ lookup('env', 'BAO_ADDR') | default('https://bao.lan.quietlife.net:8200', true) }}"
 openbao_token: "{{ lookup('env', 'BAO_TOKEN') }}"
-openbao_validate_certs: "{{ not (lookup('env', 'BAO_SKIP_VERIFY') | default(false, true) | bool) }}"
+# BAO_SKIP_VERIFY=true means "skip verification", so we invert it for validate_certs
+openbao_skip_verify: "{{ lookup('env', 'BAO_SKIP_VERIFY') | default(false, true) | bool }}"
+openbao_validate_certs: "{{ not openbao_skip_verify }}"
 openbao_kv_mount: "kv"  # KV v2 secrets engine mount point
 
 # Base users for all homelab hosts
