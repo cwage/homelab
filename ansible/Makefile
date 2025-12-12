@@ -1,17 +1,17 @@
 SHELL := /bin/bash
 
-DC := docker compose
+DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check all check-all run adhoc sh build-tinyfugue trufflehog
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test all check-all run adhoc sh build-tinyfugue trufflehog
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
 
-init: ## Create .env and set UID/GID for compose
-	@test -f .env || cp .env.example .env
-	sed -i "s/^UID=.*/UID=$$(id -u)/" .env
-	sed -i "s/^GID=.*/GID=$$(id -g)/" .env
+init: ## Create root .env and set UID/GID for compose
+	@test -f ../.env || cp ../.env.example ../.env
+	sed -i "s/^UID=.*/UID=$$(id -u)/" ../.env
+	sed -i "s/^GID=.*/GID=$$(id -g)/" ../.env
 
 build: ## Build the Ansible Docker image
 	$(DC) build --pull
@@ -75,6 +75,9 @@ openbao: ## Configure OpenBao secrets server
 
 openbao-check: ## Dry-run OpenBao configuration with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/openbao.yml -vv --check --diff $(OPTS)
+
+openbao-test: ## Test OpenBao connectivity and secret retrieval (requires BAO_TOKEN)
+	$(DC) run --rm ansible ansible-playbook playbooks/openbao-test.yml -vv $(OPTS)
 
 all: ## Run standard playbooks (proxmox, firewall, felix)
 	$(MAKE) proxmox

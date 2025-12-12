@@ -19,6 +19,10 @@ services:
       - TF_VAR_pm_node_name=${PM_NODE_NAME}
       - TF_VAR_pm_image_datastore_id=${PM_IMAGE_DATASTORE_ID:-local}
       - TF_VAR_pm_vm_datastore_id=${PM_VM_DATASTORE_ID:-local-lvm}
+      # OpenBao credentials for secret retrieval
+      - BAO_ADDR=${BAO_ADDR:-}
+      - BAO_TOKEN=${BAO_TOKEN:-}
+      - BAO_SKIP_VERIFY=${BAO_SKIP_VERIFY:-}
       # Disable OpenTofu telemetry
       - TF_CLI_ARGS=-no-color
     # Keep container running for interactive use
