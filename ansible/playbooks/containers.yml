@@ -30,14 +30,33 @@
         mode: '0700'
 
     - name: Retrieve TLS certificates from OpenBao
-      ansible.builtin.set_fact:
-        tls_certs: "{{ lookup('community.hashi_vault.vault_kv2_get',
-                        'infra/certs/lan.quietlife.net',
-                        engine_mount_point='kv',
-                        url=openbao_addr,
-                        token=openbao_token,
-                        validate_certs=openbao_validate_certs).secret }}"
-      no_log: true
+      block:
+        - name: Fetch TLS certificates from OpenBao
+          ansible.builtin.set_fact:
+            tls_certs: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                            'infra/certs/lan.quietlife.net',
+                            engine_mount_point='kv',
+                            url=openbao_addr,
+                            token=openbao_token,
+                            validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+
+        - name: Validate TLS certificate data
+          ansible.builtin.assert:
+            that:
+              - tls_certs.certificate is defined
+              - tls_certs.certificate | length > 0
+              - tls_certs.private_key is defined
+              - tls_certs.private_key | length > 0
+            fail_msg: "TLS certificate or private key missing from OpenBao secret"
+      rescue:
+        - name: Fail with helpful error message
+          ansible.builtin.fail:
+            msg: >
+              Failed to retrieve TLS certificates from OpenBao.
+              Ensure BAO_TOKEN is valid and kv/infra/certs/lan.quietlife.net exists
+              with 'certificate' and 'private_key' fields.
+              Run 'make lego-store' to populate certificates.
 
     - name: Deploy TLS certificate
       ansible.builtin.copy:
@@ -46,7 +65,7 @@
         owner: deploy
         group: deploy
         mode: '0644'
-      register: tls_cert_changed
+      register: tls_cert_result
       no_log: true
 
     - name: Deploy TLS private key
@@ -56,7 +75,7 @@
         owner: deploy
         group: deploy
         mode: '0600'
-      register: tls_key_changed
+      register: tls_key_result
       no_log: true
 
     - name: Copy Traefik TLS configuration
@@ -66,7 +85,7 @@
         owner: deploy
         group: deploy
         mode: '0644'
-      register: traefik_tls_config
+      register: traefik_tls_result
 
     - name: Copy docker-compose file
       ansible.builtin.copy:
@@ -75,11 +94,20 @@
         owner: deploy
         group: deploy
         mode: '0644'
-      register: compose_file
+      register: compose_result
+
+    - name: Determine if containers need restart
+      ansible.builtin.set_fact:
+        containers_need_restart: >-
+          {{ compose_result.changed or
+             traefik_tls_result.changed or
+             tls_cert_result.changed or
+             tls_key_result.changed or
+             (force_restart | default(false)) }}
 
     - name: Start containers
       ansible.builtin.command:
         cmd: docker compose up -d
         chdir: /opt/stacks
       become_user: deploy
-      when: compose_file.changed or traefik_tls_config.changed or tls_cert_changed.changed or tls_key_changed.changed or (force_restart | default(false))
+      when: containers_need_restart
