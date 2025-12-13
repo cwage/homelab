@@ -1,0 +1,99 @@
+---
+# Deploys wildcard TLS certificate to Proxmox VE from OpenBao
+#
+# Certificate files:
+#   /etc/pve/local/pveproxy-ssl.pem - certificate chain
+#   /etc/pve/local/pveproxy-ssl.key - private key
+#
+# Note: /etc/pve is pmxcfs (Proxmox Cluster File System) which doesn't
+# support standard file operations. We stage to /tmp then copy with shell.
+
+- name: Retrieve TLS certificates from OpenBao
+  block:
+    - name: Fetch TLS certificates from OpenBao
+      ansible.builtin.set_fact:
+        tls_certs: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                        'infra/certs/lan.quietlife.net',
+                        engine_mount_point='kv',
+                        url=openbao_addr,
+                        token=openbao_token,
+                        validate_certs=openbao_validate_certs).secret }}"
+      no_log: true
+
+    - name: Validate TLS certificate data
+      ansible.builtin.assert:
+        that:
+          - tls_certs.certificate is defined
+          - tls_certs.certificate | length > 0
+          - tls_certs.private_key is defined
+          - tls_certs.private_key | length > 0
+        fail_msg: "TLS certificate or private key missing from OpenBao secret"
+  rescue:
+    - name: Fail with helpful error message
+      ansible.builtin.fail:
+        msg: >
+          Failed to retrieve TLS certificates from OpenBao.
+          Ensure BAO_TOKEN is valid and kv/infra/certs/lan.quietlife.net exists
+          with 'certificate' and 'private_key' fields.
+          Run 'make lego-store' to populate certificates.
+
+- name: Stage, deploy, and cleanup TLS certificates
+  block:
+    - name: Stage TLS certificate to temp location
+      ansible.builtin.copy:
+        content: "{{ tls_certs.certificate }}"
+        dest: /tmp/pveproxy-ssl.pem
+        mode: '0644'
+      no_log: true
+
+    - name: Stage TLS private key to temp location
+      ansible.builtin.copy:
+        content: "{{ tls_certs.private_key }}"
+        dest: /tmp/pveproxy-ssl.key
+        mode: '0600'
+      no_log: true
+
+    - name: Check if certificate needs update
+      ansible.builtin.shell: |
+        if [ ! -f /etc/pve/local/pveproxy-ssl.pem ]; then
+          echo "changed"
+        elif ! diff -q /tmp/pveproxy-ssl.pem /etc/pve/local/pveproxy-ssl.pem > /dev/null 2>&1; then
+          echo "changed"
+        else
+          echo "ok"
+        fi
+      register: cert_check
+      changed_when: false
+
+    - name: Check if private key needs update
+      ansible.builtin.shell: |
+        if [ ! -f /etc/pve/local/pveproxy-ssl.key ]; then
+          echo "changed"
+        elif ! diff -q /tmp/pveproxy-ssl.key /etc/pve/local/pveproxy-ssl.key > /dev/null 2>&1; then
+          echo "changed"
+        else
+          echo "ok"
+        fi
+      register: key_check
+      changed_when: false
+
+    - name: Deploy TLS certificate to Proxmox
+      ansible.builtin.command: cp /tmp/pveproxy-ssl.pem /etc/pve/local/pveproxy-ssl.pem
+      when: cert_check.stdout == "changed"
+      notify: restart pveproxy
+
+    - name: Deploy TLS private key to Proxmox
+      ansible.builtin.command: cp /tmp/pveproxy-ssl.key /etc/pve/local/pveproxy-ssl.key
+      when: key_check.stdout == "changed"
+      notify: restart pveproxy
+
+  always:
+    - name: Remove staged certificate
+      ansible.builtin.file:
+        path: /tmp/pveproxy-ssl.pem
+        state: absent
+
+    - name: Remove staged private key
+      ansible.builtin.file:
+        path: /tmp/pveproxy-ssl.key
+        state: absent

@@ -7,3 +7,4 @@
     - role: users
     - role: nfs_mounts
     - role: gpu_passthrough
+    - role: proxmox_certs
