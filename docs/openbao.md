@@ -60,8 +60,8 @@ OpenBao starts sealed after every restart. To unseal:
 ```bash
 ssh deploy@10.10.15.11
 
-export BAO_ADDR="https://127.0.0.1:8200"
-export BAO_SKIP_VERIFY=true
+# Use the hostname (wildcard cert doesn't include 127.0.0.1 as a SAN)
+export BAO_ADDR="https://bao.lan.quietlife.net:8200"
 
 bao operator unseal
 # Paste unseal key from Bitwarden
@@ -73,22 +73,31 @@ To interact with OpenBao from your local machine:
 
 ```bash
 export BAO_ADDR="https://bao.lan.quietlife.net:8200"
-
-# Copy the server's self-signed cert for verification
-scp deploy@10.10.15.11:/opt/openbao/tls/tls.crt ~/.config/openbao-ca.crt
-export BAO_CACERT=~/.config/openbao-ca.crt
-
-bao login
-# Paste root token (or other token)
+export BAO_TOKEN="<your-token>"
 
 bao status
 bao secrets list
 ```
 
+Once the wildcard certificate is deployed (see TLS Certificate Management below), standard
+TLS verification works automatically - no `BAO_CACERT` or `BAO_SKIP_VERIFY` needed.
+
+### Before Wildcard Certificate is Deployed
+
+During initial setup (self-signed cert), either:
+
+```bash
+# Option 1: Skip verification (bootstrap only)
+export BAO_SKIP_VERIFY=true
+
+# Option 2: Copy self-signed cert to trust store
+scp deploy@10.10.15.11:/opt/openbao/tls/tls.crt ~/.config/openbao-ca.crt
+export BAO_CACERT=~/.config/openbao-ca.crt
+```
+
 > **Security Note:** Avoid using `BAO_SKIP_VERIFY=true` for routine access as it disables
-> TLS certificate verification, allowing potential man-in-the-middle attacks. Only use
-> it for initial setup when you cannot yet copy the certificate. For regular use, always
-> configure `BAO_CACERT` with the server's certificate.
+> TLS certificate verification, allowing potential man-in-the-middle attacks. Once the
+> wildcard certificate is deployed, remove `BAO_SKIP_VERIFY` from your environment.
 
 ## Configuration
 
@@ -98,6 +107,58 @@ Key files on the server:
 - `/opt/openbao/tls/tls.key` - TLS private key
 - `/opt/openbao/data/` - Raft data directory
 
+## TLS Certificate Management
+
+OpenBao's TLS certificate has a two-stage lifecycle:
+
+### Stage 1: Self-Signed (Bootstrap)
+
+On initial deployment, the Ansible role generates a self-signed certificate. This allows
+OpenBao to start with TLS enabled, but clients must use `BAO_SKIP_VERIFY=true` or copy
+the self-signed cert to their trust store.
+
+### Stage 2: Wildcard Certificate (Production)
+
+Once the Let's Encrypt wildcard certificate is stored in OpenBao (via `make lego-store`),
+subsequent runs of `make ansible-openbao` will:
+
+1. Check if OpenBao is unsealed
+2. Fetch the wildcard cert from `kv/infra/certs/lan.quietlife.net`
+3. Deploy it to `/opt/openbao/tls/`
+4. Restart OpenBao if the certificate changed
+
+After this, clients can connect with standard TLS verification (no `BAO_SKIP_VERIFY`).
+
+### The Bootstrap Problem
+
+There's an inherent chicken-and-egg issue: to deploy the certificate TO OpenBao, we must
+connect to OpenBao, but we can't verify its certificate before we deploy it.
+
+**Solution**: The Ansible role always uses `validate_certs: false` when fetching the
+certificate for OpenBao itself. This is acceptable because:
+- It's a controlled operation (Ansible → localhost OpenBao)
+- It's only for deploying OpenBao's own certificate
+- Other services can and should use `validate_certs: true`
+
+### Recovery from Expired Certificate
+
+If the wildcard certificate expires:
+
+1. Set `BAO_SKIP_VERIFY=true` in your environment
+2. Renew the certificate: `make lego-renew`
+3. Store to OpenBao: `make lego-store`
+4. Redeploy to OpenBao: `make ansible-openbao`
+5. Remove `BAO_SKIP_VERIFY` from your environment
+
+### Disabling Wildcard Cert Deployment
+
+To skip wildcard certificate deployment (use self-signed only):
+
+```yaml
+# In host_vars/openbao.yml or via extra vars
+openbao_deploy_wildcard_cert: false
+```
+
 ## Backup Token Setup (One-Time)
 
 The backup system requires a dedicated token with minimal permissions. After initial setup:
@@ -105,8 +166,8 @@ The backup system requires a dedicated token with minimal permissions. After ini
 ```bash
 ssh deploy@10.10.15.11
 
-export BAO_ADDR="https://127.0.0.1:8200"
-export BAO_SKIP_VERIFY=true
+# Use hostname (or BAO_SKIP_VERIFY=true if wildcard cert not yet deployed)
+export BAO_ADDR="https://bao.lan.quietlife.net:8200"
 bao login
 # Enter root token
 

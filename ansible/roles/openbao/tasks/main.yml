@@ -71,6 +71,79 @@
         group: openbao
         mode: "0644"
 
+# Deploy wildcard certificate from OpenBao (if available)
+# This replaces the self-signed cert with the Let's Encrypt wildcard.
+# Note: We MUST use validate_certs: false here - this is a bootstrap operation
+# where OpenBao can't verify its own certificate before we deploy it.
+# See docs/openbao.md for details on the TLS certificate lifecycle.
+- name: Deploy wildcard TLS certificate from OpenBao
+  when: openbao_deploy_wildcard_cert | default(true) | bool
+  block:
+    - name: Check if OpenBao is accessible and unsealed
+      ansible.builtin.uri:
+        url: "https://127.0.0.1:8200/v1/sys/seal-status"
+        validate_certs: false
+        return_content: true
+      register: seal_status
+      failed_when: false
+      changed_when: false
+
+    - name: Set OpenBao availability fact
+      ansible.builtin.set_fact:
+        openbao_available: "{{ seal_status.status | default(0) == 200 and not (seal_status.json.sealed | default(true)) }}"
+
+    - name: Note if OpenBao is sealed or unavailable
+      when: not openbao_available
+      ansible.builtin.debug:
+        msg: "OpenBao is sealed or unavailable - keeping existing TLS certificate"
+
+    - name: Retrieve TLS certificates from OpenBao
+      when: openbao_available
+      block:
+        - name: Fetch certificate from OpenBao KV
+          ansible.builtin.set_fact:
+            wildcard_certs: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                                'infra/certs/lan.quietlife.net',
+                                engine_mount_point='kv',
+                                url=openbao_addr,
+                                token=openbao_token,
+                                validate_certs=false).secret }}"
+          no_log: true
+      rescue:
+        - name: Note certificate retrieval failed
+          ansible.builtin.debug:
+            msg: "Could not retrieve wildcard certificate from OpenBao - using existing cert. Run 'make lego-store' to populate."
+
+        - name: Clear wildcard_certs on failure
+          ansible.builtin.set_fact:
+            wildcard_certs: {}
+
+    - name: Deploy wildcard certificate
+      when:
+        - openbao_available
+        - wildcard_certs is defined
+        - wildcard_certs.certificate is defined
+      block:
+        - name: Deploy wildcard TLS certificate
+          ansible.builtin.copy:
+            content: "{{ wildcard_certs.certificate }}"
+            dest: "{{ openbao_tls_cert_file }}"
+            owner: openbao
+            group: openbao
+            mode: "0644"
+          no_log: true
+          notify: restart openbao
+
+        - name: Deploy wildcard TLS private key
+          ansible.builtin.copy:
+            content: "{{ wildcard_certs.private_key }}"
+            dest: "{{ openbao_tls_key_file }}"
+            owner: openbao
+            group: openbao
+            mode: "0600"
+          no_log: true
+          notify: restart openbao
+
 - name: Deploy OpenBao configuration
   ansible.builtin.template:
     src: config.hcl.j2
