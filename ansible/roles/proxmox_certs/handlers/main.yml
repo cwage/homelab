@@ -1,5 +1,5 @@
 ---
-- name: Restart pveproxy
+- name: restart pveproxy
   ansible.builtin.systemd:
     name: pveproxy
     state: restarted

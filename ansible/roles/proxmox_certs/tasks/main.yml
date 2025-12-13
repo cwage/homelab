@@ -37,64 +37,63 @@
           with 'certificate' and 'private_key' fields.
           Run 'make lego-store' to populate certificates.
 
-# Stage certificates to /tmp (normal filesystem)
-- name: Stage TLS certificate to temp location
-  ansible.builtin.copy:
-    content: "{{ tls_certs.certificate }}"
-    dest: /tmp/pveproxy-ssl.pem
-    mode: '0644'
-  no_log: true
+- name: Stage, deploy, and cleanup TLS certificates
+  block:
+    - name: Stage TLS certificate to temp location
+      ansible.builtin.copy:
+        content: "{{ tls_certs.certificate }}"
+        dest: /tmp/pveproxy-ssl.pem
+        mode: '0644'
+      no_log: true
 
-- name: Stage TLS private key to temp location
-  ansible.builtin.copy:
-    content: "{{ tls_certs.private_key }}"
-    dest: /tmp/pveproxy-ssl.key
-    mode: '0600'
-  no_log: true
+    - name: Stage TLS private key to temp location
+      ansible.builtin.copy:
+        content: "{{ tls_certs.private_key }}"
+        dest: /tmp/pveproxy-ssl.key
+        mode: '0600'
+      no_log: true
 
-# Check if certs differ from current
-- name: Check if certificate needs update
-  ansible.builtin.shell: |
-    if [ ! -f /etc/pve/local/pveproxy-ssl.pem ]; then
-      echo "changed"
-    elif ! diff -q /tmp/pveproxy-ssl.pem /etc/pve/local/pveproxy-ssl.pem > /dev/null 2>&1; then
-      echo "changed"
-    else
-      echo "ok"
-    fi
-  register: cert_check
-  changed_when: false
+    - name: Check if certificate needs update
+      ansible.builtin.shell: |
+        if [ ! -f /etc/pve/local/pveproxy-ssl.pem ]; then
+          echo "changed"
+        elif ! diff -q /tmp/pveproxy-ssl.pem /etc/pve/local/pveproxy-ssl.pem > /dev/null 2>&1; then
+          echo "changed"
+        else
+          echo "ok"
+        fi
+      register: cert_check
+      changed_when: false
 
-- name: Check if private key needs update
-  ansible.builtin.shell: |
-    if [ ! -f /etc/pve/local/pveproxy-ssl.key ]; then
-      echo "changed"
-    elif ! diff -q /tmp/pveproxy-ssl.key /etc/pve/local/pveproxy-ssl.key > /dev/null 2>&1; then
-      echo "changed"
-    else
-      echo "ok"
-    fi
-  register: key_check
-  changed_when: false
+    - name: Check if private key needs update
+      ansible.builtin.shell: |
+        if [ ! -f /etc/pve/local/pveproxy-ssl.key ]; then
+          echo "changed"
+        elif ! diff -q /tmp/pveproxy-ssl.key /etc/pve/local/pveproxy-ssl.key > /dev/null 2>&1; then
+          echo "changed"
+        else
+          echo "ok"
+        fi
+      register: key_check
+      changed_when: false
 
-# Copy into pmxcfs using cp (bypasses Ansible's file operations)
-- name: Deploy TLS certificate to Proxmox
-  ansible.builtin.command: cp /tmp/pveproxy-ssl.pem /etc/pve/local/pveproxy-ssl.pem
-  when: cert_check.stdout == "changed"
-  notify: Restart pveproxy
+    - name: Deploy TLS certificate to Proxmox
+      ansible.builtin.command: cp /tmp/pveproxy-ssl.pem /etc/pve/local/pveproxy-ssl.pem
+      when: cert_check.stdout == "changed"
+      notify: restart pveproxy
 
-- name: Deploy TLS private key to Proxmox
-  ansible.builtin.command: cp /tmp/pveproxy-ssl.key /etc/pve/local/pveproxy-ssl.key
-  when: key_check.stdout == "changed"
-  notify: Restart pveproxy
+    - name: Deploy TLS private key to Proxmox
+      ansible.builtin.command: cp /tmp/pveproxy-ssl.key /etc/pve/local/pveproxy-ssl.key
+      when: key_check.stdout == "changed"
+      notify: restart pveproxy
 
-# Cleanup staged files
-- name: Remove staged certificate
-  ansible.builtin.file:
-    path: /tmp/pveproxy-ssl.pem
-    state: absent
+  always:
+    - name: Remove staged certificate
+      ansible.builtin.file:
+        path: /tmp/pveproxy-ssl.pem
+        state: absent
 
-- name: Remove staged private key
-  ansible.builtin.file:
-    path: /tmp/pveproxy-ssl.key
-    state: absent
+    - name: Remove staged private key
+      ansible.builtin.file:
+        path: /tmp/pveproxy-ssl.key
+        state: absent
