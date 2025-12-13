@@ -60,7 +60,7 @@ OpenBao starts sealed after every restart. To unseal:
 ```bash
 ssh deploy@10.10.15.11
 
-# Use the hostname (wildcard cert doesn't include 127.0.0.1 as a SAN)
+# Use the hostname for proper TLS verification
 export BAO_ADDR="https://bao.lan.quietlife.net:8200"
 
 bao operator unseal
@@ -166,7 +166,10 @@ The backup system requires a dedicated token with minimal permissions. After ini
 ```bash
 ssh deploy@10.10.15.11
 
-# Use hostname (or BAO_SKIP_VERIFY=true if wildcard cert not yet deployed)
+# Use the hostname (preferred, as 127.0.0.1 is not included as a SAN in either certificate).
+# If hostname resolution does not work, you may use 127.0.0.1 with BAO_SKIP_VERIFY=true:
+#   export BAO_SKIP_VERIFY=true
+#   export BAO_ADDR="https://127.0.0.1:8200"
 export BAO_ADDR="https://bao.lan.quietlife.net:8200"
 bao login
 # Enter root token
