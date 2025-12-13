@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test all check-all run adhoc sh build-tinyfugue trufflehog
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test mail mail-check all check-all run adhoc sh build-tinyfugue trufflehog
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -78,6 +78,12 @@ openbao-check: ## Dry-run OpenBao configuration with --check/--diff
 
 openbao-test: ## Test OpenBao connectivity and secret retrieval (requires BAO_TOKEN)
 	$(DC) run --rm ansible ansible-playbook playbooks/openbao-test.yml -vv $(OPTS)
+
+mail: ## Configure mail relay server (ProtonMail Bridge)
+	$(DC) run --rm ansible ansible-playbook playbooks/mail.yml -vv $(OPTS)
+
+mail-check: ## Dry-run mail relay configuration with --check/--diff
+	$(DC) run --rm ansible ansible-playbook playbooks/mail.yml -vv --check --diff $(OPTS)
 
 all: ## Run standard playbooks (proxmox, firewall, felix)
 	$(MAKE) proxmox

@@ -12,3 +12,8 @@ output "containers_ip" {
   description = "IP address of containers VM"
   value       = "10.10.15.12"
 }
+
+output "mail_ip" {
+  description = "IP address of mail relay VM"
+  value       = "10.10.15.14"
+}

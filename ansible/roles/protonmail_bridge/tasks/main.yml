@@ -1,0 +1,149 @@
+---
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - gnupg
+      - debsig-verify
+      - pass
+      - libsecret-1-0
+      - socat
+      - wget
+      - curl
+      - jq
+    state: present
+    update_cache: true
+
+- name: Ensure group exists before user
+  ansible.builtin.group:
+    name: "{{ protonmail_bridge_group }}"
+    system: true
+
+- name: Create protonmail bridge user
+  ansible.builtin.user:
+    name: "{{ protonmail_bridge_user }}"
+    group: "{{ protonmail_bridge_group }}"
+    system: true
+    shell: /bin/bash
+    home: "/home/{{ protonmail_bridge_user }}"
+    create_home: true
+
+- name: Create bin directory for scripts
+  ansible.builtin.file:
+    path: "/home/{{ protonmail_bridge_user }}/bin"
+    state: directory
+    owner: "{{ protonmail_bridge_user }}"
+    group: "{{ protonmail_bridge_group }}"
+    mode: '0755'
+
+- name: Create .gnupg directory
+  ansible.builtin.file:
+    path: "/home/{{ protonmail_bridge_user }}/.gnupg"
+    state: directory
+    owner: "{{ protonmail_bridge_user }}"
+    group: "{{ protonmail_bridge_group }}"
+    mode: '0700'
+
+- name: Download Proton GPG public key
+  ansible.builtin.get_url:
+    url: https://proton.me/download/bridge/bridge_pubkey.gpg
+    dest: /tmp/bridge_pubkey.gpg
+    mode: '0644'
+
+- name: Create debsig keyring directory
+  ansible.builtin.file:
+    path: "/usr/share/debsig/keyrings/{{ protonmail_bridge_gpg_key_id }}"
+    state: directory
+    mode: '0755'
+
+- name: Convert and install GPG key for debsig
+  ansible.builtin.shell: |
+    gpg --dearmor < /tmp/bridge_pubkey.gpg > /usr/share/debsig/keyrings/{{ protonmail_bridge_gpg_key_id }}/debsig.gpg
+  args:
+    creates: "/usr/share/debsig/keyrings/{{ protonmail_bridge_gpg_key_id }}/debsig.gpg"
+
+- name: Create debsig policy directory
+  ansible.builtin.file:
+    path: "/etc/debsig/policies/{{ protonmail_bridge_gpg_key_id }}"
+    state: directory
+    mode: '0755'
+
+- name: Download debsig policy file
+  ansible.builtin.get_url:
+    url: https://proton.me/download/bridge/bridge.pol
+    dest: "/etc/debsig/policies/{{ protonmail_bridge_gpg_key_id }}/bridge.pol"
+    mode: '0644'
+
+- name: Download ProtonMail Bridge .deb package
+  ansible.builtin.get_url:
+    url: "https://proton.me/download/bridge/protonmail-bridge_{{ protonmail_bridge_version }}-1_amd64.deb"
+    dest: "/tmp/protonmail-bridge_{{ protonmail_bridge_version }}-1_amd64.deb"
+    mode: '0644'
+
+- name: Verify package signature
+  ansible.builtin.command:
+    cmd: "debsig-verify /tmp/protonmail-bridge_{{ protonmail_bridge_version }}-1_amd64.deb"
+  changed_when: false
+
+- name: Install ProtonMail Bridge
+  ansible.builtin.apt:
+    deb: "/tmp/protonmail-bridge_{{ protonmail_bridge_version }}-1_amd64.deb"
+    state: present
+
+- name: Deploy gpg-agent configuration
+  ansible.builtin.template:
+    src: gpg-agent.conf.j2
+    dest: "/home/{{ protonmail_bridge_user }}/.gnupg/gpg-agent.conf"
+    owner: "{{ protonmail_bridge_user }}"
+    group: "{{ protonmail_bridge_group }}"
+    mode: '0600'
+
+- name: Deploy GPG key parameters template
+  ansible.builtin.template:
+    src: gpgparams.j2
+    dest: "/home/{{ protonmail_bridge_user }}/.gpgparams"
+    owner: "{{ protonmail_bridge_user }}"
+    group: "{{ protonmail_bridge_group }}"
+    mode: '0600'
+
+- name: Deploy startup script
+  ansible.builtin.template:
+    src: protonmail-bridge-start.sh.j2
+    dest: "/home/{{ protonmail_bridge_user }}/bin/protonmail-bridge-start.sh"
+    owner: "{{ protonmail_bridge_user }}"
+    group: "{{ protonmail_bridge_group }}"
+    mode: '0755'
+
+- name: Deploy socat SMTP service
+  ansible.builtin.template:
+    src: socat-smtp.service.j2
+    dest: /etc/systemd/system/socat-smtp.service
+    mode: '0644'
+  notify: Reload systemd
+
+- name: Deploy protonmail-bridge service
+  ansible.builtin.template:
+    src: protonmail-bridge.service.j2
+    dest: /etc/systemd/system/protonmail-bridge.service
+    mode: '0644'
+  notify: Reload systemd
+
+- name: Flush handlers to reload systemd
+  ansible.builtin.meta: flush_handlers
+
+- name: Display post-installation instructions
+  ansible.builtin.debug:
+    msg: |
+      ProtonMail Bridge installed successfully.
+
+      Manual bootstrap required - see docs/protonmail-bridge.md for full instructions.
+
+      Quick reference:
+        1. Store GPG passphrase in OpenBao: bao kv put {{ openbao_gpg_passphrase_path }} passphrase="..."
+        2. SSH to mail server, become protonmail user, generate GPG key
+        3. Initialize pass, create .bao_token file
+        4. Login to bridge CLI, note the generated credentials
+        5. Store bridge credentials in OpenBao for other services
+        6. Enable services: sudo systemctl enable --now protonmail-bridge socat-smtp
+
+      Endpoint (after setup):
+        SMTP: {{ ansible_host }}:{{ protonmail_bridge_smtp_port }}

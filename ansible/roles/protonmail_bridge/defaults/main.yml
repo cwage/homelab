@@ -1,0 +1,21 @@
+---
+# ProtonMail Bridge version to install
+protonmail_bridge_version: "3.21.2"
+
+# Proton GPG key ID for package verification
+protonmail_bridge_gpg_key_id: "E2C75D68E6234B07"
+
+# Service user (runs the bridge daemon)
+protonmail_bridge_user: protonmail
+protonmail_bridge_group: protonmail
+
+# External SMTP port that socat exposes (bridge listens on 127.0.0.1:1025 internally)
+# Port 587 is submission with STARTTLS (bridge handles TLS with self-signed cert)
+protonmail_bridge_smtp_port: 587
+
+# OpenBao configuration for GPG passphrase
+# The passphrase must be manually stored at this path before the service can start
+openbao_addr: "https://bao.lan.quietlife.net:8200"
+# Note: KV v2 API path (includes /data/ segment)
+openbao_gpg_passphrase_path: "kv/data/infra/mail/gpg-passphrase"
+openbao_gpg_passphrase_field: "passphrase"

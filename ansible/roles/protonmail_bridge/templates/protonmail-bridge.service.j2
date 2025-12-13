@@ -1,0 +1,24 @@
+# {{ ansible_managed }}
+[Unit]
+Description=ProtonMail Bridge
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ protonmail_bridge_user }}
+Group={{ protonmail_bridge_group }}
+EnvironmentFile=/home/{{ protonmail_bridge_user }}/.bao_token
+ExecStart=/home/{{ protonmail_bridge_user }}/bin/protonmail-bridge-start.sh
+Restart=on-failure
+RestartSec=30
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/{{ protonmail_bridge_user }}
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

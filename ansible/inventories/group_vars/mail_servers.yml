@@ -1,0 +1,9 @@
+---
+# Mail server group configuration
+
+# domain_name and managed_users inherited from group_vars/all.yml
+
+# System packages for mail servers
+system_packages:
+  - curl
+  - dnsutils

@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+# GPG agent configuration for ProtonMail Bridge
+
+# Allow preset-passphrase to be used (required for automated unlocking)
+allow-preset-passphrase
+
+# Keep passphrases cached for 24 hours (86400 seconds)
+# The startup script will re-preset on each service start anyway
+default-cache-ttl 86400
+max-cache-ttl 86400

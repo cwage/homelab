@@ -1,0 +1,49 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# Startup script for ProtonMail Bridge
+# Fetches GPG passphrase from OpenBao and presets it before starting bridge
+
+set -e
+
+OPENBAO_ADDR="{{ openbao_addr }}"
+SECRET_PATH="{{ openbao_gpg_passphrase_path }}"
+SECRET_FIELD="{{ openbao_gpg_passphrase_field }}"
+
+# Check for BAO_TOKEN
+if [[ -z "$BAO_TOKEN" ]]; then
+    echo "ERROR: BAO_TOKEN environment variable not set" >&2
+    exit 1
+fi
+
+# Fetch passphrase from OpenBao
+echo "Fetching GPG passphrase from OpenBao..."
+PASSPHRASE=$(curl -sf \
+    -H "X-Vault-Token: $BAO_TOKEN" \
+    "${OPENBAO_ADDR}/v1/${SECRET_PATH}" \
+    | jq -r ".data.data.${SECRET_FIELD}")
+
+if [[ -z "$PASSPHRASE" || "$PASSPHRASE" == "null" ]]; then
+    echo "ERROR: Failed to fetch passphrase from OpenBao" >&2
+    exit 1
+fi
+
+# Ensure gpg-agent is running
+gpgconf --launch gpg-agent
+
+# Get the keygrip for our GPG key
+KEYGRIP=$(gpg --list-keys --with-keygrip "ProtonMail Bridge" 2>/dev/null | grep Keygrip | head -1 | awk '{print $3}')
+
+if [[ -z "$KEYGRIP" ]]; then
+    echo "ERROR: Could not find GPG keygrip for 'ProtonMail Bridge'" >&2
+    exit 1
+fi
+
+# Preset the passphrase in gpg-agent
+echo "Presetting GPG passphrase..."
+echo "$PASSPHRASE" | /usr/lib/gnupg/gpg-preset-passphrase --preset "$KEYGRIP"
+
+# Clear passphrase from memory
+unset PASSPHRASE
+
+echo "Starting ProtonMail Bridge..."
+exec /usr/bin/protonmail-bridge --noninteractive --log-level info

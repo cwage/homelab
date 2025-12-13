@@ -20,4 +20,4 @@ nsd_soa_expire: 604800
 nsd_soa_minimum: 300
 
 # Zone serial - use YYYYMMDDNN format, increment NN when making changes
-nsd_zone_serial: 2025120502
+nsd_zone_serial: 2025121301

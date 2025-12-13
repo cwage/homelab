@@ -1,0 +1,11 @@
+---
+- name: Configure mail relay server
+  hosts: mail_servers
+  become: true
+  gather_facts: true
+  roles:
+    - hostname
+    - dns_client
+    - users
+    - packages
+    - protonmail_bridge

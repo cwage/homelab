@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Socat SMTP proxy for ProtonMail Bridge
+After=network.target protonmail-bridge.service
+Requires=protonmail-bridge.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/socat TCP-LISTEN:{{ protonmail_bridge_smtp_port }},bind=0.0.0.0,reuseaddr,fork TCP:127.0.0.1:1025
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
