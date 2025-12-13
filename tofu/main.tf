@@ -10,7 +10,7 @@ terraform {
 provider "proxmox" {
   endpoint  = var.pm_api_url
   api_token = "${var.pm_api_token_id}=${var.pm_api_token_secret}"
-  insecure  = true # Set to false in production with valid certs
+  insecure  = false # Wildcard cert deployed via ansible proxmox_certs role
 
   ssh {
     agent = true
