@@ -1,0 +1,47 @@
+---
+# Install dependencies for game servers
+# Runs once per play, installs all needed packages
+
+- name: Gather unique game types from active profiles
+  ansible.builtin.set_fact:
+    active_game_types: "{{ active_profiles | map(attribute='game') | unique | list }}"
+
+- name: Install LGSM base packages
+  ansible.builtin.apt:
+    name: "{{ lgsm_base_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install game-specific dependencies
+  ansible.builtin.apt:
+    name: "{{ gaming_dependencies[item] | default([]) }}"
+    state: present
+  loop: "{{ active_game_types }}"
+  when: item in gaming_dependencies
+
+# .NET for Vintage Story requires Microsoft package repository
+- name: Check if dotnet is needed
+  ansible.builtin.set_fact:
+    needs_dotnet: "{{ 'vintagestory' in active_game_types }}"
+
+- name: Install Microsoft package signing key
+  ansible.builtin.get_url:
+    url: https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb
+    dest: /tmp/packages-microsoft-prod.deb
+    mode: "0644"
+  when: needs_dotnet
+
+- name: Install Microsoft package repository
+  ansible.builtin.apt:
+    deb: /tmp/packages-microsoft-prod.deb
+  when: needs_dotnet
+
+- name: Install .NET runtime
+  ansible.builtin.apt:
+    name:
+      - dotnet-runtime-8.0
+      - aspnetcore-runtime-8.0
+    state: present
+    update_cache: true
+  when: needs_dotnet

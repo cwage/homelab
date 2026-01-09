@@ -1,0 +1,6 @@
+---
+# Handlers for gaming_server role
+# NOTE: We intentionally do NOT have restart handlers.
+# Game servers are NEVER restarted automatically by Ansible.
+# The user must manually restart after config changes to avoid
+# interrupting players who may be online.
