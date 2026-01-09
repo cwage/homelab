@@ -1,0 +1,66 @@
+---
+# Gaming server role - main entry point
+#
+# This role manages game server profiles using LinuxGSM.
+# Each profile gets its own Linux user (no sudo) with isolated game installation.
+#
+# Ansible provisions, LGSM runs, user controls restarts.
+# Servers are NEVER automatically restarted by Ansible.
+
+- name: Filter active profiles
+  ansible.builtin.set_fact:
+    active_profiles: "{{ gaming_profiles | selectattr('active', 'defined') | selectattr('active', 'equalto', true) | list + gaming_profiles | rejectattr('active', 'defined') | list }}"
+  when: gaming_profile_filter is not defined
+  tags: always
+
+- name: Filter to specific profile
+  ansible.builtin.set_fact:
+    active_profiles: "{{ gaming_profiles | selectattr('name', 'equalto', gaming_profile_filter) | list }}"
+  when: gaming_profile_filter is defined
+  tags: always
+
+- name: Display profiles to be managed
+  ansible.builtin.debug:
+    msg: "Managing profiles: {{ active_profiles | map(attribute='name') | list }}"
+  tags: always
+
+- name: Include profile user tasks
+  ansible.builtin.include_tasks: user.yml
+  loop: "{{ active_profiles }}"
+  loop_control:
+    loop_var: profile
+  tags:
+    - users
+    - provision
+
+- name: Include dependency tasks
+  ansible.builtin.include_tasks: dependencies.yml
+  tags:
+    - dependencies
+    - provision
+
+- name: Include LGSM tasks
+  ansible.builtin.include_tasks: lgsm.yml
+  loop: "{{ active_profiles }}"
+  loop_control:
+    loop_var: profile
+  tags:
+    - lgsm
+    - provision
+
+- name: Include config deployment tasks
+  ansible.builtin.include_tasks: configs.yml
+  loop: "{{ active_profiles }}"
+  loop_control:
+    loop_var: profile
+  tags:
+    - configs
+
+- name: Include cron tasks
+  ansible.builtin.include_tasks: cron.yml
+  loop: "{{ active_profiles }}"
+  loop_control:
+    loop_var: profile
+  tags:
+    - cron
+    - provision

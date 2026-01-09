@@ -1,0 +1,31 @@
+---
+# Gaming server configuration
+# VPS hosts running game servers via LinuxGSM
+
+# System users (sudo access)
+# Profile users (game servers) are created by the gaming_server role
+managed_users:
+  - name: deploy
+    shell: /bin/bash
+    groups: ["sudo"]
+    sudo_nopasswd: true
+    ssh_pubkey_file: "keys/deploy.pub"
+  - name: cwage
+    shell: /bin/bash
+    groups: ["sudo"]
+    sudo_nopasswd: false
+    password_hash: "$6$7fU9thowiE/0QSde$jpnJcpG0DVZpQ5OzOOgeuPg5OTBsiKsL0ats0geIZRoR5m0RLlnmGBrjnJtNk7Rfn4gm6wp8BBlHJCWZ6xFIT1"
+    ssh_pubkey_files:
+      - "inventories/keys/cwage-portaplotz.pub"
+      - "inventories/keys/cwage-portaptty.pub"
+      - "inventories/keys/cwage-shot.pub"
+
+# Game server profiles
+# Each profile creates a dedicated Linux user (no sudo) with isolated LGSM installation
+gaming_profiles:
+  - name: vs-buttopia
+    game: vintagestory
+    active: true
+    version: "1.21.6"
+    ports:
+      game: 42420

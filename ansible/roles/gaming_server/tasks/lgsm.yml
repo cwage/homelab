@@ -1,0 +1,50 @@
+---
+# Install LinuxGSM for a game server profile
+# Each profile gets its own LGSM installation in the profile user's home directory
+
+- name: "Set LGSM script name for {{ profile.name }}"
+  ansible.builtin.set_fact:
+    lgsm_script: "{{ lgsm_script_names[profile.game] | default(profile.game + 'server') }}"
+  vars:
+    lgsm_script_names:
+      vintagestory: vintsserver
+
+- name: "Download LGSM installer for {{ profile.name }}"
+  ansible.builtin.get_url:
+    url: "{{ lgsm_url }}"
+    dest: "/home/{{ profile.name }}/linuxgsm.sh"
+    mode: "0755"
+    owner: "{{ profile.name }}"
+    group: "{{ profile.name }}"
+
+- name: "Check if LGSM script exists for {{ profile.name }}"
+  ansible.builtin.stat:
+    path: "/home/{{ profile.name }}/{{ lgsm_script }}"
+  register: lgsm_script_stat
+
+- name: "Install LGSM for {{ profile.name }}"
+  ansible.builtin.command:
+    cmd: "./linuxgsm.sh {{ lgsm_script }}"
+    chdir: "/home/{{ profile.name }}"
+    creates: "/home/{{ profile.name }}/{{ lgsm_script }}"
+  become: true
+  become_user: "{{ profile.name }}"
+  when: not lgsm_script_stat.stat.exists
+
+# Note: Game installation (./vintsserver install) is NOT done automatically
+# The user should run this manually the first time to avoid long playbook runs
+# and to handle any interactive prompts
+
+- name: "Check if game is installed for {{ profile.name }}"
+  ansible.builtin.stat:
+    path: "/home/{{ profile.name }}/serverfiles"
+  register: game_installed
+
+- name: "Notify if game needs installation for {{ profile.name }}"
+  ansible.builtin.debug:
+    msg: |
+      Game server not yet installed for {{ profile.name }}.
+      To install, SSH to the server and run:
+        sudo -iu {{ profile.name }}
+        ./{{ lgsm_script }} install
+  when: not game_installed.stat.exists
