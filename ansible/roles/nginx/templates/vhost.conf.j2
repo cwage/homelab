@@ -7,8 +7,8 @@ server {
     root {{ item.root }};
     index index.html;
 
-    # Disable directory listing
-    autoindex off;
+    # Directory listing (disabled by default)
+    autoindex {{ 'on' if item.autoindex | default(false) else 'off' }};
 
 {% if item.basic_auth is defined %}
     # Basic authentication
