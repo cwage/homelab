@@ -30,13 +30,29 @@
     - active_profiles | length == 0
   tags: always
 
+- name: Validate requested gaming profile is active
+  ansible.builtin.fail:
+    msg: >-
+      Profile '{{ gaming_profile_filter }}' has active: false. Set active: true
+      in group_vars/gaming_servers.yml before provisioning.
+  when:
+    - gaming_profile_filter is defined
+    - active_profiles | length > 0
+    - not (active_profiles[0].active | default(true))
+  tags: always
+
 - name: Display profiles to be managed
   ansible.builtin.debug:
     msg: "Managing profiles: {{ active_profiles | map(attribute='name') | list }}"
   tags: always
 
 - name: Include profile user tasks
-  ansible.builtin.include_tasks: user.yml
+  ansible.builtin.include_tasks:
+    file: user.yml
+    apply:
+      tags:
+        - users
+        - provision
   loop: "{{ active_profiles }}"
   loop_control:
     loop_var: profile
@@ -45,13 +61,23 @@
     - provision
 
 - name: Include dependency tasks
-  ansible.builtin.include_tasks: dependencies.yml
+  ansible.builtin.include_tasks:
+    file: dependencies.yml
+    apply:
+      tags:
+        - dependencies
+        - provision
   tags:
     - dependencies
     - provision
 
 - name: Include LGSM tasks
-  ansible.builtin.include_tasks: lgsm.yml
+  ansible.builtin.include_tasks:
+    file: lgsm.yml
+    apply:
+      tags:
+        - lgsm
+        - provision
   loop: "{{ active_profiles }}"
   loop_control:
     loop_var: profile
@@ -60,7 +86,11 @@
     - provision
 
 - name: Include config deployment tasks
-  ansible.builtin.include_tasks: configs.yml
+  ansible.builtin.include_tasks:
+    file: configs.yml
+    apply:
+      tags:
+        - configs
   loop: "{{ active_profiles }}"
   loop_control:
     loop_var: profile
@@ -68,7 +98,12 @@
     - configs
 
 - name: Include cron tasks
-  ansible.builtin.include_tasks: cron.yml
+  ansible.builtin.include_tasks:
+    file: cron.yml
+    apply:
+      tags:
+        - cron
+        - provision
   loop: "{{ active_profiles }}"
   loop_control:
     loop_var: profile
