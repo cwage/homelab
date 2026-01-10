@@ -78,6 +78,33 @@
       when: mods_dir.stat.exists
       register: mods_changed
 
+    - name: "Check for modconfig directory for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ profile_config_src }}/modconfig"
+      delegate_to: localhost
+      become: false
+      register: modconfig_dir
+
+    - name: "Ensure ModConfig directory exists for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "{{ profile_config_dest }}/serverfiles/data/{{ lgsm_script }}/ModConfig"
+        state: directory
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0755"
+      when: modconfig_dir.stat.exists
+
+    - name: "Deploy mod configs for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ profile_config_src }}/modconfig/"
+        dest: "{{ profile_config_dest }}/serverfiles/data/{{ lgsm_script }}/ModConfig/"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+        directory_mode: "0755"
+      when: modconfig_dir.stat.exists
+      register: modconfig_changed
+
 # Reminder message - never auto-restart
 - name: "Config deployment reminder for {{ profile.name }}"
   ansible.builtin.debug:
@@ -86,4 +113,7 @@
       - "  ssh {{ inventory_hostname }}"
       - "  sudo -iu {{ profile.name }}"
       - "  ./{{ lgsm_script }} restart"
-  when: (serverconfig_changed is defined and serverconfig_changed.changed) or (mods_changed is defined and mods_changed.changed)
+  when: >-
+    (serverconfig_changed is defined and serverconfig_changed.changed) or
+    (mods_changed is defined and mods_changed.changed) or
+    (modconfig_changed is defined and modconfig_changed.changed)
