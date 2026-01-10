@@ -23,22 +23,22 @@ managed_users:
 # Game server profiles
 # Each profile creates a dedicated Linux user (no sudo) with isolated LGSM installation
 # See templates/vintagestory/serverconfig.json.j2 for all available settings
+#
+# Passwords: Fetched from OpenBao at kv/services/gaming/<profile-name> (required).
+# Ensure BAO_TOKEN is set and create the secret:
+#   bao kv put kv/services/gaming/vs-buttopia password="secret"
 gaming_profiles:
   - name: vs-buttopia
     game: vintagestory
-    active: false
+    active: true
     version: "1.21.6"
     ports:
       game: 42420
-    # Server settings (all optional - defaults in template)
     server_name: "Buttopia"
-    password: "butts"
   - name: vs-sloths
     game: vintagestory
     active: false
     version: "1.21.6"
     ports:
       game: 42421
-    # Server settings (all optional - defaults in template)
     server_name: "Slothtopia"
-    password: "sloths"
