@@ -328,7 +328,8 @@
   ],
   "DefaultRoleCode": "suplayer",
   "ModPaths": [
-    "Mods"
+    "Mods",
+    "data/vintsserver/Mods"
   ],
   "AntiAbuse": 0,
   "WorldConfig": {
