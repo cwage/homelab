@@ -1,10 +1,10 @@
 {
   "FileEditWarning": "This file is managed by Ansible. Local changes will be overwritten.",
   "ConfigVersion": "1.9",
-  "ServerName": "{{ profile.server_name | default(profile.name) }}",
+  "ServerName": {{ profile.server_name | default(profile.name) | to_json }},
   "ServerUrl": {{ profile.server_url | default('null') | to_json }},
   "ServerDescription": {{ profile.server_description | default('null') | to_json }},
-  "WelcomeMessage": "{{ profile.welcome_message | default('Welcome {0}, may you survive well and prosper') }}",
+  "WelcomeMessage": {{ profile.welcome_message | default('Welcome {0}, may you survive well and prosper') | to_json }},
   "Ip": null,
   "Port": {{ profile.ports.game | default(42420) }},
   "Upnp": {{ profile.upnp | default(false) | to_json }},
@@ -17,11 +17,11 @@
   "ModDbUrl": "https://mods.vintagestory.at/",
   "ClientConnectionTimeout": {{ profile.client_connection_timeout | default(150) }},
   "EntityDebugMode": {{ profile.entity_debug_mode | default(false) | to_json }},
-  "Password": "{{ profile.password | default('') }}",
+  "Password": {{ profile.password | default('') | to_json }},
   "MapSizeX": {{ profile.map_size_x | default(1024000) }},
   "MapSizeY": {{ profile.map_size_y | default(256) }},
   "MapSizeZ": {{ profile.map_size_z | default(1024000) }},
-  "ServerLanguage": "{{ profile.server_language | default('en') }}",
+  "ServerLanguage": {{ profile.server_language | default('en') | to_json }},
   "MaxChunkRadius": {{ profile.max_chunk_radius | default(12) }},
   "TickTime": {{ profile.tick_time | default(33.333332) }},
   "SpawnCapPlayerScaling": {{ profile.spawn_cap_player_scaling | default(0.5) }},
@@ -177,7 +177,7 @@
       "AutoGrant": true
     }
   ],
-  "DefaultRoleCode": "{{ profile.default_role | default('suplayer') }}",
+  "DefaultRoleCode": {{ profile.default_role | default('suplayer') | to_json }},
   "ModPaths": [
     "Mods",
     "data/{{ lgsm_script }}/Mods"
@@ -186,11 +186,11 @@
   "WorldConfig": {
     "Seed": {{ profile.world_seed | default('null') | to_json }},
     "SaveFileLocation": "data/{{ lgsm_script }}/Saves/{{ profile.world_save_name | default('default') }}.vcdbs",
-    "WorldName": "{{ profile.world_name | default(profile.name) }}",
+    "WorldName": {{ profile.world_name | default(profile.name) | to_json }},
     "AllowCreativeMode": {{ profile.allow_creative_mode | default(true) | to_json }},
-    "PlayStyle": "{{ profile.play_style | default('surviveandbuild') }}",
-    "PlayStyleLangCode": "{{ profile.play_style_lang_code | default(profile.play_style | default('surviveandbuild') + '-bands') }}",
-    "WorldType": "{{ profile.world_type | default('standard') }}",
+    "PlayStyle": {{ profile.play_style | default('surviveandbuild') | to_json }},
+    "PlayStyleLangCode": {{ profile.play_style_lang_code | default(profile.play_style | default('surviveandbuild') + '-bands') | to_json }},
+    "WorldType": {{ profile.world_type | default('standard') | to_json }},
     "WorldConfiguration": null,
     "MapSizeY": null,
     "CreatedByPlayerName": null,
