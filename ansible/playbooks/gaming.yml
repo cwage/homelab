@@ -1,0 +1,9 @@
+---
+- name: Manage gaming servers
+  hosts: gaming_servers
+  become: true
+  gather_facts: true
+  roles:
+    - users
+    - packages
+    - gaming_server

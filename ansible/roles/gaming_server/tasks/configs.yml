@@ -1,0 +1,88 @@
+---
+# Deploy configuration files for a game server profile
+# Configs are deployed but servers are NEVER restarted automatically
+
+- name: "Set config paths for {{ profile.name }}"
+  ansible.builtin.set_fact:
+    profile_config_src: "{{ gaming_profiles_dir }}/{{ profile.name }}"
+    profile_config_dest: "/home/{{ profile.name }}"
+
+- name: "Check if profile config directory exists for {{ profile.name }}"
+  ansible.builtin.stat:
+    path: "{{ profile_config_src }}"
+  delegate_to: localhost
+  become: false
+  register: profile_config_dir
+
+- name: "Skip config deployment if no config directory for {{ profile.name }}"
+  ansible.builtin.debug:
+    msg: "No config directory found at {{ profile_config_src }} - skipping config deployment"
+  when: not profile_config_dir.stat.exists
+
+# Vintage Story specific config deployment
+- name: "Deploy Vintage Story configs for {{ profile.name }}"
+  when:
+    - profile.game == 'vintagestory'
+    - profile_config_dir.stat.exists
+  block:
+    - name: "Check if serverconfig.json exists for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ profile_config_src }}/serverconfig.json"
+      delegate_to: localhost
+      become: false
+      register: serverconfig_file
+
+    - name: "Ensure serverfiles/data directory exists for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "{{ profile_config_dest }}/serverfiles/data"
+        state: directory
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0755"
+      when: serverconfig_file.stat.exists
+
+    - name: "Deploy serverconfig.json for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ profile_config_src }}/serverconfig.json"
+        dest: "{{ profile_config_dest }}/serverfiles/data/serverconfig.json"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+      when: serverconfig_file.stat.exists
+      register: serverconfig_changed
+
+    - name: "Check for mods directory for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ profile_config_src }}/mods"
+      delegate_to: localhost
+      become: false
+      register: mods_dir
+
+    - name: "Ensure Mods directory exists for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "{{ profile_config_dest }}/serverfiles/data/Mods"
+        state: directory
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0755"
+      when: mods_dir.stat.exists
+
+    - name: "Deploy mods for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ profile_config_src }}/mods/"
+        dest: "{{ profile_config_dest }}/serverfiles/data/Mods/"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+      when: mods_dir.stat.exists
+      register: mods_changed
+
+# Reminder message - never auto-restart
+- name: "Config deployment reminder for {{ profile.name }}"
+  ansible.builtin.debug:
+    msg: |
+      Config/mods updated for {{ profile.name }}. To apply changes:
+        ssh {{ inventory_hostname }}
+        sudo -iu {{ profile.name }}
+        ./{{ lgsm_script_names[profile.game] | default(profile.game + 'server') }} restart
+  when: (serverconfig_changed is defined and serverconfig_changed.changed) or (mods_changed is defined and mods_changed.changed)
