@@ -48,3 +48,9 @@ gaming_dependencies:
     - steamcmd
   minecraft:
     - openjdk-21-jre-headless
+
+# Game executable paths (relative to serverfiles/)
+# Used to detect if game is installed
+lgsm_game_executables:
+  vintagestory: "VintagestoryServer"
+  valheim: "valheim_server.x86_64"

@@ -105,7 +105,22 @@
       when: modconfig_dir.stat.exists
       register: modconfig_changed
 
-# Reminder message - never auto-restart
+# Start server after fresh install (configs are now in place)
+- name: "Start game server after fresh install for {{ profile.name }}"
+  ansible.builtin.command:
+    cmd: "./{{ lgsm_script }} start"
+    chdir: "{{ profile_config_dest }}"
+  become: true
+  become_user: "{{ profile.name }}"
+  when: fresh_installs is defined and fresh_installs[profile.name] | default(false)
+  register: game_start_result
+
+- name: "Show fresh install result for {{ profile.name }}"
+  ansible.builtin.debug:
+    msg: "Game installed, configured, and started successfully for {{ profile.name }}"
+  when: fresh_installs is defined and fresh_installs[profile.name] | default(false)
+
+# Reminder message - never auto-restart (only shown for config updates, not fresh installs)
 - name: "Config deployment reminder for {{ profile.name }}"
   ansible.builtin.debug:
     msg:
@@ -114,6 +129,7 @@
       - "  sudo -iu {{ profile.name }}"
       - "  ./{{ lgsm_script }} restart"
   when: >-
-    (serverconfig_changed is defined and serverconfig_changed.changed) or
+    (not (fresh_installs is defined and fresh_installs[profile.name] | default(false))) and
+    ((serverconfig_changed is defined and serverconfig_changed.changed) or
     (mods_changed is defined and mods_changed.changed) or
-    (modconfig_changed is defined and modconfig_changed.changed)
+    (modconfig_changed is defined and modconfig_changed.changed))
