@@ -15,6 +15,10 @@ Examples:
 make ansible-firewall     # apply firewall config via Ansible container
 make ansible-firewall-check  # dry-run firewall (check+diff)
 make ansible-felix-check     # dry-run felix VPS playbook
+make ansible-gaming          # provision gaming servers (all active profiles)
+make ansible-gaming-check    # dry-run gaming server config
+make ansible-gaming PROFILE=vs-buttopia  # provision specific profile only
+make ansible-gaming-configs  # deploy configs/mods only (no deps/lgsm install)
 make ansible-run PLAY=playbooks/firewall.yml LIMIT=openbsd_firewalls OPTS="--check --diff"  # dry-run limited group
 make ansible-all            # run users + firewall + felix (apply)
 make ansible-check-all      # dry-run users + firewall + felix
@@ -33,6 +37,21 @@ make install-precommit-hook  # install root pre-commit hook (trufflehog)
 - **Limit to a group/host**: `make ansible-run PLAY=playbooks/firewall.yml LIMIT=openbsd_firewalls` (add `OPTS="--check --diff"` for dry-run)
 - **Apply to all standard playbooks**: `make ansible-all` (users, firewall, felix) — use sparingly
 - **Dry-run all standard playbooks**: `make ansible-check-all`
+
+### Gaming servers
+Game servers on Linode VPS managed via LinuxGSM. Each game profile gets its own Linux user.
+
+- **Full provision (all profiles)**: `make ansible-gaming`
+- **Full provision (single profile)**: `make ansible-gaming PROFILE=vs-buttopia`
+- **Dry-run**: `make ansible-gaming-check`
+- **Deploy configs/mods only**: `make ansible-gaming-configs` (skips package install, useful for quick updates)
+
+Note: Ansible never auto-restarts game servers. After config changes, manually restart via SSH:
+```bash
+ssh gaming.quietlife.net
+sudo -iu vs-buttopia
+./vintsserver restart
+```
 
 ### Secrets and local state
 - OpenTofu API creds live in `tofu/.env` (gitignored).

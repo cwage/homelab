@@ -1,0 +1,50 @@
+---
+# Gaming server role defaults
+
+# List of game server profiles to manage
+# Override in group_vars/gaming_servers.yml
+gaming_profiles: []
+
+# Base directory for profile configs in the role
+gaming_profiles_dir: "{{ role_path }}/files/profiles"
+
+# LGSM download URL
+lgsm_url: "https://linuxgsm.sh"
+
+# Optional LGSM installer checksum for integrity verification
+# Set to "sha256:<hash>" to enable validation
+# lgsm_installer_checksum: ""
+
+# LGSM script names mapping (some games have non-obvious script names)
+lgsm_script_names:
+  vintagestory: vintsserver
+
+# Default packages needed for LGSM (Debian/Ubuntu)
+lgsm_base_packages:
+  - curl
+  - wget
+  - file
+  - tar
+  - bzip2
+  - gzip
+  - unzip
+  - pigz
+  - bsdmainutils
+  - python3
+  - util-linux
+  - ca-certificates
+  - binutils
+  - bc
+  - jq
+  - tmux
+  - netcat-openbsd
+  - lib32gcc-s1
+  - lib32stdc++6
+
+# Game-specific dependencies
+gaming_dependencies:
+  vintagestory: []
+  valheim:
+    - steamcmd
+  minecraft:
+    - openjdk-21-jre-headless

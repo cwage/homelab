@@ -1,0 +1,18 @@
+---
+# Create Linux user for a game server profile
+# Profile users have NO sudo access - they only run game servers
+
+- name: "Create profile user: {{ profile.name }}"
+  ansible.builtin.user:
+    name: "{{ profile.name }}"
+    shell: /bin/bash
+    create_home: true
+    home: "/home/{{ profile.name }}"
+    state: present
+
+- name: "Secure home directory: {{ profile.name }}"
+  ansible.builtin.file:
+    path: "/home/{{ profile.name }}"
+    mode: "0700"
+    owner: "{{ profile.name }}"
+    group: "{{ profile.name }}"

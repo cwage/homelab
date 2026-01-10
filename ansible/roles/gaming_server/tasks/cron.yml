@@ -1,0 +1,66 @@
+---
+# Set up cron jobs for a game server profile
+# Handles monitoring (crash recovery), backups, and LGSM updates
+
+- name: "Set LGSM script name for cron {{ profile.name }}"
+  ansible.builtin.set_fact:
+    lgsm_script: "{{ lgsm_script_names[profile.game] | default(profile.game + 'server') }}"
+
+- name: "Check if game is installed for {{ profile.name }}"
+  ansible.builtin.stat:
+    path: "/home/{{ profile.name }}/serverfiles"
+  register: game_installed_cron
+
+# Only set up cron if game is installed
+- name: "Set up cron jobs for {{ profile.name }}"
+  when: game_installed_cron.stat.exists
+  block:
+    - name: "Cron: monitor (crash recovery) for {{ profile.name }}"
+      ansible.builtin.cron:
+        name: "{{ profile.name }}-monitor"
+        user: "{{ profile.name }}"
+        minute: "*/5"
+        job: "/home/{{ profile.name }}/{{ lgsm_script }} monitor > /dev/null 2>&1"
+
+    - name: "Cron: daily backup for {{ profile.name }}"
+      ansible.builtin.cron:
+        name: "{{ profile.name }}-backup"
+        user: "{{ profile.name }}"
+        minute: "0"
+        hour: "4"
+        job: "/home/{{ profile.name }}/{{ lgsm_script }} backup > /dev/null 2>&1"
+
+    - name: "Cron: weekly LGSM update for {{ profile.name }}"
+      ansible.builtin.cron:
+        name: "{{ profile.name }}-update-lgsm"
+        user: "{{ profile.name }}"
+        minute: "0"
+        hour: "0"
+        weekday: "0"
+        job: "/home/{{ profile.name }}/{{ lgsm_script }} update-lgsm > /dev/null 2>&1"
+
+# Remove cron jobs if game is not installed (cleanup for inactive/removed profiles)
+- name: "Remove cron jobs when game not installed for {{ profile.name }}"
+  when: not game_installed_cron.stat.exists
+  block:
+    - name: "Cron: remove monitor job for {{ profile.name }}"
+      ansible.builtin.cron:
+        name: "{{ profile.name }}-monitor"
+        user: "{{ profile.name }}"
+        state: absent
+
+    - name: "Cron: remove backup job for {{ profile.name }}"
+      ansible.builtin.cron:
+        name: "{{ profile.name }}-backup"
+        user: "{{ profile.name }}"
+        state: absent
+
+    - name: "Cron: remove LGSM update job for {{ profile.name }}"
+      ansible.builtin.cron:
+        name: "{{ profile.name }}-update-lgsm"
+        user: "{{ profile.name }}"
+        state: absent
+
+    - name: "Skip cron setup - game not installed for {{ profile.name }}"
+      ansible.builtin.debug:
+        msg: "Skipping cron setup - game not yet installed for {{ profile.name }}"
