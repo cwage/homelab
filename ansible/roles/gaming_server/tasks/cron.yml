@@ -5,9 +5,6 @@
 - name: "Set LGSM script name for cron {{ profile.name }}"
   ansible.builtin.set_fact:
     lgsm_script: "{{ lgsm_script_names[profile.game] | default(profile.game + 'server') }}"
-  vars:
-    lgsm_script_names:
-      vintagestory: vintsserver
 
 - name: "Check if game is installed for {{ profile.name }}"
   ansible.builtin.stat:
@@ -42,7 +39,28 @@
         weekday: "0"
         job: "/home/{{ profile.name }}/{{ lgsm_script }} update-lgsm > /dev/null 2>&1"
 
-- name: "Skip cron setup - game not installed for {{ profile.name }}"
-  ansible.builtin.debug:
-    msg: "Skipping cron setup - game not yet installed for {{ profile.name }}"
+# Remove cron jobs if game is not installed (cleanup for inactive/removed profiles)
+- name: "Remove cron jobs when game not installed for {{ profile.name }}"
   when: not game_installed_cron.stat.exists
+  block:
+    - name: "Cron: remove monitor job for {{ profile.name }}"
+      ansible.builtin.cron:
+        name: "{{ profile.name }}-monitor"
+        user: "{{ profile.name }}"
+        state: absent
+
+    - name: "Cron: remove backup job for {{ profile.name }}"
+      ansible.builtin.cron:
+        name: "{{ profile.name }}-backup"
+        user: "{{ profile.name }}"
+        state: absent
+
+    - name: "Cron: remove LGSM update job for {{ profile.name }}"
+      ansible.builtin.cron:
+        name: "{{ profile.name }}-update-lgsm"
+        user: "{{ profile.name }}"
+        state: absent
+
+    - name: "Skip cron setup - game not installed for {{ profile.name }}"
+      ansible.builtin.debug:
+        msg: "Skipping cron setup - game not yet installed for {{ profile.name }}"

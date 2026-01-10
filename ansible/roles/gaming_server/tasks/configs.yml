@@ -85,7 +85,4 @@
         ssh {{ inventory_hostname }}
         sudo -iu {{ profile.name }}
         ./{{ lgsm_script_names[profile.game] | default(profile.game + 'server') }} restart
-  when: serverconfig_changed.changed | default(false) or mods_changed.changed | default(false)
-  vars:
-    lgsm_script_names:
-      vintagestory: vintsserver
+  when: (serverconfig_changed is defined and serverconfig_changed.changed) or (mods_changed is defined and mods_changed.changed)

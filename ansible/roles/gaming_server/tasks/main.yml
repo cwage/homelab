@@ -19,6 +19,17 @@
   when: gaming_profile_filter is defined
   tags: always
 
+- name: Validate requested gaming profile exists
+  ansible.builtin.fail:
+    msg: >-
+      gaming_profile_filter '{{ gaming_profile_filter }}' does not match any
+      defined gaming_profiles. Available profiles:
+      {{ gaming_profiles | map(attribute='name') | list | join(', ') }}
+  when:
+    - gaming_profile_filter is defined
+    - active_profiles | length == 0
+  tags: always
+
 - name: Display profiles to be managed
   ansible.builtin.debug:
     msg: "Managing profiles: {{ active_profiles | map(attribute='name') | list }}"

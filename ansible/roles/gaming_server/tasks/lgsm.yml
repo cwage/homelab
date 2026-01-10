@@ -5,9 +5,6 @@
 - name: "Set LGSM script name for {{ profile.name }}"
   ansible.builtin.set_fact:
     lgsm_script: "{{ lgsm_script_names[profile.game] | default(profile.game + 'server') }}"
-  vars:
-    lgsm_script_names:
-      vintagestory: vintsserver
 
 - name: "Download LGSM installer for {{ profile.name }}"
   ansible.builtin.get_url:
@@ -16,6 +13,7 @@
     mode: "0755"
     owner: "{{ profile.name }}"
     group: "{{ profile.name }}"
+    checksum: "{{ lgsm_installer_checksum | default(omit) }}"
 
 - name: "Check if LGSM script exists for {{ profile.name }}"
   ansible.builtin.stat:

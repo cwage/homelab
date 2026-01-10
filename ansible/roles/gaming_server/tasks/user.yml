@@ -13,6 +13,6 @@
 - name: "Secure home directory: {{ profile.name }}"
   ansible.builtin.file:
     path: "/home/{{ profile.name }}"
-    mode: "0750"
+    mode: "0700"
     owner: "{{ profile.name }}"
     group: "{{ profile.name }}"
