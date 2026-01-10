@@ -20,6 +20,17 @@
     msg: "No config directory found at {{ profile_config_src }} - skipping config deployment"
   when: not profile_config_dir.stat.exists
 
+# Fetch password from OpenBao (required)
+- name: "Fetch password from OpenBao for {{ profile.name }}"
+  ansible.builtin.set_fact:
+    profile_password: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                          'services/gaming/' + profile.name,
+                          engine_mount_point='kv',
+                          url=openbao_addr,
+                          token=openbao_token,
+                          validate_certs=openbao_validate_certs).secret.password }}"
+  no_log: true
+
 # Vintage Story specific config deployment
 - name: "Deploy Vintage Story configs for {{ profile.name }}"
   when: profile.game == 'vintagestory'

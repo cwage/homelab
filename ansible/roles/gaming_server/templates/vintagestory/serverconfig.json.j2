@@ -17,7 +17,7 @@
   "ModDbUrl": "https://mods.vintagestory.at/",
   "ClientConnectionTimeout": {{ profile.client_connection_timeout | default(150) }},
   "EntityDebugMode": {{ profile.entity_debug_mode | default(false) | to_json }},
-  "Password": {{ profile.password | default('') | to_json }},
+  "Password": {{ profile_password | to_json }},
   "MapSizeX": {{ profile.map_size_x | default(1024000) }},
   "MapSizeY": {{ profile.map_size_y | default(256) }},
   "MapSizeZ": {{ profile.map_size_z | default(1024000) }},
