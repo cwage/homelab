@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs all check-all run adhoc sh build-tinyfugue trufflehog
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive all check-all run adhoc sh build-tinyfugue trufflehog
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -87,6 +87,10 @@ gaming-check: ## Dry-run gaming server config with --check/--diff [PROFILE=name]
 
 gaming-configs: ## Deploy configs/mods only (skip deps/lgsm install) [PROFILE=name]
 	$(DC) run --rm ansible ansible-playbook playbooks/gaming.yml -vv --tags configs $(if $(PROFILE),-e 'gaming_profile_filter=$(PROFILE)',) $(OPTS)
+
+gaming-archive: ## Archive and purge a profile (requires PROFILE=name, CONFIRM=yes to execute)
+	@if [ -z "$(PROFILE)" ]; then echo "PROFILE required. Example: make gaming-archive PROFILE=vs-buttopia"; exit 1; fi
+	$(DC) run --rm ansible ansible-playbook playbooks/gaming-archive.yml -vv -e 'archive_profile=$(PROFILE)' $(if $(CONFIRM),-e 'archive_confirm=$(CONFIRM)',) $(OPTS)
 
 all: ## Run standard playbooks (proxmox, firewall, felix)
 	$(MAKE) proxmox

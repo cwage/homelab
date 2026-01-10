@@ -1,0 +1,26 @@
+---
+# Archive and purge a gaming server profile
+#
+# Usage:
+#   make gaming-archive PROFILE=vs-buttopia           # Preview only
+#   make gaming-archive PROFILE=vs-buttopia CONFIRM=yes  # Actually archive
+#
+# Requirements:
+#   - Profile must be marked active: false in group_vars/gaming_servers.yml
+#   - Server should be stopped first (will warn if processes running)
+
+- name: Archive gaming server profile
+  hosts: gaming_servers
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Validate PROFILE is specified
+      ansible.builtin.fail:
+        msg: >-
+          PROFILE is required. Usage: make gaming-archive PROFILE=<profile-name>
+      when: archive_profile is not defined
+      run_once: true
+      delegate_to: localhost
+
+    - name: Include archive tasks
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/../roles/gaming_server/tasks/archive.yml"

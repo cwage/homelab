@@ -1,0 +1,178 @@
+---
+# Archive and purge a game server profile
+# Creates a tarball backup then removes user/home directory
+#
+# Required variables:
+#   - archive_profile: name of profile to archive
+#   - archive_confirm: set to "yes" to actually perform the archive
+#
+# Safety requirements:
+#   - Profile must be marked active: false
+#   - Warns if processes are still running
+#   - Requires explicit confirmation
+
+- name: Find profile to archive
+  ansible.builtin.set_fact:
+    target_profile: "{{ gaming_profiles | selectattr('name', 'equalto', archive_profile) | first | default(none) }}"
+
+- name: Fail if profile not found
+  ansible.builtin.fail:
+    msg: >-
+      Profile '{{ archive_profile }}' not found in gaming_profiles.
+      Available profiles: {{ gaming_profiles | map(attribute='name') | list | join(', ') }}
+  when: target_profile is none or target_profile == '' or target_profile is not mapping
+
+- name: Fail if profile is still active
+  ansible.builtin.fail:
+    msg: >-
+      Profile '{{ archive_profile }}' is still active. Set 'active: false' in
+      group_vars/gaming_servers.yml before archiving. This prevents accidental
+      deletion of running servers.
+  when:
+    - target_profile is mapping
+    - target_profile.active | default(true)
+
+- name: Check if user exists
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ archive_profile }}"
+  register: user_exists
+  failed_when: false
+
+- name: Fail if user does not exist
+  ansible.builtin.fail:
+    msg: >-
+      User '{{ archive_profile }}' does not exist on the system.
+      Nothing to archive.
+  when: user_exists.msg is defined and 'not found' in user_exists.msg
+
+- name: Get home directory info
+  ansible.builtin.stat:
+    path: "/home/{{ archive_profile }}"
+  register: home_dir
+
+- name: Fail if home directory does not exist
+  ansible.builtin.fail:
+    msg: >-
+      Home directory '/home/{{ archive_profile }}' does not exist.
+      Nothing to archive.
+  when: not home_dir.stat.exists
+
+- name: Calculate home directory size
+  ansible.builtin.command:
+    cmd: "du -sh /home/{{ archive_profile }}"
+  register: home_size
+  changed_when: false
+
+- name: Check for running processes
+  ansible.builtin.shell:
+    cmd: "pgrep -u {{ archive_profile }} || true"
+  register: running_procs
+  changed_when: false
+
+- name: Set archive filename
+  ansible.builtin.set_fact:
+    archive_filename: "{{ archive_profile }}-{{ ansible_date_time.date }}.tar.gz"
+    archive_path: "/tmp/{{ archive_profile }}-{{ ansible_date_time.date }}.tar.gz"
+
+# Preview mode - show what would happen
+- name: Display archive preview
+  when: archive_confirm | default('no') != 'yes'
+  block:
+    - name: Show archive preview header
+      ansible.builtin.debug:
+        msg: "=== ARCHIVE & PURGE PREVIEW: {{ archive_profile }} ==="
+
+    - name: Show archive details
+      ansible.builtin.debug:
+        msg:
+          - "Step 1 - Archive:"
+          - "  Source: /home/{{ archive_profile }}/ ({{ home_size.stdout.split()[0] }})"
+          - "  Target: {{ archive_path }}"
+          - ""
+          - "Step 2 - Purge:"
+          - "  - Delete user: {{ archive_profile }}"
+          - "  - Delete home: /home/{{ archive_profile }}/"
+          - "  - Cron jobs already removed (profile inactive)"
+
+    - name: Warn about running processes
+      ansible.builtin.debug:
+        msg:
+          - "WARNING: Processes still running for this user!"
+          - "  PIDs: {{ running_procs.stdout_lines | join(', ') }}"
+          - "  Stop server first: sudo -iu {{ archive_profile }} ./vintsserver stop"
+      when: running_procs.stdout | length > 0
+
+    - name: Show next steps
+      ansible.builtin.debug:
+        msg:
+          - "IMPORTANT: Grab the tarball from /tmp before reboot!"
+          - ""
+          - "To proceed: make ansible-gaming-archive PROFILE={{ archive_profile }} CONFIRM=yes"
+
+    - name: Exit without changes (preview only)
+      ansible.builtin.meta: end_play
+
+# Actual archive - requires confirmation
+- name: Perform archive and purge
+  when: archive_confirm | default('no') == 'yes'
+  block:
+    - name: Fail if processes still running
+      ansible.builtin.fail:
+        msg: >-
+          Server is still running! Stop it first before archiving:
+          ssh {{ inventory_hostname }} sudo -iu {{ archive_profile }} ./{{ lgsm_script_names[target_profile.game] | default(target_profile.game + 'server') }} stop
+          (Running PIDs: {{ running_procs.stdout_lines | join(', ') }})
+      when: running_procs.stdout | length > 0
+
+    - name: Create archive tarball
+      ansible.builtin.archive:
+        path: "/home/{{ archive_profile }}"
+        dest: "{{ archive_path }}"
+        format: gz
+        owner: root
+        group: root
+        mode: "0600"
+      register: archive_result
+
+    - name: Display archive created
+      ansible.builtin.debug:
+        msg: "Archive created: {{ archive_path }} ({{ archive_result.size | default('unknown') }} bytes)"
+
+    - name: Remove user crontab
+      ansible.builtin.command:
+        cmd: "crontab -r -u {{ archive_profile }}"
+      register: crontab_remove
+      failed_when: false
+      changed_when: crontab_remove.rc == 0
+
+    - name: Remove user account and home directory
+      ansible.builtin.user:
+        name: "{{ archive_profile }}"
+        state: absent
+        remove: true
+        force: true
+
+    - name: Verify home directory removed
+      ansible.builtin.stat:
+        path: "/home/{{ archive_profile }}"
+      register: home_after
+
+    - name: Display completion summary
+      ansible.builtin.debug:
+        msg:
+          - "=== ARCHIVE COMPLETE: {{ archive_profile }} ==="
+          - "Archive: {{ archive_path }}"
+          - "User removed: yes"
+          - "Home removed: {{ 'yes' if not home_after.stat.exists else 'NO!' }}"
+
+    - name: Show next steps
+      ansible.builtin.debug:
+        msg:
+          - "IMPORTANT: Copy the tarball before it's lost!"
+          - "  scp {{ inventory_hostname }}:{{ archive_path }} ./"
+          - ""
+          - "To restore later:"
+          - "  1. Set active: true in group_vars"
+          - "  2. Run: make ansible-gaming PROFILE={{ archive_profile }}"
+          - "  3. Extract tarball to restore world data"
