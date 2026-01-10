@@ -103,7 +103,6 @@
     owner: root
     group: root
     mode: '0644'
-    validate: 'nginx -t'
   loop: "{{ nginx_sites }}"
   loop_control:
     label: "{{ item.server_name }}"
