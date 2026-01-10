@@ -49,4 +49,4 @@
 - name: "Mark fresh install for {{ profile.name }}"
   ansible.builtin.set_fact:
     fresh_installs: "{{ fresh_installs | default({}) | combine({profile.name: true}) }}"
-  when: game_install_result is defined and game_install_result is changed
+  when: game_install_result is changed
