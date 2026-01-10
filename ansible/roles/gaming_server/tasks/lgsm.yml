@@ -29,20 +29,24 @@
   become_user: "{{ profile.name }}"
   when: not lgsm_script_stat.stat.exists
 
-# Note: Game installation (./vintsserver install) is NOT done automatically
-# The user should run this manually the first time to avoid long playbook runs
-# and to handle any interactive prompts
-
+# Check for game executable to determine if game is installed
+# serverfiles/ may exist from LGSM setup but be empty until game is installed
 - name: "Check if game is installed for {{ profile.name }}"
   ansible.builtin.stat:
-    path: "/home/{{ profile.name }}/serverfiles"
-  register: game_installed
+    path: "/home/{{ profile.name }}/serverfiles/{{ lgsm_game_executables[profile.game] }}"
+  register: game_executable
 
-- name: "Notify if game needs installation for {{ profile.name }}"
-  ansible.builtin.debug:
-    msg: |
-      Game server not yet installed for {{ profile.name }}.
-      To install, SSH to the server and run:
-        sudo -iu {{ profile.name }}
-        ./{{ lgsm_script }} install
-  when: not game_installed.stat.exists
+- name: "Install game via LGSM for {{ profile.name }}"
+  ansible.builtin.command:
+    cmd: "./{{ lgsm_script }} auto-install"
+    chdir: "/home/{{ profile.name }}"
+  become: true
+  become_user: "{{ profile.name }}"
+  when: not game_executable.stat.exists
+  register: game_install_result
+
+# Track fresh installs so we can start the server after configs are deployed
+- name: "Mark fresh install for {{ profile.name }}"
+  ansible.builtin.set_fact:
+    fresh_installs: "{{ fresh_installs | default({}) | combine({profile.name: true}) }}"
+  when: game_install_result is changed
