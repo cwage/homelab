@@ -12,6 +12,7 @@ nginx_sites:
     group: cwage
     dir_mode: '0750'
     file_mode: '0640'
+    autoindex: true
     basic_auth:
       realm: "Books"
       users:
