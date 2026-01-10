@@ -6,6 +6,7 @@
   ansible.builtin.set_fact:
     profile_config_src: "{{ gaming_profiles_dir }}/{{ profile.name }}"
     profile_config_dest: "/home/{{ profile.name }}"
+    lgsm_script: "{{ lgsm_script_names[profile.game] | default(profile.game + 'server') }}"
 
 - name: "Check if profile config directory exists for {{ profile.name }}"
   ansible.builtin.stat:
@@ -32,9 +33,9 @@
       become: false
       register: serverconfig_file
 
-    - name: "Ensure serverfiles/data directory exists for {{ profile.name }}"
+    - name: "Ensure serverfiles/data/{{ lgsm_script }} directory exists for {{ profile.name }}"
       ansible.builtin.file:
-        path: "{{ profile_config_dest }}/serverfiles/data"
+        path: "{{ profile_config_dest }}/serverfiles/data/{{ lgsm_script }}"
         state: directory
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
@@ -44,7 +45,7 @@
     - name: "Deploy serverconfig.json for {{ profile.name }}"
       ansible.builtin.copy:
         src: "{{ profile_config_src }}/serverconfig.json"
-        dest: "{{ profile_config_dest }}/serverfiles/data/serverconfig.json"
+        dest: "{{ profile_config_dest }}/serverfiles/data/{{ lgsm_script }}/serverconfig.json"
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
         mode: "0644"
@@ -60,7 +61,7 @@
 
     - name: "Ensure Mods directory exists for {{ profile.name }}"
       ansible.builtin.file:
-        path: "{{ profile_config_dest }}/serverfiles/data/Mods"
+        path: "{{ profile_config_dest }}/serverfiles/data/{{ lgsm_script }}/Mods"
         state: directory
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
@@ -70,7 +71,7 @@
     - name: "Deploy mods for {{ profile.name }}"
       ansible.builtin.copy:
         src: "{{ profile_config_src }}/mods/"
-        dest: "{{ profile_config_dest }}/serverfiles/data/Mods/"
+        dest: "{{ profile_config_dest }}/serverfiles/data/{{ lgsm_script }}/Mods/"
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
         mode: "0644"
@@ -80,9 +81,9 @@
 # Reminder message - never auto-restart
 - name: "Config deployment reminder for {{ profile.name }}"
   ansible.builtin.debug:
-    msg: |
-      Config/mods updated for {{ profile.name }}. To apply changes:
-        ssh {{ inventory_hostname }}
-        sudo -iu {{ profile.name }}
-        ./{{ lgsm_script_names[profile.game] | default(profile.game + 'server') }} restart
+    msg:
+      - "Config/mods updated for {{ profile.name }}. To apply changes:"
+      - "  ssh {{ inventory_hostname }}"
+      - "  sudo -iu {{ profile.name }}"
+      - "  ./{{ lgsm_script }} restart"
   when: (serverconfig_changed is defined and serverconfig_changed.changed) or (mods_changed is defined and mods_changed.changed)
