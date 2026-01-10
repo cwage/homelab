@@ -93,14 +93,14 @@
           - "Step 2 - Purge:"
           - "  - Delete user: {{ archive_profile }}"
           - "  - Delete home: /home/{{ archive_profile }}/"
-          - "  - Cron jobs already removed (profile inactive)"
+          - "  - Cron jobs will be removed during purge"
 
     - name: Warn about running processes
       ansible.builtin.debug:
         msg:
           - "WARNING: Processes still running for this user!"
           - "  PIDs: {{ running_procs.stdout_lines | join(', ') }}"
-          - "  Stop server first: sudo -iu {{ archive_profile }} ./vintsserver stop"
+          - "  Stop server first: sudo -iu {{ archive_profile }} ./{{ lgsm_script_names[target_profile.game] | default(target_profile.game + 'server') }} stop"
       when: running_procs.stdout | length > 0
 
     - name: Show next steps
