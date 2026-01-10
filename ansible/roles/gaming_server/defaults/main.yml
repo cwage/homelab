@@ -54,3 +54,4 @@ gaming_dependencies:
 lgsm_game_executables:
   vintagestory: "VintagestoryServer"
   valheim: "valheim_server.x86_64"
+  minecraft: "server.jar"
