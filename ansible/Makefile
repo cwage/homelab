@@ -90,7 +90,9 @@ gaming-configs: ## Deploy configs/mods only (skip deps/lgsm install) [PROFILE=na
 
 gaming-archive: ## Archive and purge a profile (requires PROFILE=name, CONFIRM=yes to execute)
 	@if [ -z "$(PROFILE)" ]; then echo "PROFILE required. Example: make gaming-archive PROFILE=vs-buttopia"; exit 1; fi
-	$(DC) run --rm ansible ansible-playbook playbooks/gaming-archive.yml -vv -e 'archive_profile=$(PROFILE)' $(if $(CONFIRM),-e 'archive_confirm=$(CONFIRM)',) $(OPTS)
+	@archive_profile_value="$$(printf '%s' "$(PROFILE)")"; \
+	archive_confirm_value="$$(printf '%s' "$(CONFIRM)")"; \
+	$(DC) run --rm ansible ansible-playbook playbooks/gaming-archive.yml -vv -e archive_profile="$$archive_profile_value" $(if $(CONFIRM),-e archive_confirm="$$archive_confirm_value",) $(OPTS)
 
 all: ## Run standard playbooks (proxmox, firewall, felix)
 	$(MAKE) proxmox
