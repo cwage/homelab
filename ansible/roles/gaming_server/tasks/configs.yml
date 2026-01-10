@@ -22,17 +22,8 @@
 
 # Vintage Story specific config deployment
 - name: "Deploy Vintage Story configs for {{ profile.name }}"
-  when:
-    - profile.game == 'vintagestory'
-    - profile_config_dir.stat.exists
+  when: profile.game == 'vintagestory'
   block:
-    - name: "Check if serverconfig.json exists for {{ profile.name }}"
-      ansible.builtin.stat:
-        path: "{{ profile_config_src }}/serverconfig.json"
-      delegate_to: localhost
-      become: false
-      register: serverconfig_file
-
     - name: "Ensure serverfiles/data/{{ lgsm_script }} directory exists for {{ profile.name }}"
       ansible.builtin.file:
         path: "{{ profile_config_dest }}/serverfiles/data/{{ lgsm_script }}"
@@ -40,24 +31,24 @@
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
         mode: "0755"
-      when: serverconfig_file.stat.exists
 
-    - name: "Deploy serverconfig.json for {{ profile.name }}"
-      ansible.builtin.copy:
-        src: "{{ profile_config_src }}/serverconfig.json"
+    - name: "Deploy serverconfig.json from template for {{ profile.name }}"
+      ansible.builtin.template:
+        src: "vintagestory/serverconfig.json.j2"
         dest: "{{ profile_config_dest }}/serverfiles/data/{{ lgsm_script }}/serverconfig.json"
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
         mode: "0644"
-      when: serverconfig_file.stat.exists
       register: serverconfig_changed
 
+    # Mods and ModConfig are still deployed from static files per-profile
     - name: "Check for mods directory for {{ profile.name }}"
       ansible.builtin.stat:
         path: "{{ profile_config_src }}/mods"
       delegate_to: localhost
       become: false
       register: mods_dir
+      when: profile_config_dir.stat.exists
 
     - name: "Ensure Mods directory exists for {{ profile.name }}"
       ansible.builtin.file:
@@ -66,7 +57,7 @@
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
         mode: "0755"
-      when: mods_dir.stat.exists
+      when: profile_config_dir.stat.exists and mods_dir.stat.exists
 
     - name: "Deploy mods for {{ profile.name }}"
       ansible.builtin.copy:
@@ -75,7 +66,7 @@
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
         mode: "0644"
-      when: mods_dir.stat.exists
+      when: profile_config_dir.stat.exists and mods_dir.stat.exists
       register: mods_changed
 
     - name: "Check for modconfig directory for {{ profile.name }}"
@@ -84,6 +75,7 @@
       delegate_to: localhost
       become: false
       register: modconfig_dir
+      when: profile_config_dir.stat.exists
 
     - name: "Ensure ModConfig directory exists for {{ profile.name }}"
       ansible.builtin.file:
@@ -92,7 +84,7 @@
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
         mode: "0755"
-      when: modconfig_dir.stat.exists
+      when: profile_config_dir.stat.exists and modconfig_dir.stat.exists
 
     - name: "Deploy mod configs for {{ profile.name }}"
       ansible.builtin.copy:
@@ -102,7 +94,7 @@
         group: "{{ profile.name }}"
         mode: "0644"
         directory_mode: "0755"
-      when: modconfig_dir.stat.exists
+      when: profile_config_dir.stat.exists and modconfig_dir.stat.exists
       register: modconfig_changed
 
 # Start server after fresh install (configs are now in place)
