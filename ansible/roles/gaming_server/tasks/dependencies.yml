@@ -13,6 +13,18 @@
     update_cache: true
     cache_valid_time: 3600
 
+- name: Enable i386 architecture for Steam games
+  ansible.builtin.command:
+    cmd: dpkg --add-architecture i386
+  register: i386_added
+  changed_when: false
+  when: "'valheim' in active_game_types"
+
+- name: Update apt cache after adding i386
+  ansible.builtin.apt:
+    update_cache: true
+  when: "'valheim' in active_game_types"
+
 - name: Install game-specific dependencies
   ansible.builtin.apt:
     name: "{{ gaming_dependencies[item] | default([]) }}"
