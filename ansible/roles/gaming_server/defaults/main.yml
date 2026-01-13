@@ -60,3 +60,12 @@ lgsm_game_executables:
   vintagestory: "VintagestoryServer"
   valheim: "valheim_server.x86_64"
   minecraft: "server.jar"
+
+# BepInEx configuration for Valheim modding
+# Pack downloaded from Thunderstore
+bepinex_valheim_version: "5.4.2333"
+bepinex_valheim_url: "https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/{{ bepinex_valheim_version }}/"
+
+# Thunderstore mod registry
+# Mods are specified per-profile with name, author, version
+thunderstore_base_url: "https://thunderstore.io/package/download"
