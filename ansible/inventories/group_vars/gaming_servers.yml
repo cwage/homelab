@@ -54,3 +54,8 @@ gaming_profiles:
     world_name: "buttopia"
     public: 0
     # crossplay: true  # Enable for Xbox/PC crossplay
+    # BepInEx mods (clients must install matching mods)
+    mods:
+      - name: Seasonality
+        author: RustyMods
+        version: "3.7.6"
