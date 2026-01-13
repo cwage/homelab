@@ -1,0 +1,224 @@
+---
+# Deploy BepInEx and mods for Valheim servers
+# Only runs for Valheim profiles with mods defined
+
+- name: "Skip mods for non-Valheim profile {{ profile.name }}"
+  ansible.builtin.debug:
+    msg: "Mods only supported for Valheim, skipping {{ profile.name }} ({{ profile.game }})"
+  when: profile.game != 'valheim'
+
+- name: "Deploy mods for {{ profile.name }}"
+  when:
+    - profile.game == 'valheim'
+    - profile.mods is defined
+    - profile.mods | length > 0
+  block:
+    - name: "Set paths for {{ profile.name }}"
+      ansible.builtin.set_fact:
+        serverfiles_dir: "/home/{{ profile.name }}/serverfiles"
+        bepinex_dir: "/home/{{ profile.name }}/serverfiles/BepInEx"
+        plugins_dir: "/home/{{ profile.name }}/serverfiles/BepInEx/plugins"
+        mods_cache_dir: "/home/{{ profile.name }}/.ansible_mods_cache"
+        profile_modconfig_src: "{{ gaming_profiles_dir }}/{{ profile.name }}/modconfig"
+
+    - name: "Ensure mods cache directory exists for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "{{ mods_cache_dir }}"
+        state: directory
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0755"
+
+    # BepInEx Installation
+    - name: "Check if BepInEx is installed for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ bepinex_dir }}/core/BepInEx.dll"
+      register: bepinex_installed
+
+    - name: "Download BepInEx pack for {{ profile.name }}"
+      ansible.builtin.get_url:
+        url: "{{ bepinex_valheim_url }}"
+        dest: "{{ mods_cache_dir }}/BepInExPack_Valheim.zip"
+        mode: "0644"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+      when: not bepinex_installed.stat.exists
+      register: bepinex_downloaded
+
+    - name: "Extract BepInEx pack for {{ profile.name }}"
+      ansible.builtin.unarchive:
+        src: "{{ mods_cache_dir }}/BepInExPack_Valheim.zip"
+        dest: "{{ mods_cache_dir }}"
+        remote_src: true
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+      when: not bepinex_installed.stat.exists
+
+    # BepInEx pack extracts to BepInExPack_Valheim/ subdirectory
+    - name: "Copy BepInEx files to serverfiles for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ mods_cache_dir }}/BepInExPack_Valheim/"
+        dest: "{{ serverfiles_dir }}/"
+        remote_src: true
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: preserve
+      when: not bepinex_installed.stat.exists
+      register: bepinex_deployed
+
+    - name: "Check if doorstop library exists for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ serverfiles_dir }}/doorstop_libs/libdoorstop_x64.so"
+      register: doorstop_lib
+
+    - name: "Make doorstop library executable for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "{{ serverfiles_dir }}/doorstop_libs/libdoorstop_x64.so"
+        mode: "0755"
+      when: doorstop_lib.stat.exists
+
+    - name: "Ensure plugins directory exists for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "{{ plugins_dir }}"
+        state: directory
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0755"
+
+    # Mod Installation
+    - name: "Download mods for {{ profile.name }}"
+      ansible.builtin.get_url:
+        url: "{{ thunderstore_base_url }}/{{ item.author }}/{{ item.name }}/{{ item.version }}/"
+        dest: "{{ mods_cache_dir }}/{{ item.name }}-{{ item.version }}.zip"
+        mode: "0644"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+      loop: "{{ profile.mods }}"
+      loop_control:
+        label: "{{ item.name }} {{ item.version }}"
+
+    - name: "Check if mods are extracted for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ mods_cache_dir }}/{{ item.name }}/manifest.json"
+      loop: "{{ profile.mods }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: mods_extracted
+
+    - name: "Create mod extraction directories for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "{{ mods_cache_dir }}/{{ item.item.name }}"
+        state: directory
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0755"
+      loop: "{{ mods_extracted.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      when: not item.stat.exists
+
+    - name: "Extract mods for {{ profile.name }}"
+      ansible.builtin.unarchive:
+        src: "{{ mods_cache_dir }}/{{ item.item.name }}-{{ item.item.version }}.zip"
+        dest: "{{ mods_cache_dir }}/{{ item.item.name }}"
+        remote_src: true
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+      loop: "{{ mods_extracted.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      when: not item.stat.exists
+
+    # Deploy mod DLLs to plugins directory
+    - name: "Find mod DLLs for {{ profile.name }}"
+      ansible.builtin.find:
+        paths: "{{ mods_cache_dir }}/{{ item.name }}"
+        patterns: "*.dll"
+        recurse: false
+      loop: "{{ profile.mods }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: mod_dlls
+
+    - name: "Deploy mod DLLs for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ item.1.path }}"
+        dest: "{{ plugins_dir }}/{{ item.1.path | basename }}"
+        remote_src: true
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+      loop: "{{ mod_dlls.results | subelements('files') }}"
+      loop_control:
+        label: "{{ item.1.path | basename }}"
+      register: mods_deployed
+
+    # Deploy default mod configs from Thunderstore packages
+    - name: "Check for mod config directories for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ mods_cache_dir }}/{{ item.name }}/config"
+      loop: "{{ profile.mods }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: mod_configs
+
+    - name: "Deploy default mod configs for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ mods_cache_dir }}/{{ item.item.name }}/config/"
+        dest: "{{ bepinex_dir }}/config/"
+        remote_src: true
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+        directory_mode: "0755"
+        force: false  # Don't overwrite existing configs
+      loop: "{{ mod_configs.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+      when: item.stat.exists
+      register: default_configs_deployed
+
+    # Deploy custom mod configs from profile directory (overrides defaults)
+    - name: "Check for profile modconfig directory for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ profile_modconfig_src }}"
+      delegate_to: localhost
+      become: false
+      register: profile_modconfig_dir
+
+    - name: "Deploy custom mod configs from profile for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ profile_modconfig_src }}/"
+        dest: "{{ bepinex_dir }}/config/"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+        directory_mode: "0755"
+      when: profile_modconfig_dir.stat.exists
+      register: custom_configs_deployed
+
+    # Fix permissions recursively (copy module doesn't always apply to existing nested dirs)
+    - name: "Check if BepInEx config directory exists for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ bepinex_dir }}/config"
+      register: bepinex_config_dir
+
+    - name: "Fix config directory ownership for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "{{ bepinex_dir }}/config"
+        state: directory
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        recurse: true
+      when: bepinex_config_dir.stat.exists
+
+    - name: "Mods deployment summary for {{ profile.name }}"
+      ansible.builtin.debug:
+        msg:
+          - "BepInEx and mods deployed for {{ profile.name }}"
+          - "Installed mods: {{ profile.mods | map(attribute='name') | list | join(', ') }}"
+          - "To apply: restart the server manually"
+      when: >-
+        (bepinex_deployed is defined and bepinex_deployed is changed) or
+        (mods_deployed is defined and mods_deployed is changed) or
+        (custom_configs_deployed is defined and custom_configs_deployed is changed)
