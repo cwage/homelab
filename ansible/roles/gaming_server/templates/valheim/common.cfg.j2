@@ -1,0 +1,47 @@
+##################################
+## Valheim Server Configuration ##
+##################################
+# Managed by Ansible - local changes will be overwritten
+# See: https://docs.linuxgsm.com/game-servers/valheim
+
+##################################
+## Server Settings ##
+##################################
+
+# Server name displayed in server browser
+servername="{{ profile.server_name | default(profile.name) }}"
+
+# Server password (min 5 characters, cannot contain server name)
+serverpassword="{{ profile_password }}"
+
+# Game port (default: 2456, also uses port+1 for queries)
+port="{{ profile.ports.game | default(2456) }}"
+
+# World name - creates new world or loads existing
+worldname="{{ profile.world_name | default('world') }}"
+
+# Public server visibility (1=visible in browser, 0=hidden)
+public="{{ profile.public | default(0) }}"
+
+{% if profile.crossplay | default(false) %}
+# Enable crossplay (allows Xbox/PC crossplay, avoids port forwarding)
+crossplay="true"
+{% endif %}
+
+{% if profile.savedir is defined %}
+# Custom save directory
+savedir="{{ profile.savedir }}"
+{% endif %}
+
+##################################
+## Backup Settings ##
+##################################
+
+# Maximum number of backups to keep
+maxbackups="{{ profile.max_backups | default(7) }}"
+
+# Maximum age of backups in days
+maxbackupdays="{{ profile.max_backup_days | default(30) }}"
+
+# Stop server during backup (recommended for data consistency)
+stopifbackup="{{ profile.stop_for_backup | default(1) }}"

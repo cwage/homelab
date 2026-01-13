@@ -108,6 +108,91 @@
       when: profile_config_dir.stat.exists and modconfig_dir.stat.exists
       register: modconfig_changed
 
+# Valheim specific config deployment
+- name: "Deploy Valheim configs for {{ profile.name }}"
+  when: profile.game == 'valheim'
+  block:
+    - name: "Ensure LGSM config directory exists for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "/home/{{ profile.name }}/lgsm/config-lgsm/{{ lgsm_script }}"
+        state: directory
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0755"
+
+    - name: "Deploy LGSM common.cfg for {{ profile.name }}"
+      ansible.builtin.template:
+        src: "valheim/common.cfg.j2"
+        dest: "/home/{{ profile.name }}/lgsm/config-lgsm/{{ lgsm_script }}/common.cfg"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+      register: valheim_config_changed
+
+    # Ensure Valheim save directory exists for permission files
+    - name: "Ensure Valheim save directory exists for {{ profile.name }}"
+      ansible.builtin.file:
+        path: "/home/{{ profile.name }}/.config/unity3d/IronGate/Valheim"
+        state: directory
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0755"
+
+    # Deploy permission files if defined in profile
+    - name: "Check for adminlist in profile config for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ profile_config_src }}/adminlist.txt"
+      delegate_to: localhost
+      become: false
+      register: adminlist_file
+      when: profile_config_dir.stat.exists
+
+    - name: "Deploy adminlist.txt for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ profile_config_src }}/adminlist.txt"
+        dest: "/home/{{ profile.name }}/.config/unity3d/IronGate/Valheim/adminlist.txt"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+      when: profile_config_dir.stat.exists and adminlist_file.stat.exists
+      register: adminlist_changed
+
+    - name: "Check for permittedlist in profile config for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ profile_config_src }}/permittedlist.txt"
+      delegate_to: localhost
+      become: false
+      register: permittedlist_file
+      when: profile_config_dir.stat.exists
+
+    - name: "Deploy permittedlist.txt for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ profile_config_src }}/permittedlist.txt"
+        dest: "/home/{{ profile.name }}/.config/unity3d/IronGate/Valheim/permittedlist.txt"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+      when: profile_config_dir.stat.exists and permittedlist_file.stat.exists
+      register: permittedlist_changed
+
+    - name: "Check for bannedlist in profile config for {{ profile.name }}"
+      ansible.builtin.stat:
+        path: "{{ profile_config_src }}/bannedlist.txt"
+      delegate_to: localhost
+      become: false
+      register: bannedlist_file
+      when: profile_config_dir.stat.exists
+
+    - name: "Deploy bannedlist.txt for {{ profile.name }}"
+      ansible.builtin.copy:
+        src: "{{ profile_config_src }}/bannedlist.txt"
+        dest: "/home/{{ profile.name }}/.config/unity3d/IronGate/Valheim/bannedlist.txt"
+        owner: "{{ profile.name }}"
+        group: "{{ profile.name }}"
+        mode: "0644"
+      when: profile_config_dir.stat.exists and bannedlist_file.stat.exists
+      register: bannedlist_changed
+
 # Start server after fresh install (configs are now in place)
 - name: "Start game server after fresh install for {{ profile.name }}"
   ansible.builtin.command:
@@ -135,4 +220,8 @@
     (not (fresh_installs is defined and fresh_installs[profile.name] | default(false))) and
     ((serverconfig_changed is defined and serverconfig_changed.changed) or
     (mods_changed is defined and mods_changed.changed) or
-    (modconfig_changed is defined and modconfig_changed.changed))
+    (modconfig_changed is defined and modconfig_changed.changed) or
+    (valheim_config_changed is defined and valheim_config_changed.changed) or
+    (adminlist_changed is defined and adminlist_changed.changed) or
+    (permittedlist_changed is defined and permittedlist_changed.changed) or
+    (bannedlist_changed is defined and bannedlist_changed.changed))
