@@ -97,6 +97,20 @@
   tags:
     - configs
 
+- name: Include mod deployment tasks
+  ansible.builtin.include_tasks:
+    file: mods.yml
+    apply:
+      tags:
+        - mods
+        - configs
+  loop: "{{ active_profiles }}"
+  loop_control:
+    loop_var: profile
+  tags:
+    - mods
+    - configs
+
 - name: Include cron tasks
   ansible.builtin.include_tasks:
     file: cron.yml
