@@ -18,6 +18,7 @@ lgsm_url: "https://linuxgsm.sh"
 # LGSM script names mapping (some games have non-obvious script names)
 lgsm_script_names:
   vintagestory: vintsserver
+  valheim: vhserver
 
 # Default packages needed for LGSM (Debian/Ubuntu)
 lgsm_base_packages:
@@ -42,10 +43,14 @@ lgsm_base_packages:
   - lib32stdc++6
 
 # Game-specific dependencies
+# Note: LGSM handles steamcmd installation itself for Steam-based games
 gaming_dependencies:
   vintagestory: []
   valheim:
-    - steamcmd
+    - libatomic1
+    - libpulse-dev
+    - libsdl2-2.0-0
+    - libsdl2-2.0-0:i386
   minecraft:
     - openjdk-21-jre-headless
 

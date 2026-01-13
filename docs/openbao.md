@@ -238,6 +238,51 @@ bao operator raft snapshot restore /mnt/backups/vm/openbao/openbao-YYYYMMDD-HHMM
 
 The VM is also backed up via Proxmox VM backups.
 
+## Ansible Deploy Token Setup
+
+Ansible uses a dedicated token to fetch secrets during playbook runs (e.g., gaming server passwords).
+
+### Initial Setup (One-Time)
+
+```bash
+# Authenticate with root token
+export BAO_ADDR="https://bao.lan.quietlife.net:8200"
+bao login
+# Enter root token
+
+# Create policy for Ansible deployments
+bao policy write ansible-deploy - <<EOF
+path "kv/data/services/*" {
+  capabilities = ["read"]
+}
+path "kv/data/infra/*" {
+  capabilities = ["read"]
+}
+EOF
+
+# Create token (30-day TTL)
+bao token create -policy=ansible-deploy -ttl=720h -display-name="ansible-deploy"
+# Save the token to ansible/.env as BAO_TOKEN
+```
+
+### Token Renewal
+
+The ansible-deploy token expires after 30 days. To renew:
+
+```bash
+# Authenticate with root token
+export BAO_ADDR="https://bao.lan.quietlife.net:8200"
+bao login
+# Enter root token
+
+# Create new token
+bao token create -policy=ansible-deploy -ttl=720h -display-name="ansible-deploy"
+
+# Update ansible/.env with new BAO_TOKEN value
+```
+
+Old tokens expire naturally - no cleanup needed.
+
 ## Related
 
 - Issue #62 - Original implementation plan

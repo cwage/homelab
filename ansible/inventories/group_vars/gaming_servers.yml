@@ -30,7 +30,7 @@ managed_users:
 gaming_profiles:
   - name: vs-buttopia
     game: vintagestory
-    active: true
+    active: false
     version: "1.21.6"
     ports:
       game: 42420
@@ -42,3 +42,15 @@ gaming_profiles:
     ports:
       game: 42421
     server_name: "Slothtopia"
+  # Valheim server profile
+  # Ports: game (default 2456), query uses game+1 automatically
+  # Password fetched from OpenBao at kv/services/gaming/vh-buttopia
+  - name: vh-buttopia
+    game: valheim
+    active: true
+    ports:
+      game: 2456
+    server_name: "Buttopia"
+    world_name: "buttopia"
+    public: 0
+    # crossplay: true  # Enable for Xbox/PC crossplay
