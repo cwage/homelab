@@ -1,0 +1,22 @@
+{
+  "Comment": "Tweak fog (fog effect), shake (earthquake effect), glitch (screen filter and audio wack at values above 0.5), waviness (terrain rounding), warping (terrain tremble), and various feature toggles.",
+  "FogDensityApproaching": 0.0025,
+  "FogDensityImminent": 0.01,
+  "ShakeStrengthApproaching": 0.075,
+  "ShakeStrengthImminent": 0.15,
+  "GlitchStrengthApproaching": 0.2,
+  "GlitchStrengthImminent": 0.4,
+  "GlitchWavinessApproaching": 0.2,
+  "GlitchWavinessImminent": 0.4,
+  "WorldWarpApproaching": 0.2,
+  "WorldWarpImminent": 0.6,
+  "ChatSilencerEnabled": true,
+  "BellsComment": "Toggles the toll of a distant church bell for approaching warnings.",
+  "BellWarnings": true,
+  "FunnyModeComment": "When enabled, exaggerates glitch and shake effects.",
+  "FunnyModeEnabled": false,
+  "TemporalStormMusicComment": "Play music during temporal storms that changes based on enemy proximity.",
+  "TemporalStormMusic": false,
+  "DetectRadiusComment": "Distance (in blocks) from enemies to trigger combat music transition.",
+  "DetectRadius": 12
+}

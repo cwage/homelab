@@ -1,0 +1,8 @@
+{
+  "AllowSailDeconstruction": true,
+  "BrakeResistanceModifier": 2.0,
+  "SailCenteredModifier": 2.0,
+  "SailAngledModifier": 2.0,
+  "SailWideModifier": 2.0,
+  "SailRotationModifier": 1.0
+}

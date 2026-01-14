@@ -1,0 +1,6 @@
+{
+  "RollDamageScaleComment": "Gravity damage when roll. 0.5 = half damage, 1.0 = no reduction.",
+  "RollDamageScale": 0.5,
+  "VaultCooldownMsComment": "Vault cooldown, lower values can make animations doesnt trigger.",
+  "VaultCooldownMs": 1000
+}

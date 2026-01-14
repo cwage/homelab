@@ -1,0 +1,10 @@
+{
+  "configVersion": 1.7,
+  "retainConfigOnVersionChange": false,
+  "Hive_Sound_Instructions": "Changes the base volume of all domestic beehives. Valid settings for hive sound are off, soft, normal, high (2x), and loud (4x)",
+  "hiveSoundVolume": "normal",
+  "Wild_Hive_Sound_Instructions": "Changes the base volume of all wild beehives. Valid settings for wild hive sound are normal, high (2x), and loud (4x)",
+  "wildHiveSoundVolume": "normal",
+  "Always_Show_Hive_Info_Instructions": "Hive info includes the three day temp and remaining pollination charges.",
+  "alwaysShowExtraBeehiveInfo": false
+}

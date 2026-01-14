@@ -1,0 +1,12 @@
+{
+  "CommentRequireEmptyHands": "If true main and offhand must be empty to use grab/hang.",
+  "RequireEmptyHands": true,
+  "CommentLeapSideSpeed": "Impulse for side and backwards leaps while hanging.",
+  "LeapSideSpeed": 0.13,
+  "CommentLeapUpSpeed": "Impulse for upward leaps while hanging.",
+  "LeapUpSpeed": 0.18,
+  "CommentLateralSpeed": "Lateral slide speed along the ledge while hanging.",
+  "LateralSpeed": 0.03,
+  "CommentGrabActionLockSec": "Cooldown for perfoming actions after grabbing ledge.",
+  "GrabActionLockSec": 0
+}

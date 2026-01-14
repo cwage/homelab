@@ -1,0 +1,103 @@
+{
+  "Thirst": {
+    "Enabled": true,
+    "MaxThirst": 1500.0,
+    "ThirstDecayRate": 10.0,
+    "ThirstDecayRateMax": 5.0,
+    "HydrationLossDelayMultiplierNormalized": 1.0,
+    "SprintThirstMultiplier": 1.5,
+    "IdleThirstModifier": 0.25,
+    "ThirstDamage": 1.0,
+    "BoilingWaterDamage": 5.0,
+    "MaxMovementSpeedPenalty": 0.3,
+    "MovementSpeedPenaltyThreshold": 600.0,
+    "ThirstPercentageOnRespawn": 0.5,
+    "ThirstRateAtStoryLocations": 1.0,
+    "NutritionDeficitMultiplier": 3.0,
+    "AntiThirstScumming": false
+  },
+  "Satiety": {
+    "ItemSatietyMapping": {}
+  },
+  "PerishRates": {
+    "Enabled": true,
+    "TransitionConfig": {}
+  },
+  "LiquidEncumbrance": {
+    "Enabled": true,
+    "EncumbranceLimit": 4.0,
+    "EncumbranceMovementSpeedDebuff": 0.4
+  },
+  "HeatAndCooling": {
+    "HarshHeat": true,
+    "TemperatureThreshold": 25.0,
+    "ThirstIncreasePerDegreeMultiplier": 5.0,
+    "HarshHeatExponentialGainMultiplier": 0.25,
+    "UnequippedSlotCooling": 1.0,
+    "WetnessCoolingBonus": 8.0,
+    "RoomCoolingBonus": 8.0,
+    "ShadeCoolingBonus": 8.0,
+    "CoolingTempOffsetPerPoint": 0.5,
+    "LowSunlightThreshold": 16,
+    "LowSunlightCoolingBonus": 8.0
+  },
+  "GroundWater": {
+    "ShallowWellLitersPerDay": 4.0,
+    "WellSpringOutputMultiplier": 1.0,
+    "WellwaterDepthMaxBase": 5,
+    "WellwaterDepthMaxClay": 7,
+    "WellwaterDepthMaxStone": 10,
+    "WinchRaiseSpeed": 0.8,
+    "WinchLowerSpeed": 0.8,
+    "WinchOutputInfo": true,
+    "AquiferRandomMultiplierChance": 0.015,
+    "AquiferWaterBlockMultiplier": 4.0,
+    "AquiferSaltWaterMultiplier": 4.0,
+    "AquiferBoilingWaterMultiplier": 50,
+    "AquiferRatingCeilingAboveSeaLevel": 30,
+    "AquiferDepthMultiplierScale": 1.0,
+    "AquiferMinimumWaterBlockThreshold": 5,
+    "CrossChunkColumnSmoothing": true,
+    "ProspectingRadius": 3,
+    "AquiferDataOnProspectingNodeMode": false,
+    "ShowAquiferProspectingDataOnMap": true
+  },
+  "Rain": {
+    "EnableRainGathering": true,
+    "RainMultiplier": 1.0,
+    "EnableParticleTicking": false
+  },
+  "Pump": {
+    "HandPumpEnablePriming": true,
+    "HandPumpOutputInfo": true,
+    "HandPumpPrimingBlocksPerStroke": 3
+  },
+  "WorldGen": {
+    "PondChance": 1.0
+  },
+  "Containers": {
+    "KegCapacityLitres": 100.0,
+    "SpoilRateUntapped": 0.15,
+    "SpoilRateTapped": 0.65,
+    "KegIronHoopDropChance": 0.8,
+    "KegTapDropChance": 0.9,
+    "KegDropWithLiquid": true,
+    "TunCapacityLitres": 950.0,
+    "TunSpoilRateMultiplier": 1.0,
+    "TunDropWithLiquid": false
+  },
+  "XLib": {
+    "DromedaryMultiplierPerLevel": 0.3,
+    "EquatidianCoolingMultipliers": [
+      1.25,
+      1.5,
+      2.0
+    ]
+  },
+  "DisableDrunkSway": false,
+  "SprintToDrink": false,
+  "Advanced": {
+    "IncreaseMarkDirtyThreshold": true,
+    "markdirtythreshold": 20
+  }
+}

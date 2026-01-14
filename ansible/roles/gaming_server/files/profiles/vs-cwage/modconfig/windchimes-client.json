@@ -1,0 +1,13 @@
+{
+  "WindChimeMainVolumeMultiplier": 1.0,
+  "BambooChimeVolume": 0.5,
+  "WoodChimeVolume": 0.5,
+  "BrassChimeVolume": 0.5,
+  "CopperChimeVolume": 0.5,
+  "CrystalChimeVolume": 0.5,
+  "WindChimeMinVolume": 0.05,
+  "WindChimeIndoorVolume": 0.1,
+  "WindChimeMaxDistance": 16.0,
+  "WindChimeFalloffExponent": 2.5,
+  "EnableDebugLogging": false
+}
