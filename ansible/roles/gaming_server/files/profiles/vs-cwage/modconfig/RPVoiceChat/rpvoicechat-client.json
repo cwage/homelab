@@ -1,0 +1,21 @@
+{
+  "OutputVoice": 1.0,
+  "OutputBlock": 0.6,
+  "OutputItem": 0.6,
+  "InputGain": 1.0,
+  "InputThreshold": 0.36,
+  "InputDevice": "Default",
+  "Denoising": false,
+  "DenoisingSensitivity": 0.5,
+  "DenoisingStrength": 0.1,
+  "ShowHud": true,
+  "IsMinimalHud": false,
+  "ActiveConfigTab": 0,
+  "PushToTalkEnabled": false,
+  "IsMuted": false,
+  "IsMonoMode": false,
+  "Loopback": false,
+  "Muffling": true,
+  "ChannelGuessing": true,
+  "FirstTimeUse": false
+}

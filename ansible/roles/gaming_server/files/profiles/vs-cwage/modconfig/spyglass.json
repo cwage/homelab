@@ -1,0 +1,18 @@
+{
+  "vignetteStyle": "edge",
+  "edgeSize": 32,
+  "edgeOpacity": 0.5,
+  "glassBrightness": 1.0,
+  "glassColor": 0.94,
+  "transitionTimeBasis": 525.0,
+  "minimumZoomTime": 250.0,
+  "defaultZoomPosition": 0.85,
+  "zoomWheelSpeedMultiplier": 1.0,
+  "invertZoomWheel": false,
+  "mouseSensitivityAdjustment": 2.0,
+  "enableMouseWheelAdjustment": true,
+  "enableZoomInThirdPerson": true,
+  "hideHUDWhileSpying": true,
+  "preserveZoomBetweenUses": false,
+  "overrideClientConfig": true
+}

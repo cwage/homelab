@@ -19,3 +19,16 @@ nginx_sites:
         - username: books
           # Generate with: openssl passwd -apr1 'password'
           password_hash: "$apr1$FNJE//Et$2SbsI8ws4cPCWQexEzrbb0"
+  - server_name: gunsmoke.quietlife.net
+    root: /var/www/gunsmoke.quietlife.net
+    owner: cwage
+    group: cwage
+    dir_mode: '0750'
+    file_mode: '0640'
+    autoindex: true
+    basic_auth:
+      realm: "Gunsmoke"
+      users:
+        - username: gunsmoke
+          # Generate with: openssl passwd -apr1 'password'
+          password_hash: "$apr1$Q7j1b8RE$zlwZR8SDfcVUYoGz17ldY0"

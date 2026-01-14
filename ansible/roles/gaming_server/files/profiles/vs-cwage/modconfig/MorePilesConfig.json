@@ -1,0 +1,1691 @@
+{
+  "AutoFill": true,
+  "Description": "AutoFill defaults entire config file every time you load any world. You need to disable it in order to make changes",
+  "ItemPiles": {
+    "arrow-*": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": false,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/stickplace",
+      "StackingModel": "morepiles:arrowpile_32",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.25,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.0625,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 6.0
+    },
+    "chutesection-*": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": false,
+      "UpSolid": true,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/chute",
+      "StackingModel": "morepiles:chutesectionpile_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.3125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.05,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 4.0
+    },
+    "metalchain-*": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": false,
+      "UpSolid": false,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 8,
+      "PlaceRemoveSound": "game:wearable/chain1",
+      "StackingModel": "morepiles:metalchainpile_16",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 1.0,
+      "CollisionBox": {
+        "X1": 0.0315,
+        "Y1": 0.0,
+        "Z1": 0.0315,
+        "X2": 0.9685,
+        "Y2": 0.125,
+        "Z2": 0.9685
+      },
+      "ModelItemsToStackSizeRatio": null
+    },
+    "metallamellae-*": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": false,
+      "UpSolid": false,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 8,
+      "PlaceRemoveSound": "game:wearable/chain1",
+      "StackingModel": "morepiles:metallamellaepile_32",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 1.0,
+      "CollisionBox": {
+        "X1": 0.0315,
+        "Y1": 0.0,
+        "Z1": 0.0315,
+        "X2": 0.9685,
+        "Y2": 0.125,
+        "Z2": 0.9685
+      },
+      "ModelItemsToStackSizeRatio": null
+    },
+    "metalscale-*": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": false,
+      "UpSolid": false,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 8,
+      "PlaceRemoveSound": "game:wearable/chain1",
+      "StackingModel": "morepiles:metalscalespile_32",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 1.0,
+      "CollisionBox": {
+        "X1": 0.1875,
+        "Y1": 0.0,
+        "Z1": 0.1875,
+        "X2": 0.8125,
+        "Y2": 0.125,
+        "Z2": 0.8125
+      },
+      "ModelItemsToStackSizeRatio": null
+    },
+    "rope": {
+      "Enabled": true,
+      "Comment": "Rope (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 32,
+      "PlaceRemoveSound": "game:block/cloth",
+      "StackingModel": "morepiles:shapes/ropepile_32",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.25,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": null
+    },
+    "drygrass": {
+      "Enabled": true,
+      "Comment": "Dry grass (vanilla). Models: [ 'drygrasspile_64-optimized', 'drygrasspile_64-heavy' ]",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:sounds/player/build",
+      "StackingModel": "morepiles:shapes/drygrasspile_64-optimized",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": null
+    },
+    "snowball-*": {
+      "Enabled": true,
+      "Comment": "Snowball (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 6,
+      "TransferQuantity": 1,
+      "StackingCapacity": 11,
+      "PlaceRemoveSound": "game:block/snow",
+      "StackingModel": "morepiles:shapes/snowballpile-11",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.2,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.25,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": null
+    }
+  },
+  "BlockPiles": {
+    "angledgears-s": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 8,
+      "PlaceRemoveSound": "game:block/stickplace",
+      "StackingModel": "morepiles:angledgearpile_4",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 1.0,
+      "CollisionBox": {
+        "X1": 0.1875,
+        "Y1": 0.0,
+        "Z1": 0.1875,
+        "X2": 0.8215,
+        "Y2": 0.125,
+        "Z2": 0.8215
+      },
+      "ModelItemsToStackSizeRatio": null
+    },
+    "woodenaxle-ud": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 16,
+      "PlaceRemoveSound": "game:block/stickplace",
+      "StackingModel": "morepiles:axlepile_16",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.25,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.25,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": null
+    },
+    "torchholder-*-empty-north": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 2,
+      "TransferQuantity": 1,
+      "StackingCapacity": 8,
+      "PlaceRemoveSound": "game:block/ingot",
+      "StackingModel": "morepiles:torchholderpile_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.5,
+      "CollisionBox": {
+        "X1": 0.188,
+        "Y1": 0.0,
+        "Z1": 0.188,
+        "X2": 0.812,
+        "Y2": 0.25,
+        "Z2": 0.812
+      },
+      "ModelItemsToStackSizeRatio": null
+    },
+    "woodenfencegate-*-n-closed-left-free": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:woodenfencegatepile_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.125,
+        "Y1": 0.0,
+        "Z1": 0.125,
+        "X2": 0.875,
+        "Y2": 0.125,
+        "Z2": 0.875
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "woodenfence-*-ew-free": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:woodenfencepile_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.125,
+        "Y1": 0.0,
+        "Z1": 0.125,
+        "X2": 0.875,
+        "Y2": 0.125,
+        "Z2": 0.875
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "trapdoor-closed-up-north": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:trapdoorpile_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.125,
+        "Y1": 0.0,
+        "Z1": 0.125,
+        "X2": 0.875,
+        "Y2": 0.125,
+        "Z2": 0.875
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "vanvar:trapdoor-*-closed-up-north": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:trapdoorpile_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.125,
+        "Y1": 0.0,
+        "Z1": 0.125,
+        "X2": 0.875,
+        "Y2": 0.125,
+        "Z2": 0.875
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "toolrack-north": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:toolrackpile_16",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.1565,
+        "Y1": 0.0,
+        "Z1": 0.1565,
+        "X2": 0.8435,
+        "Y2": 0.125,
+        "Z2": 0.8435
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "vanvar:toolrack-*-north": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:toolrackpile_16",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.1565,
+        "Y1": 0.0,
+        "Z1": 0.1565,
+        "X2": 0.8435,
+        "Y2": 0.125,
+        "Z2": 0.8435
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "sign-ground-north": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:signpile_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.125,
+        "Y1": 0.0,
+        "Z1": 0.125,
+        "X2": 0.875,
+        "Y2": 0.125,
+        "Z2": 0.875
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "vanvar:sign-*-ground-north": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:signpile_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.125,
+        "Y1": 0.0,
+        "Z1": 0.125,
+        "X2": 0.875,
+        "Y2": 0.125,
+        "Z2": 0.875
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "drystonefence-*-ew-free": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/loosestone1",
+      "StackingModel": "morepiles:drystonefencepile_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.0625,
+      "CollisionBox": {
+        "X1": 0.25,
+        "Y1": 0.0,
+        "Z1": 0.25,
+        "X2": 0.75,
+        "Y2": 0.25,
+        "Z2": 0.75
+      },
+      "ModelItemsToStackSizeRatio": 2.0
+    },
+    "ironfence-base-ew": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/ingot",
+      "StackingModel": "morepiles:ironfencepile-base",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.25,
+      "CollisionBox": {
+        "X1": 0.0625,
+        "Y1": 0.0,
+        "Z1": 0.0625,
+        "X2": 0.9375,
+        "Y2": 0.0625,
+        "Z2": 0.9375
+      },
+      "ModelItemsToStackSizeRatio": 2.0
+    },
+    "ironfence-top-ew": {
+      "Enabled": true,
+      "Comment": "",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/ingot",
+      "StackingModel": "morepiles:ironfencepile-top",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.25,
+      "CollisionBox": {
+        "X1": 0.0625,
+        "Y1": 0.0,
+        "Z1": 0.0625,
+        "X2": 0.9375,
+        "Y2": 0.0625,
+        "Z2": 0.9375
+      },
+      "ModelItemsToStackSizeRatio": 3.0
+    },
+    "ladder-wood-north": {
+      "Enabled": true,
+      "Comment": "Wooden ladder (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:ladderpile-wood_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.125,
+        "Y1": 0.0,
+        "Z1": 0.125,
+        "X2": 0.875,
+        "Y2": 0.125,
+        "Z2": 0.875
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "ladder-rope-north": {
+      "Enabled": true,
+      "Comment": "Rope ladder (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:ladderpile-rope_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.125,
+        "Y1": 0.0,
+        "Z1": 0.125,
+        "X2": 0.875,
+        "Y2": 0.125,
+        "Z2": 0.875
+      },
+      "ModelItemsToStackSizeRatio": 11.0
+    },
+    "vanvar:ladder-*-north": {
+      "Enabled": true,
+      "Comment": "Wooden ladder (Vanilla Variants mod)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:ladderpile-wood_8",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.125,
+        "Y1": 0.0,
+        "Z1": 0.125,
+        "X2": 0.875,
+        "Y2": 0.125,
+        "Z2": 0.875
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "henbox-empty": {
+      "Enabled": true,
+      "Comment": "Henbox (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:henboxpile_4",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.0625,
+      "CollisionBox": {
+        "X1": 0.0625,
+        "Y1": 0.0,
+        "Z1": 0.0625,
+        "X2": 0.9375,
+        "Y2": 0.25,
+        "Z2": 0.9375
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "vanvar:henbox-*-empty": {
+      "Enabled": true,
+      "Comment": "Henbox (Vanilla Variants mod)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:henboxpile_4",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.0625,
+      "CollisionBox": {
+        "X1": 0.0625,
+        "Y1": 0.0,
+        "Z1": 0.0625,
+        "X2": 0.9375,
+        "Y2": 0.25,
+        "Z2": 0.9375
+      },
+      "ModelItemsToStackSizeRatio": 5.0
+    },
+    "@wallpaper.*": {
+      "Enabled": true,
+      "Comment": "Wallpaper (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/cloth",
+      "StackingModel": "morepiles:wallpaperpile_8",
+      "StackingTextures": {
+        "0": "game:block/wallpaper/{type}",
+        "1": "game:block/linen"
+      },
+      "CbScaleYByLayer": 0.0625,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.25,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 8.0
+    },
+    "@linen.*": {
+      "Enabled": true,
+      "Comment": "Linen (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": false,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/cloth",
+      "StackingModel": "morepiles:wallpaperpile_8",
+      "StackingTextures": {
+        "0": "game:block/cloth/linen/{pattern}1",
+        "1": "game:block/linen"
+      },
+      "CbScaleYByLayer": 0.0625,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.25,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 8.0
+    },
+    "supportbeam-tarnishedmetal-copper": {
+      "Enabled": true,
+      "Comment": "Tarnished copper support beam (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 2,
+      "StackingCapacity": 16,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:beampile_16",
+      "StackingTextures": {
+        "wood": "game:block/metal/tarnished/copper1"
+      },
+      "CbScaleYByLayer": 0.25,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.25,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "supportbeam-tarnishedmetal-*": {
+      "Enabled": true,
+      "Comment": "Tarnished metal support beam (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 2,
+      "StackingCapacity": 16,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:beampile_16",
+      "StackingTextures": {
+        "wood": "game:block/metal/tarnished/{metal}"
+      },
+      "CbScaleYByLayer": 0.25,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.25,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "supportbeam-*": {
+      "Enabled": true,
+      "Comment": "Wooden support beam (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/wood/supportbeam/16"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 8,
+      "TransferQuantity": 2,
+      "StackingCapacity": 16,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:beampile_16",
+      "StackingTextures": {
+        "wood": "game:block/wood/debarked/{wood}"
+      },
+      "CbScaleYByLayer": 0.25,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.25,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "plankstairs-*": {
+      "Enabled": true,
+      "Comment": "Plank stairs (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:stairpile_64",
+      "StackingTextures": {
+        "east": "game:block/wood/planks/{wood}1",
+        "south": "game:block/wood/planks/{wood}1",
+        "north": "game:block/wood/planks/{wood}1",
+        "west": "game:block/wood/planks/{wood}1",
+        "up": "game:block/wood/planks/{wood}1",
+        "down": "game:block/wood/planks/{wood}1"
+      },
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 2.0
+    },
+    "@.*stairs-.*": {
+      "Enabled": true,
+      "Comment": "Other stairs (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/stairs/normal"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:sounds/player/build",
+      "StackingModel": "morepiles:stairpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 2.0
+    },
+    "@(.*slab.*|.*labs.*)": {
+      "Enabled": true,
+      "Comment": "Most slabs (vanilla)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesClasses": [
+          "BlockSlabSnowRemove",
+          "BlockRainAmbient"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:sounds/player/build",
+      "StackingModel": "morepiles:slabpile_128",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 2.0
+    },
+    "@.*log.*ud": {
+      "Enabled": true,
+      "Comment": "Log pile (vanilla logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "wildcrafttree:log-*-ud": {
+      "Enabled": true,
+      "Comment": "Log pile (Wildcraft Trees logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "wildcrafttree:debarkedlog-*-ud": {
+      "Enabled": true,
+      "Comment": "Debarked log pile (Wildcraft Trees debarked logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "wildcrafttree:planks-*-ud": {
+      "Enabled": true,
+      "Comment": "Planks block pile (Wildcraft Trees planks)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:player/build",
+      "StackingModel": "morepiles:cubepile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescaperegion:log-*-ud": {
+      "Enabled": true,
+      "Comment": "Log pile (Floral Zones logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescaperegion:debarkedlog-*-ud": {
+      "Enabled": true,
+      "Comment": "Debarked log pile (Floral Zones debarked logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescaperegion:planks-*": {
+      "Enabled": true,
+      "Comment": "Planks block pile (Floral Zones planks)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:player/build",
+      "StackingModel": "morepiles:cubepile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescaribbeanregion:log-*-ud": {
+      "Enabled": true,
+      "Comment": "Log pile (Floral Zones logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescaribbeanregion:debarkedlog-*-ud": {
+      "Enabled": true,
+      "Comment": "Debarked log pile (Floral Zones debarked logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescaribbeanregion:planks-*": {
+      "Enabled": true,
+      "Comment": "Planks block pile (Floral Zones planks)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:player/build",
+      "StackingModel": "morepiles:cubepile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescentralaustralianregion:log-*-ud": {
+      "Enabled": true,
+      "Comment": "Log pile (Floral Zones logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescentralaustralianregion:debarkedlog-*-ud": {
+      "Enabled": true,
+      "Comment": "Debarked log pile (Floral Zones debarked logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescentralaustralianregion:planks-*": {
+      "Enabled": true,
+      "Comment": "Planks block pile (Floral Zones planks)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:player/build",
+      "StackingModel": "morepiles:cubepile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescosmopolitanregion:log-*-ud": {
+      "Enabled": true,
+      "Comment": "Log pile (Floral Zones logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescosmopolitanregion:debarkedlog-*-ud": {
+      "Enabled": true,
+      "Comment": "Debarked log pile (Floral Zones debarked logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonescosmopolitanregion:planks-*": {
+      "Enabled": true,
+      "Comment": "Planks block pile (Floral Zones planks)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:player/build",
+      "StackingModel": "morepiles:cubepile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzoneseastasiaticregion:log-*-ud": {
+      "Enabled": true,
+      "Comment": "Log pile (Floral Zones logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzoneseastasiaticregion:debarkedlog-*-ud": {
+      "Enabled": true,
+      "Comment": "Debarked log pile (Floral Zones debarked logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzoneseastasiaticregion:planks-*": {
+      "Enabled": true,
+      "Comment": "Planks block pile (Floral Zones planks)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:player/build",
+      "StackingModel": "morepiles:cubepile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonesmediterraneanregion:log-*-ud": {
+      "Enabled": true,
+      "Comment": "Log pile (Floral Zones logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonesmediterraneanregion:debarkedlog-*-ud": {
+      "Enabled": true,
+      "Comment": "Debarked log pile (Floral Zones debarked logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonesmediterraneanregion:planks-*": {
+      "Enabled": true,
+      "Comment": "Planks block pile (Floral Zones planks)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:player/build",
+      "StackingModel": "morepiles:cubepile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonesneozeylandicregion:log-*-ud": {
+      "Enabled": true,
+      "Comment": "Log pile (Floral Zones logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonesneozeylandicregion:debarkedlog-*-ud": {
+      "Enabled": true,
+      "Comment": "Debarked log pile (Floral Zones debarked logs)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube",
+        "MatchesClasses": [
+          "BlockLog"
+        ]
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:block/planks",
+      "StackingModel": "morepiles:cubelogpile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "floralzonesneozeylandicregion:planks-*": {
+      "Enabled": true,
+      "Comment": "Planks block pile (Floral Zones planks)",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": true,
+        "MatchesShape": "game:block/basic/cube"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:player/build",
+      "StackingModel": "morepiles:cubepile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    },
+    "*": {
+      "Enabled": true,
+      "Comment": "Any blocks with simple CUBE shape",
+      "MorePilesProperties": {
+        "FixPlacement": true,
+        "ForceReplaceBehavior": false,
+        "MatchesShape": "game:block/basic/cube"
+      },
+      "CtrlKey": true,
+      "UpSolid": true,
+      "BulkTransferQuantity": 4,
+      "TransferQuantity": 1,
+      "StackingCapacity": 64,
+      "PlaceRemoveSound": "game:player/build",
+      "StackingModel": "morepiles:cubepile_64",
+      "StackingTextures": null,
+      "CbScaleYByLayer": 0.125,
+      "CollisionBox": {
+        "X1": 0.0,
+        "Y1": 0.0,
+        "Z1": 0.0,
+        "X2": 1.0,
+        "Y2": 0.125,
+        "Z2": 1.0
+      },
+      "ModelItemsToStackSizeRatio": 1.0
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "CommentHoldToCatch": "If true you need to hold the Catch Ledge key.",
+  "HoldToCatch": false,
+  "CommentCameraShake": "Camera shake intensity when latching onto a ledge.",
+  "CameraShake": 0.2
+}

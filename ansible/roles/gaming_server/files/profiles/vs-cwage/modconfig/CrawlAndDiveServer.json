@@ -1,0 +1,10 @@
+{
+  "CommentCrawlSpeedDelta": "Speed while crawling.",
+  "CrawlSpeedDelta": -0.6,
+  "CommentUpwardImpulse": "Upward impulse applied when starting a dive.",
+  "UpwardImpulse": 0.11,
+  "CommentSlideSpeed": "Slide impulse speed when landing.",
+  "SlideSpeed": 0.4,
+  "CommentDisableDive": "If true, disables the dive mechanic. Crawl remains enabled.",
+  "DisableDive": false
+}

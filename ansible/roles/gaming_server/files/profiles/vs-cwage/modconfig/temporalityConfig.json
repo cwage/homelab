@@ -1,0 +1,7 @@
+{
+  "configVersion": 5,
+  "rustCreaturesTakeHalfDamage": true,
+  "enableWraith": true,
+  "betterRiftward": true,
+  "riftSpread": true
+}

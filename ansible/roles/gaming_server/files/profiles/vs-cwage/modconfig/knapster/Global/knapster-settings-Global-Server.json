@@ -1,0 +1,9 @@
+{
+  "Features": {
+    "Configuration": {
+      "Scope": "World",
+      "CommandName": "knapster",
+      "Side": 3
+    }
+  }
+}

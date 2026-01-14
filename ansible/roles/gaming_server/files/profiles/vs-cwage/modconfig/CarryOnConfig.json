@@ -1,0 +1,81 @@
+{
+  "ConfigVersion": 2,
+  "Carryables": {
+    "Anvil": true,
+    "Barrel": true,
+    "Bookshelf": false,
+    "BunchOCandles": false,
+    "Chandelier": false,
+    "ChestLabeled": true,
+    "ChestTrunk": false,
+    "Chest": true,
+    "Clutter": false,
+    "Crate": true,
+    "DisplayCase": false,
+    "Flowerpot": false,
+    "Forge": false,
+    "Henbox": false,
+    "LogWithResin": false,
+    "LootVessel": true,
+    "MoldRack": false,
+    "Molds": false,
+    "Oven": false,
+    "Planter": true,
+    "Quern": true,
+    "ReedBasket": true,
+    "Resonator": true,
+    "Shelf": false,
+    "Sign": false,
+    "StorageVessel": true,
+    "ToolRack": false,
+    "TorchHolder": false
+  },
+  "Interactables": {
+    "Door": true,
+    "Barrel": true,
+    "Storage": true
+  },
+  "CarryOptions": {
+    "AllowSprintWhileCarrying": false,
+    "IgnoreCarrySpeedPenalty": false,
+    "RemoveInteractDelayWhileCarrying": false,
+    "InteractSpeedMultiplier": 1.0,
+    "BackSlotEnabled": true,
+    "AllowChestTrunksOnBack": false,
+    "AllowLargeChestsOnBack": false,
+    "AllowCratesOnBack": false,
+    "PreventSwapFromBackOnTarget": [
+      "behavior::Container",
+      "behavior::Door",
+      "class::portals.portal"
+    ]
+  },
+  "CarryablesFilters": {
+    "AutoMapSimilar": true,
+    "AutoMatchIgnoreMods": [
+      "mcrate"
+    ],
+    "AllowedShapeOnlyMatches": [
+      "block/clay/lootvessel",
+      "block/wood/chest/normal",
+      "block/wood/trunk/normal",
+      "block/reed/basket-normal"
+    ],
+    "RemoveBaseCarryableBehaviour": [
+      "woodchests:wtrunk"
+    ],
+    "RemoveCarryableBehaviour": [
+      "game:banner"
+    ]
+  },
+  "DroppedBlockOptions": {
+    "NonGroundBlockClasses": [
+      "BlockWater",
+      "BlockLava"
+    ]
+  },
+  "DebuggingOptions": {
+    "LoggingEnabled": false,
+    "DisableHarmonyPatch": false
+  }
+}

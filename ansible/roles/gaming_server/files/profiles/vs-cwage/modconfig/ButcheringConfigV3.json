@@ -1,0 +1,16 @@
+{
+  "description_BonePickaxeEnabled": "A low durability bone pickaxe that can only mine stone not ore. Default = false",
+  "BonePickaxeEnabled": false,
+  "description_HealingPrimeMeatRecipeEnabled": "Prepare primemeat into a healing meat with honey, horsetail and smoking. Default = true",
+  "HealingPrimeMeatRecipeEnabled": true,
+  "description_ClassRecipesEnabled": "Makes some recipes require class traits to craft. Default = true",
+  "ClassRecipesEnabled": true,
+  "description_butcheringTableLootMultiplier": "Effects the Butchering Tables drop rate. Default = 1",
+  "butcheringTableLootMultiplier": 1.0,
+  "description_SkinningRackLootMultiplier": "Effects the Skinning Hooks drop rate. Default = 1",
+  "SkinningRackLootMultiplier": 1.0,
+  "description_AnimalMassMultiplier": "Effects how much animals in your inventory slow you down. Default = 1",
+  "AnimalMassMultiplier": 1.0,
+  "description_FieldHarvestingLightMode": "Field Harvesting can be set to 'Light Mode' which changes the mods usual 50% drop rate (when field harvesting) to 80%. Default = false",
+  "FieldHarvestingLightMode": false
+}
