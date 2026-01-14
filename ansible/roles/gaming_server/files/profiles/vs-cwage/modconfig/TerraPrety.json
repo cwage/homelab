@@ -1,0 +1,46 @@
+{
+  "noiseScale": 300.0,
+  "heightMapNoiseScale": 32.0,
+  "fallbackParentLandformCode": "ultraflats",
+  "Delicate_configs_below__alter_at_your_own_peril": false,
+  "oceanWobbleScale": 2.0,
+  "oceanWobbleIntensity": 2.0,
+  "remappingKeys": [
+    0.15,
+    0.325
+  ],
+  "remappingValues": [
+    0.0,
+    1.0
+  ],
+  "heightMapOctaves": 1,
+  "heightMapPersistance": 0.1,
+  "midHeightKeys": [
+    0.0,
+    0.05,
+    0.33333,
+    1.0
+  ],
+  "midHeightValues": [
+    1.0,
+    0.9,
+    0.0,
+    0.0
+  ],
+  "chanceForMidZone": 0.8,
+  "targetMidLevel": 0.5,
+  "lowThreshForMidZone": 0.35,
+  "radiusMultOutwardsForSmoothing": 6.0,
+  "heightThresholdsForOceanicityComp": [
+    0.0,
+    1.0
+  ],
+  "heightMultsAtThresholdsForOceanicityComp": [
+    0.0,
+    0.0
+  ],
+  "heightFlatsAtThresholdsForOceanicityComp": [
+    0.0,
+    0.0
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "Version": "1.7.1",
+  "EnableJackOLanternParticles": true,
+  "EnableBossWarningSound": true,
+  "BossWarningMaxRange": 35.0,
+  "BossWarningMinRange": 10.0
+}

@@ -148,7 +148,7 @@
         owner: "{{ profile.name }}"
         group: "{{ profile.name }}"
         mode: "0644"
-      loop: "{{ mod_dlls.results | subelements('files') }}"
+      loop: "{{ mod_dlls.results | default([]) | subelements('files', skip_missing=true) }}"
       loop_control:
         label: "{{ item.1.path | basename }}"
       register: mods_deployed

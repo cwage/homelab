@@ -37,17 +37,25 @@ gaming_profiles:
     server_name: "Buttopia"
   - name: vs-sloths
     game: vintagestory
-    active: false
+    active: true
     version: "1.21.6"
     ports:
       game: 42421
     server_name: "Slothtopia"
+  - name: vs-cwage
+    game: vintagestory
+    active: true
+    version: "1.21.6"
+    ports:
+      game: 42420
+    server_name: "Cwage"
+    world_save_name: "fuckass"
   # Valheim server profile
   # Ports: game (default 2456), query uses game+1 automatically
   # Password fetched from OpenBao at kv/services/gaming/vh-buttopia
   - name: vh-buttopia
     game: valheim
-    active: true
+    active: false
     ports:
       game: 2456
     server_name: "Buttopia"

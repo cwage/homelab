@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "OffsetBlacklist": [
+    "*:lognarrow*",
+    "*:*fence*",
+    "*:*segment*",
+    "*:palisade*",
+    "clutter",
+    "wattle*",
+    "*:utb*"
+  ]
+}

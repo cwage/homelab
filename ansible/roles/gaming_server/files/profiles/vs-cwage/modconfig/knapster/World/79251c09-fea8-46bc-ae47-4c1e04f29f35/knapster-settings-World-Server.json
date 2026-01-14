@@ -1,0 +1,67 @@
+{
+  "Features": {
+    "EasyTillingServer": {
+      "Mode": "Enabled",
+      "Whitelist": [],
+      "Blacklist": [],
+      "SpeedMultiplier": 1.0,
+      "Side": 3
+    },
+    "EasySmithingServer": {
+      "Mode": "Enabled",
+      "Whitelist": [],
+      "Blacklist": [],
+      "CostPerClick": 1,
+      "VoxelsPerClick": 1,
+      "InstantComplete": false,
+      "Side": 3
+    },
+    "EasyPressingServer": {
+      "Mode": "Enabled",
+      "Whitelist": [],
+      "Blacklist": [],
+      "Side": 3
+    },
+    "EasyPanningServer": {
+      "Mode": "Enabled",
+      "Whitelist": [],
+      "Blacklist": [],
+      "DropsPerLayer": 1,
+      "SecondsPerLayer": 4.0,
+      "SaturationPerLayer": 3.0,
+      "Side": 3
+    },
+    "EasyKnappingServer": {
+      "Mode": "Enabled",
+      "Whitelist": [],
+      "Blacklist": [],
+      "VoxelsPerClick": 1,
+      "InstantComplete": false,
+      "Side": 3
+    },
+    "EasyHarvestingServer": {
+      "Mode": "Enabled",
+      "Whitelist": [],
+      "Blacklist": [],
+      "SpeedMultiplier": 1.0,
+      "Side": 3
+    },
+    "EasyGrindingServer": {
+      "Mode": "Enabled",
+      "Whitelist": [],
+      "Blacklist": [],
+      "SpeedMultiplier": 1.0,
+      "IncludeAutomated": false,
+      "StickyMouseButton": false,
+      "Side": 3
+    },
+    "EasyClayFormingServer": {
+      "Mode": "Enabled",
+      "Whitelist": [],
+      "Blacklist": [],
+      "VoxelsPerClick": 1,
+      "InstantComplete": false,
+      "Side": 3
+    }
+  }
+}

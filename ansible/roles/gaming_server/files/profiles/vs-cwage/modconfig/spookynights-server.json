@@ -1,0 +1,35 @@
+{
+  "Version": "1.7.1",
+  "EnableCandyLoot": true,
+  "AllowedCandyMonths": [
+    10
+  ],
+  "CandyOnlyOnFullMoon": false,
+  "SpawnMultipliers": {
+    "spookynights:spectralwolf-*": 0.5,
+    "spookynights:spectralbear-brown-*": 0.5,
+    "spookynights:spectralbear-giant-*": 0.5,
+    "spookynights:spectraldrifter-*": 0.5,
+    "spookynights:spectralshiver-*": 0.5,
+    "spookynights:spectralbowtorn-*": 0.5
+  },
+  "UseTimeBasedSpawning": true,
+  "SpawnOnlyAtNight": true,
+  "NightTimeMode": "Auto",
+  "NightStartHour": 20.0,
+  "NightEndHour": 6.0,
+  "LightLevelThreshold": 14,
+  "AllowedSpawnMonths": [],
+  "SpawnOnlyOnLastDayOfMonth": false,
+  "SpawnOnlyOnFullMoon": false,
+  "FullMoonSpawnMultiplier": 2.0,
+  "Bosses": {
+    "spookynights:spectralbear-giant-*": {
+      "Enabled": true,
+      "AllowedMoonPhases": [
+        "full"
+      ]
+    }
+  },
+  "EnableDebugLogging": false
+}
