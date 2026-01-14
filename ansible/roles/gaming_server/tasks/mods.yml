@@ -152,7 +152,6 @@
       loop_control:
         label: "{{ item.1.path | basename }}"
       register: mods_deployed
-      when: mod_dlls.results is defined and mod_dlls.results | length > 0
 
     # Deploy default mod configs from Thunderstore packages
     - name: "Check for mod config directories for {{ profile.name }}"
