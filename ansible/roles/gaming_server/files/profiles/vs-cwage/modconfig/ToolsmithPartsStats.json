@@ -1,0 +1,1622 @@
+{
+  "EnableEdits": false,
+  "BaseHandleParts": {
+    "stick": {
+      "handleStatTag": "stick",
+      "canHaveGrip": false,
+      "handleShapePath": "toolsmith:shapes/item/parts/handles/stick/handle",
+      "canBeTreated": false,
+      "dryingTimeMult": 1.0,
+      "enabled": true,
+      "id": "stick"
+    },
+    "bone": {
+      "handleStatTag": "bone",
+      "canHaveGrip": true,
+      "handleShapePath": "toolsmith:shapes/item/parts/handles/bone/handle",
+      "canBeTreated": false,
+      "dryingTimeMult": 1.0,
+      "enabled": true,
+      "id": "bone"
+    },
+    "crudehandle": {
+      "handleStatTag": "crude",
+      "canHaveGrip": true,
+      "handleShapePath": "toolsmith:shapes/item/parts/handles/crude/handle",
+      "canBeTreated": false,
+      "dryingTimeMult": 1.0,
+      "enabled": true,
+      "id": "crudehandle"
+    },
+    "handle": {
+      "handleStatTag": "handle",
+      "canHaveGrip": true,
+      "handleShapePath": "toolsmith:shapes/item/parts/handles/regular/handle",
+      "canBeTreated": true,
+      "dryingTimeMult": 1.0,
+      "enabled": true,
+      "id": "handle"
+    },
+    "carpentedhandle": {
+      "handleStatTag": "professional",
+      "canHaveGrip": true,
+      "handleShapePath": "toolsmith:shapes/item/parts/handles/fine/handle",
+      "canBeTreated": true,
+      "dryingTimeMult": 2.0,
+      "enabled": true,
+      "id": "carpentedhandle"
+    }
+  },
+  "GripParts": {
+    "leather-normal-acacia": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/acacia",
+      "enabled": true,
+      "id": "leather-normal-acacia"
+    },
+    "leather-normal-aged": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/aged",
+      "enabled": true,
+      "id": "leather-normal-aged"
+    },
+    "leather-normal-baldcypress": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/baldcypress",
+      "enabled": true,
+      "id": "leather-normal-baldcypress"
+    },
+    "leather-normal-birch": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/birch",
+      "enabled": true,
+      "id": "leather-normal-birch"
+    },
+    "leather-normal-cypress": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/cypress",
+      "enabled": true,
+      "id": "leather-normal-cypress"
+    },
+    "leather-normal-ebony": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/ebony",
+      "enabled": true,
+      "id": "leather-normal-ebony"
+    },
+    "leather-normal-kapok": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/kapok",
+      "enabled": true,
+      "id": "leather-normal-kapok"
+    },
+    "leather-normal-larch": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/larch",
+      "enabled": true,
+      "id": "leather-normal-larch"
+    },
+    "leather-normal-maple": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/maple",
+      "enabled": true,
+      "id": "leather-normal-maple"
+    },
+    "leather-normal-pine": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/pine",
+      "enabled": true,
+      "id": "leather-normal-pine"
+    },
+    "leather-normal-purpleheart": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/purpleheart",
+      "enabled": true,
+      "id": "leather-normal-purpleheart"
+    },
+    "leather-normal-redwood": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/redwood",
+      "enabled": true,
+      "id": "leather-normal-redwood"
+    },
+    "leather-normal-walnut": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/leather/walnut",
+      "enabled": true,
+      "id": "leather-normal-walnut"
+    },
+    "buckskin": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "ancienttools:item/resource/buckskin",
+      "enabled": true,
+      "id": "buckskin"
+    },
+    "twine-wool-mordant": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/mordant",
+      "enabled": true,
+      "id": "twine-wool-mordant"
+    },
+    "twine-wool-plain": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/normal1",
+      "enabled": true,
+      "id": "twine-wool-plain"
+    },
+    "twine-wool-black": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/black",
+      "enabled": true,
+      "id": "twine-wool-black"
+    },
+    "twine-wool-blue": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/blue",
+      "enabled": true,
+      "id": "twine-wool-blue"
+    },
+    "twine-wool-brown": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/brown",
+      "enabled": true,
+      "id": "twine-wool-brown"
+    },
+    "twine-wool-gray": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/gray",
+      "enabled": true,
+      "id": "twine-wool-gray"
+    },
+    "twine-wool-green": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/green",
+      "enabled": true,
+      "id": "twine-wool-green"
+    },
+    "twine-wool-orange": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/orange",
+      "enabled": true,
+      "id": "twine-wool-orange"
+    },
+    "twine-wool-pink": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/pink",
+      "enabled": true,
+      "id": "twine-wool-pink"
+    },
+    "twine-wool-purple": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/purple",
+      "enabled": true,
+      "id": "twine-wool-purple"
+    },
+    "twine-wool-red": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/red",
+      "enabled": true,
+      "id": "twine-wool-red"
+    },
+    "twine-wool-white": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/white",
+      "enabled": true,
+      "id": "twine-wool-white"
+    },
+    "twine-wool-yellow": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/yellow",
+      "enabled": true,
+      "id": "twine-wool-yellow"
+    },
+    "twine-wool-darkblue": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkblue",
+      "enabled": true,
+      "id": "twine-wool-darkblue"
+    },
+    "twine-wool-darkbrown": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkbrown",
+      "enabled": true,
+      "id": "twine-wool-darkbrown"
+    },
+    "twine-wool-darkgreen": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkgreen",
+      "enabled": true,
+      "id": "twine-wool-darkgreen"
+    },
+    "twine-wool-darkred": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkred",
+      "enabled": true,
+      "id": "twine-wool-darkred"
+    },
+    "cloth-wool-mordant": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/mordant",
+      "enabled": true,
+      "id": "cloth-wool-mordant"
+    },
+    "cloth-wool-plain": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/plain",
+      "enabled": true,
+      "id": "cloth-wool-plain"
+    },
+    "cloth-wool-black": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/black",
+      "enabled": true,
+      "id": "cloth-wool-black"
+    },
+    "cloth-wool-blue": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/blue",
+      "enabled": true,
+      "id": "cloth-wool-blue"
+    },
+    "cloth-wool-brown": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/brown",
+      "enabled": true,
+      "id": "cloth-wool-brown"
+    },
+    "cloth-wool-gray": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/gray",
+      "enabled": true,
+      "id": "cloth-wool-gray"
+    },
+    "cloth-wool-green": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/green",
+      "enabled": true,
+      "id": "cloth-wool-green"
+    },
+    "cloth-wool-orange": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/orange",
+      "enabled": true,
+      "id": "cloth-wool-orange"
+    },
+    "cloth-wool-pink": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/pink",
+      "enabled": true,
+      "id": "cloth-wool-pink"
+    },
+    "cloth-wool-purple": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/purple",
+      "enabled": true,
+      "id": "cloth-wool-purple"
+    },
+    "cloth-wool-red": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/red",
+      "enabled": true,
+      "id": "cloth-wool-red"
+    },
+    "cloth-wool-white": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/white",
+      "enabled": true,
+      "id": "cloth-wool-white"
+    },
+    "cloth-wool-yellow": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/yellow",
+      "enabled": true,
+      "id": "cloth-wool-yellow"
+    },
+    "cloth-wool-darkblue": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkblue",
+      "enabled": true,
+      "id": "cloth-wool-darkblue"
+    },
+    "cloth-wool-darkbrown": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkbrown",
+      "enabled": true,
+      "id": "cloth-wool-darkbrown"
+    },
+    "cloth-wool-darkgreen": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkgreen",
+      "enabled": true,
+      "id": "cloth-wool-darkgreen"
+    },
+    "cloth-wool-darkred": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkred",
+      "enabled": true,
+      "id": "cloth-wool-darkred"
+    },
+    "wool-plain": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/plain",
+      "enabled": true,
+      "id": "wool-plain"
+    },
+    "wool-black": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/black",
+      "enabled": true,
+      "id": "wool-black"
+    },
+    "wool-blue": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/blue",
+      "enabled": true,
+      "id": "wool-blue"
+    },
+    "wool-brown": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/brown",
+      "enabled": true,
+      "id": "wool-brown"
+    },
+    "wool-gray": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/gray",
+      "enabled": true,
+      "id": "wool-gray"
+    },
+    "wool-green": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/green",
+      "enabled": true,
+      "id": "wool-green"
+    },
+    "wool-orange": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/orange",
+      "enabled": true,
+      "id": "wool-orange"
+    },
+    "wool-pink": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/pink",
+      "enabled": true,
+      "id": "wool-pink"
+    },
+    "wool-purple": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/purple",
+      "enabled": true,
+      "id": "wool-purple"
+    },
+    "wool-red": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/red",
+      "enabled": true,
+      "id": "wool-red"
+    },
+    "wool-white": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/white",
+      "enabled": true,
+      "id": "wool-white"
+    },
+    "wool-yellow": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/linen/yellow",
+      "enabled": true,
+      "id": "wool-yellow"
+    },
+    "wool-darkblue": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkblue",
+      "enabled": true,
+      "id": "wool-darkblue"
+    },
+    "wool-darkbrown": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkbrown",
+      "enabled": true,
+      "id": "wool-darkbrown"
+    },
+    "wool-darkgreen": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkgreen",
+      "enabled": true,
+      "id": "wool-darkgreen"
+    },
+    "wool-darkred": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "wool:block/cloth/wool/darkred",
+      "enabled": true,
+      "id": "wool-darkred"
+    },
+    "cloth-darkblue": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "tailorsdelight:block/cloth/dark/darkblue",
+      "enabled": true,
+      "id": "cloth-darkblue"
+    },
+    "cloth-darkbrown": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "tailorsdelight:block/cloth/dark/darkbrown",
+      "enabled": true,
+      "id": "cloth-darkbrown"
+    },
+    "cloth-darkgreen": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "tailorsdelight:block/cloth/dark/darkgreen",
+      "enabled": true,
+      "id": "cloth-darkgreen"
+    },
+    "cloth-darkred": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "tailorsdelight:block/cloth/dark/darkred",
+      "enabled": true,
+      "id": "cloth-darkred"
+    },
+    "flaxtwine": {
+      "gripStatTag": "twine",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "",
+      "enabled": true,
+      "id": "flaxtwine"
+    },
+    "linen-diamond-down": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/diamond1",
+      "enabled": true,
+      "id": "linen-diamond-down"
+    },
+    "linen-normal-down": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/normal1",
+      "enabled": true,
+      "id": "linen-normal-down"
+    },
+    "linen-offset-down": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/offset1",
+      "enabled": true,
+      "id": "linen-offset-down"
+    },
+    "linen-square-down": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/square1",
+      "enabled": true,
+      "id": "linen-square-down"
+    },
+    "cloth-plain": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/normal1",
+      "enabled": true,
+      "id": "cloth-plain"
+    },
+    "cloth-mordant": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/mordant",
+      "enabled": true,
+      "id": "cloth-mordant"
+    },
+    "cloth-blue": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/blue",
+      "enabled": true,
+      "id": "cloth-blue"
+    },
+    "cloth-red": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/red",
+      "enabled": true,
+      "id": "cloth-red"
+    },
+    "cloth-yellow": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/yellow",
+      "enabled": true,
+      "id": "cloth-yellow"
+    },
+    "cloth-green": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/green",
+      "enabled": true,
+      "id": "cloth-green"
+    },
+    "cloth-purple": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/purple",
+      "enabled": true,
+      "id": "cloth-purple"
+    },
+    "cloth-pink": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/pink",
+      "enabled": true,
+      "id": "cloth-pink"
+    },
+    "cloth-orange": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/orange",
+      "enabled": true,
+      "id": "cloth-orange"
+    },
+    "cloth-brown": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/brown",
+      "enabled": true,
+      "id": "cloth-brown"
+    },
+    "cloth-gray": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/gray",
+      "enabled": true,
+      "id": "cloth-gray"
+    },
+    "cloth-black": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/black",
+      "enabled": true,
+      "id": "cloth-black"
+    },
+    "cloth-white": {
+      "gripStatTag": "cloth",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/cloth/linen/white",
+      "enabled": true,
+      "id": "cloth-white"
+    },
+    "leather-normal-plain": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "",
+      "enabled": true,
+      "id": "leather-normal-plain"
+    },
+    "leather-normal-orange": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/orange",
+      "enabled": true,
+      "id": "leather-normal-orange"
+    },
+    "leather-normal-black": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/black",
+      "enabled": true,
+      "id": "leather-normal-black"
+    },
+    "leather-normal-red": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/red",
+      "enabled": true,
+      "id": "leather-normal-red"
+    },
+    "leather-normal-blue": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/blue",
+      "enabled": true,
+      "id": "leather-normal-blue"
+    },
+    "leather-normal-purple": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/purple",
+      "enabled": true,
+      "id": "leather-normal-purple"
+    },
+    "leather-normal-pink": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/pink",
+      "enabled": true,
+      "id": "leather-normal-pink"
+    },
+    "leather-normal-white": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/white",
+      "enabled": true,
+      "id": "leather-normal-white"
+    },
+    "leather-normal-yellow": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/yellow",
+      "enabled": true,
+      "id": "leather-normal-yellow"
+    },
+    "leather-normal-gray": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/gray",
+      "enabled": true,
+      "id": "leather-normal-gray"
+    },
+    "leather-normal-green": {
+      "gripStatTag": "leather",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "game:block/leather/green",
+      "enabled": true,
+      "id": "leather-normal-green"
+    },
+    "leather-sturdy-plain": {
+      "gripStatTag": "sturdy",
+      "gripShapePath": "fabric",
+      "gripTextureOverride": "",
+      "enabled": true,
+      "id": "leather-sturdy-plain"
+    }
+  },
+  "TreatmentParts": {
+    "plantoil-flax": {
+      "treatmentStatTag": "oil",
+      "dryingHours": 24,
+      "isLiquid": true,
+      "litersUsed": 0.1,
+      "enabled": true,
+      "id": "plantoil-flax"
+    },
+    "plantoil-walnut": {
+      "treatmentStatTag": "oil",
+      "dryingHours": 24,
+      "isLiquid": true,
+      "litersUsed": 0.1,
+      "enabled": true,
+      "id": "plantoil-walnut"
+    },
+    "woodfinish-flax": {
+      "treatmentStatTag": "oil",
+      "dryingHours": 24,
+      "isLiquid": true,
+      "litersUsed": 0.05,
+      "enabled": true,
+      "id": "woodfinish-flax"
+    },
+    "woodfinish-walnut": {
+      "treatmentStatTag": "oil",
+      "dryingHours": 24,
+      "isLiquid": true,
+      "litersUsed": 0.05,
+      "enabled": true,
+      "id": "woodfinish-walnut"
+    },
+    "fat": {
+      "treatmentStatTag": "fat",
+      "dryingHours": 12,
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "enabled": true,
+      "id": "fat"
+    },
+    "beeswax": {
+      "treatmentStatTag": "wax",
+      "dryingHours": 12,
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "enabled": true,
+      "id": "beeswax"
+    },
+    "foodoilportion-flax": {
+      "treatmentStatTag": "oil",
+      "dryingHours": 24,
+      "isLiquid": true,
+      "litersUsed": 0.1,
+      "enabled": true,
+      "id": "foodoilportion-flax"
+    },
+    "foodoilportion-seed": {
+      "treatmentStatTag": "oil",
+      "dryingHours": 24,
+      "isLiquid": true,
+      "litersUsed": 0.1,
+      "enabled": true,
+      "id": "foodoilportion-seed"
+    }
+  },
+  "BindingParts": {
+    "drygrass": {
+      "bindingStatTag": "reeds",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "drygrass"
+    },
+    "cattailtops": {
+      "bindingStatTag": "reeds",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "cattailtops"
+    },
+    "papyrustops": {
+      "bindingStatTag": "reeds",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "papyrustops"
+    },
+    "flaxtwine": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "flaxtwine"
+    },
+    "fabricstrips-rawhide": {
+      "bindingStatTag": "hide",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "fabricstrips-rawhide"
+    },
+    "rope": {
+      "bindingStatTag": "rope",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "rope"
+    },
+    "fabricstrips-cloth": {
+      "bindingStatTag": "cloth",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "fabricstrips-cloth"
+    },
+    "fabricstrips-leather": {
+      "bindingStatTag": "leather",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "fabricstrips-leather"
+    },
+    "fabricstrips-sturdy": {
+      "bindingStatTag": "sturdy",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "fabricstrips-sturdy"
+    },
+    "glueportion-pitch-hot": {
+      "bindingStatTag": "glue",
+      "isLiquid": true,
+      "litersUsed": 0.5,
+      "bindingShapePath": "",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "glueportion-pitch-hot"
+    },
+    "metalnailsandstrips-copper": {
+      "bindingStatTag": "coppernails",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "metal",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "metalnailsandstrips-copper"
+    },
+    "metalnailsandstrips-tinbronze": {
+      "bindingStatTag": "tinbronzenails",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "metal",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "metalnailsandstrips-tinbronze"
+    },
+    "metalnailsandstrips-bismuthbronze": {
+      "bindingStatTag": "bismuthbronzenails",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "metal",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "metalnailsandstrips-bismuthbronze"
+    },
+    "metalnailsandstrips-blackbronze": {
+      "bindingStatTag": "blackbronzenails",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "metal",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "metalnailsandstrips-blackbronze"
+    },
+    "metalnailsandstrips-iron": {
+      "bindingStatTag": "ironnails",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "metal",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "metalnailsandstrips-iron"
+    },
+    "metalnailsandstrips-cupronickel": {
+      "bindingStatTag": "cupronickelnails",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "metal",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "metalnailsandstrips-cupronickel"
+    },
+    "metalnailsandstrips-meteoriciron": {
+      "bindingStatTag": "meteoricironnails",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "metal",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "metalnailsandstrips-meteoriciron"
+    },
+    "metalnailsandstrips-steel": {
+      "bindingStatTag": "steelnails",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "metal",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "metalnailsandstrips-steel"
+    },
+    "metal-parts": {
+      "bindingStatTag": "cupronickelnails",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "metal",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "metal-parts"
+    },
+    "cordage": {
+      "bindingStatTag": "rope",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "cordage"
+    },
+    "sinew-dry": {
+      "bindingStatTag": "rope",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "butchering:item/resource/sinew",
+      "enabled": true,
+      "id": "sinew-dry"
+    },
+    "glueportion-sinew-cold": {
+      "bindingStatTag": "glue",
+      "isLiquid": true,
+      "litersUsed": 0.5,
+      "bindingShapePath": "",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "glueportion-sinew-cold"
+    },
+    "glueportion-hide-hot": {
+      "bindingStatTag": "glue",
+      "isLiquid": true,
+      "litersUsed": 0.5,
+      "bindingShapePath": "",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "glueportion-hide-hot"
+    },
+    "twine-mordant": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/mordant",
+      "enabled": true,
+      "id": "twine-mordant"
+    },
+    "twine-black": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/black",
+      "enabled": true,
+      "id": "twine-black"
+    },
+    "twine-blue": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/blue",
+      "enabled": true,
+      "id": "twine-blue"
+    },
+    "twine-brown": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/brown",
+      "enabled": true,
+      "id": "twine-brown"
+    },
+    "twine-gray": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/gray",
+      "enabled": true,
+      "id": "twine-gray"
+    },
+    "twine-green": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/green",
+      "enabled": true,
+      "id": "twine-green"
+    },
+    "twine-orange": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/orange",
+      "enabled": true,
+      "id": "twine-orange"
+    },
+    "twine-pink": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/pink",
+      "enabled": true,
+      "id": "twine-pink"
+    },
+    "twine-purple": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/purple",
+      "enabled": true,
+      "id": "twine-purple"
+    },
+    "twine-red": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/red",
+      "enabled": true,
+      "id": "twine-red"
+    },
+    "twine-white": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/white",
+      "enabled": true,
+      "id": "twine-white"
+    },
+    "twine-yellow": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/yellow",
+      "enabled": true,
+      "id": "twine-yellow"
+    },
+    "twine-darkblue": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "tailorsdelight:block/cloth/dark/darkblue",
+      "enabled": true,
+      "id": "twine-darkblue"
+    },
+    "twine-darkbrown": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "tailorsdelight:block/cloth/dark/darkbrown",
+      "enabled": true,
+      "id": "twine-darkbrown"
+    },
+    "twine-darkgreen": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "tailorsdelight:block/cloth/dark/darkgreen",
+      "enabled": true,
+      "id": "twine-darkgreen"
+    },
+    "twine-darkred": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "tailorsdelight:block/cloth/dark/darkred",
+      "enabled": true,
+      "id": "twine-darkred"
+    },
+    "leatherstrips-plain": {
+      "bindingStatTag": "leather",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "leatherstrips-plain"
+    },
+    "twine-wool-mordant": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/mordant",
+      "enabled": true,
+      "id": "twine-wool-mordant"
+    },
+    "twine-wool-plain": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/plain",
+      "enabled": true,
+      "id": "twine-wool-plain"
+    },
+    "twine-wool-black": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/black",
+      "enabled": true,
+      "id": "twine-wool-black"
+    },
+    "twine-wool-blue": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/blue",
+      "enabled": true,
+      "id": "twine-wool-blue"
+    },
+    "twine-wool-brown": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/brown",
+      "enabled": true,
+      "id": "twine-wool-brown"
+    },
+    "twine-wool-gray": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/gray",
+      "enabled": true,
+      "id": "twine-wool-gray"
+    },
+    "twine-wool-green": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/green",
+      "enabled": true,
+      "id": "twine-wool-green"
+    },
+    "twine-wool-orange": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/orange",
+      "enabled": true,
+      "id": "twine-wool-orange"
+    },
+    "twine-wool-pink": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/pink",
+      "enabled": true,
+      "id": "twine-wool-pink"
+    },
+    "twine-wool-purple": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/purple",
+      "enabled": true,
+      "id": "twine-wool-purple"
+    },
+    "twine-wool-red": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/red",
+      "enabled": true,
+      "id": "twine-wool-red"
+    },
+    "twine-wool-white": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/white",
+      "enabled": true,
+      "id": "twine-wool-white"
+    },
+    "twine-wool-yellow": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "game:block/cloth/linen/yellow",
+      "enabled": true,
+      "id": "twine-wool-yellow"
+    },
+    "twine-wool-darkblue": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "wool:block/cloth/wool/darkblue",
+      "enabled": true,
+      "id": "twine-wool-darkblue"
+    },
+    "twine-wool-darkbrown": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "wool:block/cloth/wool/darkbrown",
+      "enabled": true,
+      "id": "twine-wool-darkbrown"
+    },
+    "twine-wool-darkgreen": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "wool:block/cloth/wool/darkgreen",
+      "enabled": true,
+      "id": "twine-wool-darkgreen"
+    },
+    "twine-wool-darkred": {
+      "bindingStatTag": "twine",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "wool:block/cloth/wool/darkred",
+      "enabled": true,
+      "id": "twine-wool-darkred"
+    },
+    "fabricstrips-wool": {
+      "bindingStatTag": "cloth",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "fabricstrips-wool"
+    },
+    "fabricstrips-atleather": {
+      "bindingStatTag": "leather",
+      "isLiquid": false,
+      "litersUsed": 0.0,
+      "bindingShapePath": "string",
+      "bindingTextureOverride": "",
+      "enabled": true,
+      "id": "fabricstrips-atleather"
+    }
+  },
+  "BaseHandleStats": {
+    "stick": {
+      "baseHPfactor": 1.0,
+      "selfHPBonus": 0.0,
+      "bindingHPBonus": 0.0,
+      "speedBonus": 0.0,
+      "id": "stick"
+    },
+    "bone": {
+      "baseHPfactor": 1.0,
+      "selfHPBonus": 0.05,
+      "bindingHPBonus": 0.05,
+      "speedBonus": 0.0,
+      "id": "bone"
+    },
+    "crude": {
+      "baseHPfactor": 1.0,
+      "selfHPBonus": 0.0,
+      "bindingHPBonus": 0.05,
+      "speedBonus": 0.0,
+      "id": "crude"
+    },
+    "handle": {
+      "baseHPfactor": 1.2,
+      "selfHPBonus": 0.05,
+      "bindingHPBonus": 0.2,
+      "speedBonus": 0.05,
+      "id": "handle"
+    },
+    "professional": {
+      "baseHPfactor": 1.5,
+      "selfHPBonus": 0.1,
+      "bindingHPBonus": 0.4,
+      "speedBonus": 0.1,
+      "id": "professional"
+    }
+  },
+  "GripStats": {
+    "plain": {
+      "texturePath": "plain",
+      "langTag": "",
+      "speedBonus": 0.0,
+      "chanceToDamage": 1.0,
+      "id": "plain"
+    },
+    "twine": {
+      "texturePath": "game:block/cloth/reedrope",
+      "langTag": "grip-twine",
+      "speedBonus": 0.0,
+      "chanceToDamage": 0.95,
+      "id": "twine"
+    },
+    "cloth": {
+      "texturePath": "game:block/cloth/linen/normal1",
+      "langTag": "grip-cloth",
+      "speedBonus": 0.1,
+      "chanceToDamage": 0.9,
+      "id": "cloth"
+    },
+    "leather": {
+      "texturePath": "game:block/leather/plain",
+      "langTag": "grip-leather",
+      "speedBonus": 0.2,
+      "chanceToDamage": 0.8,
+      "id": "leather"
+    },
+    "sturdy": {
+      "texturePath": "game:block/leather/chromium",
+      "langTag": "grip-sturdy",
+      "speedBonus": 0.3,
+      "chanceToDamage": 0.65,
+      "id": "sturdy"
+    }
+  },
+  "TreatmentStats": {
+    "none": {
+      "langTag": "",
+      "handleHPbonus": 0.0,
+      "id": "none"
+    },
+    "fat": {
+      "langTag": "treatment-fat",
+      "handleHPbonus": 0.2,
+      "id": "fat"
+    },
+    "wax": {
+      "langTag": "treatment-wax",
+      "handleHPbonus": 0.5,
+      "id": "wax"
+    },
+    "oil": {
+      "langTag": "treatment-oil",
+      "handleHPbonus": 0.65,
+      "id": "oil"
+    }
+  },
+  "BindingStats": {
+    "none": {
+      "texturePath": "plain",
+      "langTag": "binding-none",
+      "baseHPfactor": 0.5,
+      "selfHPBonus": 0.0,
+      "handleHPBonus": 0.0,
+      "recoveryPercent": 1.0,
+      "isMetal": false,
+      "metalType": null,
+      "id": "none"
+    },
+    "reeds": {
+      "texturePath": "game:block/cloth/reedrope",
+      "langTag": "binding-reeds",
+      "baseHPfactor": 1.0,
+      "selfHPBonus": 0.0,
+      "handleHPBonus": 0.0,
+      "recoveryPercent": 1.0,
+      "isMetal": false,
+      "metalType": null,
+      "id": "reeds"
+    },
+    "twine": {
+      "texturePath": "game:block/cloth/basic/normal",
+      "langTag": "binding-twine",
+      "baseHPfactor": 1.2,
+      "selfHPBonus": 0.1,
+      "handleHPBonus": 0.05,
+      "recoveryPercent": 0.9,
+      "isMetal": false,
+      "metalType": null,
+      "id": "twine"
+    },
+    "hide": {
+      "texturePath": "game:block/cloth/rawhide",
+      "langTag": "binding-hide",
+      "baseHPfactor": 1.25,
+      "selfHPBonus": 0.15,
+      "handleHPBonus": 0.05,
+      "recoveryPercent": 0.8,
+      "isMetal": false,
+      "metalType": null,
+      "id": "hide"
+    },
+    "rope": {
+      "texturePath": "game:block/cloth/basic/brown",
+      "langTag": "binding-rope",
+      "baseHPfactor": 1.25,
+      "selfHPBonus": 0.15,
+      "handleHPBonus": 0.05,
+      "recoveryPercent": 0.7,
+      "isMetal": false,
+      "metalType": null,
+      "id": "rope"
+    },
+    "cloth": {
+      "texturePath": "game:block/cloth/linen/plain",
+      "langTag": "binding-cloth",
+      "baseHPfactor": 1.3,
+      "selfHPBonus": 0.2,
+      "handleHPBonus": 0.1,
+      "recoveryPercent": 0.75,
+      "isMetal": false,
+      "metalType": null,
+      "id": "cloth"
+    },
+    "leather": {
+      "texturePath": "game:block/leather/plain",
+      "langTag": "binding-leather",
+      "baseHPfactor": 1.5,
+      "selfHPBonus": 0.3,
+      "handleHPBonus": 0.1,
+      "recoveryPercent": 0.6,
+      "isMetal": false,
+      "metalType": null,
+      "id": "leather"
+    },
+    "sturdy": {
+      "texturePath": "game:block/leather/chromium",
+      "langTag": "binding-sturdy",
+      "baseHPfactor": 1.8,
+      "selfHPBonus": 0.3,
+      "handleHPBonus": 0.25,
+      "recoveryPercent": 0.55,
+      "isMetal": false,
+      "metalType": null,
+      "id": "sturdy"
+    },
+    "glue": {
+      "texturePath": "plain",
+      "langTag": "binding-glue",
+      "baseHPfactor": 2.0,
+      "selfHPBonus": 0.3,
+      "handleHPBonus": 0.3,
+      "recoveryPercent": 1.0,
+      "isMetal": false,
+      "metalType": null,
+      "id": "glue"
+    },
+    "coppernails": {
+      "texturePath": "game:block/metal/plate/copper",
+      "langTag": "binding-nails-copper",
+      "baseHPfactor": 1.4,
+      "selfHPBonus": 0.1,
+      "handleHPBonus": 0.1,
+      "recoveryPercent": 0.9,
+      "isMetal": true,
+      "metalType": "copper",
+      "id": "coppernails"
+    },
+    "tinbronzenails": {
+      "texturePath": "game:block/metal/plate/tinbronze",
+      "langTag": "binding-nails-tinbronze",
+      "baseHPfactor": 1.7,
+      "selfHPBonus": 0.2,
+      "handleHPBonus": 0.2,
+      "recoveryPercent": 0.5,
+      "isMetal": true,
+      "metalType": "tinbronze",
+      "id": "tinbronzenails"
+    },
+    "bismuthbronzenails": {
+      "texturePath": "game:block/metal/plate/bismuthbronze",
+      "langTag": "binding-nails-bismuthbronze",
+      "baseHPfactor": 1.7,
+      "selfHPBonus": 0.25,
+      "handleHPBonus": 0.2,
+      "recoveryPercent": 0.5,
+      "isMetal": true,
+      "metalType": "bismuthbronze",
+      "id": "bismuthbronzenails"
+    },
+    "blackbronzenails": {
+      "texturePath": "game:block/metal/plate/blackbronze",
+      "langTag": "binding-nails-blackbronze",
+      "baseHPfactor": 1.7,
+      "selfHPBonus": 0.3,
+      "handleHPBonus": 0.2,
+      "recoveryPercent": 0.5,
+      "isMetal": true,
+      "metalType": "blackbronze",
+      "id": "blackbronzenails"
+    },
+    "ironnails": {
+      "texturePath": "game:block/metal/plate/iron",
+      "langTag": "binding-nails-iron",
+      "baseHPfactor": 1.8,
+      "selfHPBonus": 0.3,
+      "handleHPBonus": 0.2,
+      "recoveryPercent": 0.45,
+      "isMetal": true,
+      "metalType": "iron",
+      "id": "ironnails"
+    },
+    "cupronickelnails": {
+      "texturePath": "game:block/metal/ingot/cupronickel",
+      "langTag": "binding-nails-cupronickel",
+      "baseHPfactor": 1.7,
+      "selfHPBonus": 0.2,
+      "handleHPBonus": 0.2,
+      "recoveryPercent": 0.5,
+      "isMetal": true,
+      "metalType": "cupronickel",
+      "id": "cupronickelnails"
+    },
+    "meteoricironnails": {
+      "texturePath": "game:block/metal/plate/meteoriciron",
+      "langTag": "binding-nails-meteoriciron",
+      "baseHPfactor": 1.9,
+      "selfHPBonus": 0.5,
+      "handleHPBonus": 0.25,
+      "recoveryPercent": 0.45,
+      "isMetal": true,
+      "metalType": "meteoriciron",
+      "id": "meteoricironnails"
+    },
+    "steelnails": {
+      "texturePath": "game:block/metal/plate/steel",
+      "langTag": "binding-nails-steel",
+      "baseHPfactor": 2.2,
+      "selfHPBonus": 0.6,
+      "handleHPBonus": 0.4,
+      "recoveryPercent": 0.35,
+      "isMetal": true,
+      "metalType": "steel",
+      "id": "steelnails"
+    }
+  }
+}

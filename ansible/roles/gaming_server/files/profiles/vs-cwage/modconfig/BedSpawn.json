@@ -1,0 +1,15 @@
+{
+  "BlacklistedBeds": [],
+  "RequireSneaking": false,
+  "Rooms": {
+    "Enabled": false,
+    "BedsThatDontRequireRooms": []
+  },
+  "EnableDebugMessages": false,
+  "NotifyPlayerOnBedDestroyed": true,
+  "DisableBelowSeaLevel": false,
+  "Cooldown": {
+    "Enabled": false,
+    "CooldownDays": 0.0
+  }
+}

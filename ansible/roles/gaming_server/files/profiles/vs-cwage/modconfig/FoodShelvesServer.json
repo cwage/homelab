@@ -1,0 +1,7 @@
+{
+  "GlobalBlockBuffs": true,
+  "LakeIceToCutIce": false,
+  "GlobalPerishMultiplier": 1.0,
+  "CooledBuff": 0.3,
+  "IceMeltRate": 1.0
+}

@@ -1,0 +1,6 @@
+{
+  "SendProximityMessage": true,
+  "ProximityMessageDistance": 100,
+  "DivisionForPapersOnBoard": 1.0,
+  "ProximityGroupName": "Proximity"
+}

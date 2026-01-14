@@ -1,0 +1,14 @@
+{
+  "FoodDecaysInShops": true,
+  "StallPerishRate": 0.15,
+  "ViconTenretniWhitelists": [
+    {
+      "baseURL": "https://pastebin.com/raw/",
+      "name": "Pastebin.com"
+    }
+  ],
+  "tradingNetworkUrl": null,
+  "networkAPIKeys": {},
+  "tradingNetworkEnabled": true,
+  "syncIntervalMinutes": 10
+}

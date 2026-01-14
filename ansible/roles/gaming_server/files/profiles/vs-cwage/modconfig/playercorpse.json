@@ -1,0 +1,92 @@
+{
+  "CanFired": {
+    "Description": "Burns in 15 seconds. LET EVERYTHING BURN IN LAVA!",
+    "Default": false,
+    "Value": false
+  },
+  "HasHealth": {
+    "Description": "Has 100 hp, can be broken by another player",
+    "Default": false,
+    "Value": false
+  },
+  "CreateCorpse": {
+    "Default": true,
+    "Value": true
+  },
+  "SaveInventoryTypes": {
+    "Default": [
+      "hotbar",
+      "backpack",
+      "craftinggrid",
+      "mouse",
+      "character"
+    ],
+    "Value": [
+      "hotbar",
+      "backpack",
+      "craftinggrid",
+      "mouse",
+      "character"
+    ]
+  },
+  "NeedPrivilegeForReturnThings": {
+    "Limits": "One of: build, useblock, buildblockseverywhere, useblockseverywhere, attackplayers, attackcreatures, freemove, gamemode, pickingrange, chat, kick, ban, whitelist, setwelcome, announce, readlists, give, areamodify, setspawn, controlserver, tp, time, grantrevoke, root, commandplayer, controlplayergroups, manageplayergroups, selfkill, manageotherplayergroups",
+    "Default": "gamemode",
+    "Value": "gamemode"
+  },
+  "MaxDeathContentSavedPerPlayer": {
+    "Limits": "System.Int32 value from 0 to 2147483647",
+    "Default": 10,
+    "Value": 10
+  },
+  "CreateWaypoint": {
+    "Description": "Auto mode will try to resolve conflicts with other mods",
+    "Limits": "One of: Auto, Always, None",
+    "Default": "Auto",
+    "Value": "Always"
+  },
+  "WaypointIcon": {
+    "Description": "circle, bee, cave, home, ladder, pick, rocks, ruins, spiral, star1, star2, trader, vessel, etc",
+    "Default": "bee",
+    "Value": "bee"
+  },
+  "WaypointColor": {
+    "Description": "https://www.99colors.net/dot-net-colors",
+    "Default": "crimson",
+    "Value": "crimson"
+  },
+  "PinWaypoint": {
+    "Default": true,
+    "Value": true
+  },
+  "RemoveWaypointOnCollect": {
+    "Description": "If true, the waypoint will be removed when the corpse is collected",
+    "Default": true,
+    "Value": true
+  },
+  "DebugMode": {
+    "Default": false,
+    "Value": false
+  },
+  "FreeCorpseAfterTime": {
+    "Description": "Makes corpses available to everyone after N in-game hours (0 - always, below zero - never)",
+    "Default": 240,
+    "Value": 240
+  },
+  "CorpseCollectionTime": {
+    "Description": "Corpse collection time in seconds",
+    "Default": 1.0,
+    "Value": 1.0
+  },
+  "CorpseCompassEnabled": {
+    "Description": "If you set it to false, all already existing compasses will turn into an unknown item",
+    "Default": true,
+    "Value": true
+  },
+  "DropArmorOnDeath": {
+    "Description": "Override vanilla keep inventory system, so you can drop armor and cloth",
+    "Limits": "One of: Vanilla, Armor, ArmorAndCloth",
+    "Default": "Vanilla",
+    "Value": "Vanilla"
+  }
+}

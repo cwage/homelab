@@ -1,0 +1,561 @@
+{
+  "ChatNotifyOnWaypointCreation": false,
+  "EnableWaypointDeletionHotkey": false,
+  "ChatNotifyOnWaypointDeletion": true,
+  "EnableCustomHotkeys": false,
+  "EnableMarkOnSneak": true,
+  "EnableMarkOnInteract": true,
+  "LabelCoordinates": false,
+  "DisableAllModFeatures": false,
+  "ConfigVersion": 3.0,
+  "AutoMapMarkers": {
+    "OrganicMatter": {
+      "Resin": {
+        "Enabled": true,
+        "MarkerTitle": "Resin",
+        "MarkerColor": "darkorange",
+        "MarkerIcon": "circle",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 1
+      },
+      "Blueberry": {
+        "Enabled": false,
+        "MarkerTitle": "Blueberry",
+        "MarkerColor": "midnightblue",
+        "MarkerIcon": "circle",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 6
+      },
+      "Cranberry": {
+        "Enabled": false,
+        "MarkerTitle": "Cranberry",
+        "MarkerColor": "maroon",
+        "MarkerIcon": "circle",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 6
+      },
+      "BlackCurrant": {
+        "Enabled": false,
+        "MarkerTitle": "Black currant",
+        "MarkerColor": "#291B1A",
+        "MarkerIcon": "circle",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 6
+      },
+      "RedCurrant": {
+        "Enabled": false,
+        "MarkerTitle": "Red currant",
+        "MarkerColor": "darkred",
+        "MarkerIcon": "circle",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 6
+      },
+      "WhiteCurrant": {
+        "Enabled": false,
+        "MarkerTitle": "White currant",
+        "MarkerColor": "ivory",
+        "MarkerIcon": "circle",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 6
+      },
+      "SafeMushroom": {
+        "Enabled": false,
+        "MarkerTitle": "Edible mushrooms",
+        "MarkerColor": "forestgreen",
+        "MarkerIcon": "mushroom",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "UnsafeMushroom": {
+        "Enabled": false,
+        "MarkerTitle": "Poisonous mushrooms",
+        "MarkerColor": "crimson",
+        "MarkerIcon": "mushroom",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "WildCrop": {
+        "Enabled": false,
+        "MarkerTitle": "Wild crops",
+        "MarkerColor": "goldenrod",
+        "MarkerIcon": "grain",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 6
+      },
+      "Flower": {
+        "Enabled": false,
+        "MarkerTitle": "Flowers",
+        "MarkerColor": "fuchsia",
+        "MarkerIcon": "grain",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "Reed": {
+        "Enabled": false,
+        "MarkerTitle": "Reeds",
+        "MarkerColor": "darkkhaki",
+        "MarkerIcon": "grain",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "Tule": {
+        "Enabled": false,
+        "MarkerTitle": "Tule",
+        "MarkerColor": "darkkhaki",
+        "MarkerIcon": "grain",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "FruitTree": {
+        "Enabled": true,
+        "MarkerTitle": "Fruit trees",
+        "MarkerColor": "mediumpurple",
+        "MarkerIcon": "tree",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 6
+      }
+    },
+    "SurfaceOre": {
+      "LooseOreAnthracite": {
+        "Enabled": true,
+        "MarkerTitle": "Anthracite bits",
+        "MarkerColor": "black",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreBlackCoal": {
+        "Enabled": true,
+        "MarkerTitle": "Black coal bits",
+        "MarkerColor": "black",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreBorax": {
+        "Enabled": true,
+        "MarkerTitle": "Borax bits",
+        "MarkerColor": "ghostwhite",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreBrownCoal": {
+        "Enabled": true,
+        "MarkerTitle": "Brown coal bits",
+        "MarkerColor": "black",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreCinnabar": {
+        "Enabled": false,
+        "MarkerTitle": "Cinnabar bits",
+        "MarkerColor": "crimson",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreCopper": {
+        "Enabled": true,
+        "MarkerTitle": "Native copper bits",
+        "MarkerColor": "darkorange",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreGold": {
+        "Enabled": true,
+        "MarkerTitle": "Native gold bits",
+        "MarkerColor": "gold",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreLapisLazuli": {
+        "Enabled": false,
+        "MarkerTitle": "Lapis lazuli bits",
+        "MarkerColor": "royalblue",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreLead": {
+        "Enabled": true,
+        "MarkerTitle": "Lead ore bits",
+        "MarkerColor": "slategray",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreOlivine": {
+        "Enabled": false,
+        "MarkerTitle": "Olivine bits",
+        "MarkerColor": "olivedrab",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreQuartz": {
+        "Enabled": true,
+        "MarkerTitle": "Quartz bits",
+        "MarkerColor": "white",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreSilver": {
+        "Enabled": true,
+        "MarkerTitle": "Native silver bits",
+        "MarkerColor": "silver",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreSulfur": {
+        "Enabled": true,
+        "MarkerTitle": "Sulfur bits",
+        "MarkerColor": "khaki",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      },
+      "LooseOreTin": {
+        "Enabled": true,
+        "MarkerTitle": "Tin ore bits",
+        "MarkerColor": "#3C1E05",
+        "MarkerIcon": "pick",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 9
+      }
+    },
+    "DeepOre": {
+      "DeepOreAnthracite": {
+        "Enabled": true,
+        "MarkerTitle": "Anthracite",
+        "MarkerColor": "black",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "DeepOreBismuth": {
+        "Enabled": true,
+        "MarkerTitle": "Bismuth ore",
+        "MarkerColor": "seagreen",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 12
+      },
+      "DeepOreBlackCoal": {
+        "Enabled": true,
+        "MarkerTitle": "Black coal",
+        "MarkerColor": "black",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 24
+      },
+      "DeepOreBorax": {
+        "Enabled": true,
+        "MarkerTitle": "Borax",
+        "MarkerColor": "ghostwhite",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 18
+      },
+      "DeepOreBrownCoal": {
+        "Enabled": true,
+        "MarkerTitle": "Brown coal",
+        "MarkerColor": "black",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 24
+      },
+      "DeepOreCinnabar": {
+        "Enabled": true,
+        "MarkerTitle": "Cinnabar",
+        "MarkerColor": "crimson",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 18
+      },
+      "DeepOreCopper": {
+        "Enabled": true,
+        "MarkerTitle": "Copper ore",
+        "MarkerColor": "darkorange",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 16
+      },
+      "DeepOreGold": {
+        "Enabled": true,
+        "MarkerTitle": "Gold ore",
+        "MarkerColor": "gold",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 16
+      },
+      "DeepOreIron": {
+        "Enabled": true,
+        "MarkerTitle": "Iron ore",
+        "MarkerColor": "maroon",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 32
+      },
+      "DeepOreLapisLazuli": {
+        "Enabled": true,
+        "MarkerTitle": "Lapis lazuli",
+        "MarkerColor": "royalblue",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 8
+      },
+      "DeepOreLead": {
+        "Enabled": true,
+        "MarkerTitle": "Lead ore",
+        "MarkerColor": "slategray",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 12
+      },
+      "DeepOreOlivine": {
+        "Enabled": true,
+        "MarkerTitle": "Olivine",
+        "MarkerColor": "olivedrab",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 32
+      },
+      "DeepOreQuartz": {
+        "Enabled": true,
+        "MarkerTitle": "Quartz",
+        "MarkerColor": "white",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 32
+      },
+      "DeepOreSilver": {
+        "Enabled": true,
+        "MarkerTitle": "Silver ore",
+        "MarkerColor": "silver",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 16
+      },
+      "DeepOreSulfur": {
+        "Enabled": true,
+        "MarkerTitle": "Sulfur",
+        "MarkerColor": "khaki",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 18
+      },
+      "DeepOreTin": {
+        "Enabled": true,
+        "MarkerTitle": "Tin ore",
+        "MarkerColor": "#3C1E05",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 12
+      },
+      "DeepOreTitanium": {
+        "Enabled": true,
+        "MarkerTitle": "Titanium ore",
+        "MarkerColor": "darkslategray",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 22
+      },
+      "DeepOreZinc": {
+        "Enabled": true,
+        "MarkerTitle": "Zinc ore",
+        "MarkerColor": "gray",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 10
+      },
+      "DeepOreNickel": {
+        "Enabled": true,
+        "MarkerTitle": "Nickel ore",
+        "MarkerColor": "darkgoldenrod",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 12
+      }
+    },
+    "MiscBlocks": {
+      "BlockRedClay": {
+        "Enabled": true,
+        "MarkerTitle": "Red clay",
+        "MarkerColor": "indianred",
+        "MarkerIcon": "vessel",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 30
+      },
+      "BlockBlueClay": {
+        "Enabled": true,
+        "MarkerTitle": "Blue clay",
+        "MarkerColor": "cornflowerblue",
+        "MarkerIcon": "vessel",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 30
+      },
+      "BlockFireClay": {
+        "Enabled": true,
+        "MarkerTitle": "Fire clay",
+        "MarkerColor": "firebrick",
+        "MarkerIcon": "vessel",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 30
+      },
+      "BlockPeat": {
+        "Enabled": true,
+        "MarkerTitle": "Peat",
+        "MarkerColor": "chocolate",
+        "MarkerIcon": "rocks",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 30
+      },
+      "BlockHighFertilitySoil": {
+        "Enabled": true,
+        "MarkerTitle": "High fertility soil",
+        "MarkerColor": "indigo",
+        "MarkerIcon": "star2",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 30
+      },
+      "BlockMeteoriticIron": {
+        "Enabled": true,
+        "MarkerTitle": "Meteoric Iron",
+        "MarkerColor": "darkorange",
+        "MarkerIcon": "star2",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 8
+      },
+      "BlockCoatingSaltpeter": {
+        "Enabled": false,
+        "MarkerTitle": "Saltpeter",
+        "MarkerColor": "beige",
+        "MarkerIcon": "ladder",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 24
+      },
+      "Beehive": {
+        "Enabled": true,
+        "MarkerTitle": "Beehive",
+        "MarkerColor": "gold",
+        "MarkerIcon": "bee",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 1
+      },
+      "Translocator": {
+        "Enabled": false,
+        "MarkerTitle": "Translocator",
+        "MarkerColor": "darkturquoise",
+        "MarkerIcon": "spiral",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 2
+      }
+    },
+    "Traders": {
+      "TraderArtisan": {
+        "Enabled": true,
+        "MarkerTitle": "Artisan trader",
+        "MarkerColor": "yellow",
+        "MarkerIcon": "trader",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "TraderBuildingMaterials": {
+        "Enabled": true,
+        "MarkerTitle": "Building materials trader",
+        "MarkerColor": "yellow",
+        "MarkerIcon": "trader",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "TraderClothing": {
+        "Enabled": true,
+        "MarkerTitle": "Clothing trader",
+        "MarkerColor": "yellow",
+        "MarkerIcon": "trader",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "TraderCommodities": {
+        "Enabled": true,
+        "MarkerTitle": "Commodities trader",
+        "MarkerColor": "yellow",
+        "MarkerIcon": "trader",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "TraderFoods": {
+        "Enabled": true,
+        "MarkerTitle": "Agriculture trader",
+        "MarkerColor": "yellow",
+        "MarkerIcon": "trader",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "TraderFurniture": {
+        "Enabled": true,
+        "MarkerTitle": "Furniture trader",
+        "MarkerColor": "yellow",
+        "MarkerIcon": "trader",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "TraderLuxuries": {
+        "Enabled": true,
+        "MarkerTitle": "Luxuries trader",
+        "MarkerColor": "yellow",
+        "MarkerIcon": "trader",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "TraderSurvivalGoods": {
+        "Enabled": true,
+        "MarkerTitle": "Survival goods trader",
+        "MarkerColor": "yellow",
+        "MarkerIcon": "trader",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      },
+      "TraderTreasureHunter": {
+        "Enabled": true,
+        "MarkerTitle": "Treasure hunter trader",
+        "MarkerColor": "yellow",
+        "MarkerIcon": "trader",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 20
+      }
+    },
+    "Custom": {
+      "CustomMarker1": {
+        "Enabled": false,
+        "MarkerTitle": "Custom Marker 1",
+        "MarkerColor": "black",
+        "MarkerIcon": "circle",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 1
+      },
+      "CustomMarker2": {
+        "Enabled": false,
+        "MarkerTitle": "Custom Marker 2",
+        "MarkerColor": "black",
+        "MarkerIcon": "circle",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 1
+      },
+      "CustomMarker3": {
+        "Enabled": false,
+        "MarkerTitle": "Custom Marker 3",
+        "MarkerColor": "black",
+        "MarkerIcon": "circle",
+        "MarkerPinned": false,
+        "MarkerCoverageRadius": 1
+      }
+    }
+  }
+}
