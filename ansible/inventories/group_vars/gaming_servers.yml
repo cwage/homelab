@@ -30,21 +30,32 @@ managed_users:
 gaming_profiles:
   - name: vs-buttopia
     game: vintagestory
-    active: false
+    active: true
     version: "1.21.6"
     ports:
       game: 42420
     server_name: "Buttopia"
+    world_config:
+      landcover: "0.7"
+      oceanscale: "3"
+      landformScale: "3"
+      upheavelCommonness: "0.3"
+      geologicActivity: "0.05"
+      polarEquatorDistance: "100000"
+      playerMoveSpeed: "1.5"
+      creatureSwimSpeed: "2"
+      daysPerMonth: "9"
+      harshWinters: "true"
   - name: vs-sloths
     game: vintagestory
-    active: true
+    active: false
     version: "1.21.6"
     ports:
       game: 42421
     server_name: "Slothtopia"
   - name: vs-cwage
     game: vintagestory
-    active: true
+    active: false
     version: "1.21.6"
     ports:
       game: 42420
