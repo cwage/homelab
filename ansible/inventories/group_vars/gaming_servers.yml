@@ -46,6 +46,8 @@ gaming_profiles:
       creatureSwimSpeed: 2
       daysPerMonth: 9
       harshWinters: true
+      temporalStability: false
+      temporalStorms: "off"
   - name: vs-sloths
     game: vintagestory
     active: false
