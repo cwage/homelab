@@ -103,18 +103,22 @@
           ansible.builtin.debug:
             msg: >
               Cloudflare Tunnel token not found in OpenBao at kv/infra/cloudflare/tunnel.
-              Cloudflared container will not start until token is configured.
+              Cloudflared container will be skipped (tunnel profile disabled).
               Store token with: bao kv put kv/infra/cloudflare/tunnel token=<YOUR_TOKEN>
         - name: Set empty tunnel token
           ansible.builtin.set_fact:
             cloudflare_tunnel:
               token: ""
 
+    - name: Determine if tunnel should be enabled
+      ansible.builtin.set_fact:
+        tunnel_enabled: "{{ (cloudflare_tunnel.token | default('')) | length > 0 }}"
+
     - name: Deploy stacks environment file
       ansible.builtin.copy:
         content: |
           # Managed by Ansible - do not edit manually
-          CLOUDFLARE_TUNNEL_TOKEN={{ cloudflare_tunnel.token }}
+          CLOUDFLARE_TUNNEL_TOKEN={{ cloudflare_tunnel.token | default('') }}
         dest: /opt/stacks/.env
         owner: deploy
         group: deploy
@@ -143,7 +147,7 @@
 
     - name: Start containers
       ansible.builtin.command:
-        cmd: docker compose up -d
+        cmd: "docker compose {{ '--profile tunnel' if tunnel_enabled else '' }} up -d"
         chdir: /opt/stacks
       become_user: deploy
       when: containers_need_restart
