@@ -60,6 +60,18 @@ services:
               count: 1
               capabilities: [gpu]
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - proxy
+    depends_on:
+      - jellyfin
+
 networks:
   proxy:
     name: proxy

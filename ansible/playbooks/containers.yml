@@ -87,6 +87,41 @@
         mode: '0644'
       register: traefik_tls_result
 
+    - name: Retrieve Cloudflare Tunnel token from OpenBao
+      block:
+        - name: Fetch Cloudflare Tunnel token from OpenBao
+          ansible.builtin.set_fact:
+            cloudflare_tunnel: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                              'infra/cloudflare/tunnel',
+                              engine_mount_point='kv',
+                              url=openbao_addr,
+                              token=openbao_token,
+                              validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+      rescue:
+        - name: Warn if Cloudflare Tunnel token not found (non-fatal)
+          ansible.builtin.debug:
+            msg: >
+              Cloudflare Tunnel token not found in OpenBao at kv/infra/cloudflare/tunnel.
+              Cloudflared container will not start until token is configured.
+              Store token with: bao kv put kv/infra/cloudflare/tunnel token=<YOUR_TOKEN>
+        - name: Set empty tunnel token
+          ansible.builtin.set_fact:
+            cloudflare_tunnel:
+              token: ""
+
+    - name: Deploy stacks environment file
+      ansible.builtin.copy:
+        content: |
+          # Managed by Ansible - do not edit manually
+          CLOUDFLARE_TUNNEL_TOKEN={{ cloudflare_tunnel.token }}
+        dest: /opt/stacks/.env
+        owner: deploy
+        group: deploy
+        mode: '0600'
+      register: env_result
+      no_log: true
+
     - name: Copy docker-compose file
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../files/stacks/docker-compose.yml"
@@ -103,6 +138,7 @@
              traefik_tls_result.changed or
              tls_cert_result.changed or
              tls_key_result.changed or
+             env_result.changed or
              (force_restart | default(false)) }}
 
     - name: Start containers
