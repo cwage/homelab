@@ -20,10 +20,6 @@ nvidia_container_enabled: true
 # NFS mounts for media access
 nfs_mounts:
   - name: media
-    src: 10.10.15.4:/volume1/Video
+    src: 10.10.15.4:/volume1/Media
     path: /mnt/media
-    opts: "ro,_netdev,hard,vers=3,noatime"
-  - name: music
-    src: 10.10.15.4:/volume1/Music
-    path: /mnt/music
-    opts: "ro,_netdev,hard,vers=3,noatime"
+    opts: "rw,_netdev,hard,vers=3,noatime"
