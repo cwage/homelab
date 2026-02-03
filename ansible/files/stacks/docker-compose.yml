@@ -119,6 +119,41 @@ services:
     networks:
       - proxy
 
+  paperless-redis:
+    image: docker.io/library/redis:8
+    container_name: paperless-redis
+    restart: unless-stopped
+    volumes:
+      - paperless_redis:/data
+    networks:
+      - proxy
+
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless
+    restart: unless-stopped
+    depends_on:
+      - paperless-redis
+    environment:
+      - PAPERLESS_REDIS=redis://paperless-redis:6379
+      - USERMAP_UID=1000
+      - USERMAP_GID=1000
+      - PAPERLESS_TIME_ZONE=America/Chicago
+      - PAPERLESS_URL=https://paperless.lan.quietlife.net
+    volumes:
+      - /mnt/paperless/data:/usr/src/paperless/data
+      - /mnt/paperless/media:/usr/src/paperless/media
+      - /mnt/paperless/export:/usr/src/paperless/export
+      - /mnt/paperless/consume:/usr/src/paperless/consume
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.paperless.rule=Host(`paperless.lan.quietlife.net`)"
+      - "traefik.http.routers.paperless.entrypoints=websecure"
+      - "traefik.http.routers.paperless.tls=true"
+      - "traefik.http.services.paperless.loadbalancer.server.port=8000"
+    networks:
+      - proxy
+
   cloudflared:
     image: cloudflare/cloudflared:2026.1.2
     container_name: cloudflared
@@ -143,3 +178,4 @@ volumes:
   sabnzbd_config:
   radarr_config:
   sonarr_config:
+  paperless_redis:
