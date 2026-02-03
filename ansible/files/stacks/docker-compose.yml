@@ -32,7 +32,7 @@ services:
       - proxy
 
   jellyfin:
-    image: jellyfin/jellyfin:10.11.4
+    image: linuxserver/jellyfin:10.11.6
     container_name: jellyfin
     restart: unless-stopped
     environment:
@@ -42,8 +42,7 @@ services:
     volumes:
       - jellyfin_config:/config
       - jellyfin_cache:/cache
-      - /mnt/media:/media:ro
-      - /mnt/music:/music:ro
+      - /mnt/media:/media
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.lan.quietlife.net`)"
