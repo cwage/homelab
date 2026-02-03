@@ -151,3 +151,40 @@
         chdir: /opt/stacks
       become_user: deploy
       when: containers_need_restart
+
+    # SABnzbd hostname whitelist configuration
+    # LinuxServer image doesn't support HOST_WHITELIST_ENTRIES env var,
+    # so we configure it directly in sabnzbd.ini after container starts
+    - name: Wait for SABnzbd config to be created
+      ansible.builtin.command:
+        cmd: docker exec sabnzbd test -f /config/sabnzbd.ini
+      register: sabnzbd_config_check
+      retries: 10
+      delay: 2
+      until: sabnzbd_config_check.rc == 0
+      changed_when: false
+      failed_when: false
+
+    - name: Check current SABnzbd host whitelist
+      ansible.builtin.command:
+        cmd: docker exec sabnzbd grep -q '^host_whitelist = sabnzbd,sabnzbd.lan.quietlife.net,' /config/sabnzbd.ini
+      register: sabnzbd_whitelist_check
+      changed_when: false
+      failed_when: false
+      when: sabnzbd_config_check.rc == 0
+
+    - name: Configure SABnzbd host whitelist
+      ansible.builtin.command:
+        cmd: >
+          docker exec sabnzbd sed -i
+          's/^host_whitelist = .*/host_whitelist = sabnzbd,sabnzbd.lan.quietlife.net,/'
+          /config/sabnzbd.ini
+      when:
+        - sabnzbd_config_check.rc == 0
+        - sabnzbd_whitelist_check.rc != 0
+      register: sabnzbd_whitelist_result
+
+    - name: Restart SABnzbd to apply host whitelist
+      ansible.builtin.command:
+        cmd: docker restart sabnzbd
+      when: sabnzbd_whitelist_result.changed | default(false)
