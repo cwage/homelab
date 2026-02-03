@@ -1,4 +1,4 @@
-FROM ghcr.io/trufflesecurity/trufflehog:3.79.0
+FROM ghcr.io/trufflesecurity/trufflehog:3.92.5
 
 WORKDIR /repo
 ENTRYPOINT ["trufflehog"]
