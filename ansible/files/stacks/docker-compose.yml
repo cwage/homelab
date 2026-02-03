@@ -120,7 +120,7 @@ services:
       - proxy
 
   paperless-redis:
-    image: docker.io/library/redis:8
+    image: docker.io/library/redis:8.0.5
     container_name: paperless-redis
     restart: unless-stopped
     volumes:
@@ -129,7 +129,7 @@ services:
       - proxy
 
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.20.6
     container_name: paperless
     restart: unless-stopped
     depends_on:
