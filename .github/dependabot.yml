@@ -1,0 +1,35 @@
+version: 2
+updates:
+  # OpenTofu provider updates
+  - package-ecosystem: "terraform"
+    directory: "/tofu"
+    schedule:
+      interval: "weekly"
+
+  # Container images in production stack
+  - package-ecosystem: "docker"
+    directory: "/ansible/files/stacks"
+    schedule:
+      interval: "weekly"
+
+  # Development/build Dockerfiles
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "docker"
+    directory: "/tofu"
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "docker"
+    directory: "/ansible"
+    schedule:
+      interval: "monthly"
+
+  # Lego ACME client
+  - package-ecosystem: "docker"
+    directory: "/lego"
+    schedule:
+      interval: "weekly"
