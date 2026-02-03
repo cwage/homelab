@@ -28,6 +28,9 @@ make ansible-trufflehog   # run secrets scan for Ansible tree
 make tofu-trufflehog      # run secrets scan for Tofu tree
 make trufflehog           # scan entire repo for secrets (root-level)
 make install-precommit-hook  # install root pre-commit hook (trufflehog)
+make grype IMAGE=nginx:latest  # scan a container image for CVEs
+make grype-compose        # scan all images in production docker-compose
+make grype-pull           # pull the grype scanner image
 ```
 
 ### Common scenarios
@@ -103,3 +106,15 @@ To restore later:
 ### TruffleHog scanning
 - Root scanner: `make trufflehog` (uses `docker-compose.trufflehog.yml` in repo root, excludes defined in `.trufflehog-exclude.txt`).
 - Install pre-commit hook: `make install-precommit-hook` (respects `SKIP_TRUFFLEHOG=1` and `TRUFFLEHOG_PRECOMMIT_ARGS`).
+
+### Grype vulnerability scanning
+Scan container images for CVEs using [Grype](https://github.com/anchore/grype):
+- `make grype IMAGE=<image>` — scan a single image (e.g., `make grype IMAGE=nginx:latest`)
+- `make grype-compose` — scan all images in `ansible/files/stacks/docker-compose.yml`
+- `make grype-pull` — pull the grype scanner image
+
+Pass additional args via `GRYPE_ARGS`:
+```bash
+make grype IMAGE=nginx:latest GRYPE_ARGS="--fail-on high"  # fail on high+ severity
+make grype-compose GRYPE_ARGS="--only-fixed"               # only show fixable CVEs
+```
