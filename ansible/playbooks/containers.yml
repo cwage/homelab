@@ -155,6 +155,12 @@
     # SABnzbd hostname whitelist configuration
     # LinuxServer image doesn't support HOST_WHITELIST_ENTRIES env var,
     # so we configure it directly in sabnzbd.ini after container starts
+    - name: Check if SABnzbd container is running
+      ansible.builtin.command:
+        cmd: docker ps -q -f name=sabnzbd
+      register: sabnzbd_container_check
+      changed_when: false
+
     - name: Wait for SABnzbd config to be created
       ansible.builtin.command:
         cmd: docker exec sabnzbd test -f /config/sabnzbd.ini
@@ -163,28 +169,47 @@
       delay: 2
       until: sabnzbd_config_check.rc == 0
       changed_when: false
-      failed_when: false
+      when: sabnzbd_container_check.stdout | length > 0
 
-    - name: Check current SABnzbd host whitelist
+    - name: Check if sabnzbd hostname is in whitelist
       ansible.builtin.command:
-        cmd: docker exec sabnzbd grep -q '^host_whitelist = sabnzbd,sabnzbd.lan.quietlife.net,' /config/sabnzbd.ini
-      register: sabnzbd_whitelist_check
+        cmd: docker exec sabnzbd grep -q 'sabnzbd' /config/sabnzbd.ini
+      register: sabnzbd_host_check
       changed_when: false
       failed_when: false
-      when: sabnzbd_config_check.rc == 0
+      when: sabnzbd_container_check.stdout | length > 0
 
-    - name: Configure SABnzbd host whitelist
+    - name: Check if sabnzbd.lan.quietlife.net is in whitelist
+      ansible.builtin.command:
+        cmd: docker exec sabnzbd grep -q 'sabnzbd\.lan\.quietlife\.net' /config/sabnzbd.ini
+      register: sabnzbd_fqdn_check
+      changed_when: false
+      failed_when: false
+      when: sabnzbd_container_check.stdout | length > 0
+
+    - name: Add sabnzbd to host whitelist
       ansible.builtin.command:
         cmd: >
           docker exec sabnzbd sed -i
-          's/^host_whitelist = .*/host_whitelist = sabnzbd,sabnzbd.lan.quietlife.net,/'
+          's/^host_whitelist = /host_whitelist = sabnzbd,/'
           /config/sabnzbd.ini
       when:
-        - sabnzbd_config_check.rc == 0
-        - sabnzbd_whitelist_check.rc != 0
-      register: sabnzbd_whitelist_result
+        - sabnzbd_container_check.stdout | length > 0
+        - sabnzbd_host_check.rc != 0
+      register: sabnzbd_host_added
+
+    - name: Add sabnzbd.lan.quietlife.net to host whitelist
+      ansible.builtin.command:
+        cmd: >
+          docker exec sabnzbd sed -i
+          's/^host_whitelist = /host_whitelist = sabnzbd.lan.quietlife.net,/'
+          /config/sabnzbd.ini
+      when:
+        - sabnzbd_container_check.stdout | length > 0
+        - sabnzbd_fqdn_check.rc != 0
+      register: sabnzbd_fqdn_added
 
     - name: Restart SABnzbd to apply host whitelist
       ansible.builtin.command:
         cmd: docker restart sabnzbd
-      when: sabnzbd_whitelist_result.changed | default(false)
+      when: (sabnzbd_host_added.changed | default(false)) or (sabnzbd_fqdn_added.changed | default(false))
