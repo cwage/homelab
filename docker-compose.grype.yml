@@ -1,0 +1,11 @@
+services:
+  grype:
+    image: anchore/grype:v0.107.1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - grype-db:/root/.cache/grype
+    environment:
+      - NO_COLOR=1
+
+volumes:
+  grype-db:
