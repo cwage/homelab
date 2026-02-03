@@ -59,6 +59,66 @@ services:
               count: 1
               capabilities: [gpu]
 
+  sabnzbd:
+    image: linuxserver/sabnzbd:4.5.5
+    container_name: sabnzbd
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - sabnzbd_config:/config
+      - /mnt/media:/media
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sabnzbd.rule=Host(`sabnzbd.lan.quietlife.net`)"
+      - "traefik.http.routers.sabnzbd.entrypoints=websecure"
+      - "traefik.http.routers.sabnzbd.tls=true"
+      - "traefik.http.services.sabnzbd.loadbalancer.server.port=8080"
+    networks:
+      - proxy
+
+  radarr:
+    image: linuxserver/radarr:6.0.4
+    container_name: radarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - radarr_config:/config
+      - /mnt/media:/media
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.lan.quietlife.net`)"
+      - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.tls=true"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+    networks:
+      - proxy
+
+  sonarr:
+    image: linuxserver/sonarr:4.0.16
+    container_name: sonarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - sonarr_config:/config
+      - /mnt/media:/media
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.lan.quietlife.net`)"
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.tls=true"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+    networks:
+      - proxy
+
   cloudflared:
     image: cloudflare/cloudflared:2026.1.2
     container_name: cloudflared
@@ -80,3 +140,6 @@ networks:
 volumes:
   jellyfin_config:
   jellyfin_cache:
+  sabnzbd_config:
+  radarr_config:
+  sonarr_config:
