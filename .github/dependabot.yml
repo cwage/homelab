@@ -6,13 +6,9 @@ updates:
     schedule:
       interval: "weekly"
 
-  # Container images in production stack
-  - package-ecosystem: "docker"
-    directory: "/ansible/files/stacks"
-    schedule:
-      interval: "weekly"
-
   # Development/build Dockerfiles
+  # Note: Dependabot's docker ecosystem only works with Dockerfile files,
+  # not docker-compose.yml. Directories with only compose files are excluded.
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -27,9 +23,3 @@ updates:
     directory: "/ansible"
     schedule:
       interval: "monthly"
-
-  # Lego ACME client
-  - package-ecosystem: "docker"
-    directory: "/lego"
-    schedule:
-      interval: "weekly"
