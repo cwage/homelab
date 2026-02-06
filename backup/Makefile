@@ -8,7 +8,7 @@
 #   - kv/backup/backblaze: account_id, application_key
 #   - kv/backup/rclone-crypt: password, password2 (salt)
 
-DC := docker compose --env-file ../.env
+DC := docker compose
 
 .PHONY: help build shell clean
 

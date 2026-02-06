@@ -6,7 +6,7 @@ services:
     user: "${UID:-1000}:${GID:-1000}"
     env_file:
       - path: ../.env
-        required: true
+        required: false
       - path: .env
         required: false
     environment:

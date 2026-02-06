@@ -13,7 +13,8 @@ fetch_from_openbao() {
     local field="$2"
 
     if [[ -z "${BAO_ADDR:-}" ]] || [[ -z "${BAO_TOKEN:-}" ]]; then
-        return 1
+        echo ""
+        return 0
     fi
 
     local curl_opts=(-sf -H "X-Vault-Token: ${BAO_TOKEN}")
@@ -21,7 +22,7 @@ fetch_from_openbao() {
         curl_opts+=(--insecure)
     fi
 
-    curl "${curl_opts[@]}" "${BAO_ADDR}/v1/${path}" | jq -r ".data.data.${field} // empty"
+    curl "${curl_opts[@]}" "${BAO_ADDR}/v1/${path}" 2>/dev/null | jq -r ".data.data.${field} // empty" 2>/dev/null || echo ""
 }
 
 setup_rclone_config() {
