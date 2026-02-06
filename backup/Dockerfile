@@ -28,5 +28,6 @@ COPY --chown=backupuser:backupuser scripts/ /opt/backup/
 RUN chmod +x /opt/backup/*.sh
 
 WORKDIR /opt/backup
+USER backupuser
 ENTRYPOINT ["/opt/backup/entrypoint.sh"]
 CMD ["bash"]

@@ -114,7 +114,8 @@ The container mounts the following paths:
 
 ## Security Notes
 
-- The OpenBao CLI binary is pinned to a specific version with SHA256 verification
+- The OpenBao CLI binary is pinned to a specific version with SHA256 verification (for interactive/admin use)
+- The entrypoint fetches secrets from OpenBao via HTTP API using curl/jq, not the CLI
 - No secrets are written to disk in the container; rclone is configured via environment variables
 - The `.env` file is gitignored
 - NAS shares are mounted read-only to prevent accidental modification
