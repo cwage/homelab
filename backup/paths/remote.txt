@@ -1,0 +1,7 @@
+# Paths to back up to Backblaze B2 (encrypted)
+# One path per line, relative to /mnt/nas
+# Only include critical data - this costs money!
+# Example:
+# Pictures
+# Documents
+# paperless-ngx
