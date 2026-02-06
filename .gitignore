@@ -1,4 +1,7 @@
-# Root-level secrets
-.env
-.env.*
-!.env.example
+# Secrets (all directories)
+**/.env
+**/.env.*
+!**/.env.example
+
+# Backup logs
+backup/logs/

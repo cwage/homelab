@@ -1,0 +1,6 @@
+# Paths to back up to local USB drive
+# One path per line, relative to /mnt/nas
+# Example:
+# Pictures
+# Documents
+# paperless-ngx
