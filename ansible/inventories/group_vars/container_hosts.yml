@@ -17,13 +17,79 @@ docker_users:
 # NVIDIA container toolkit for GPU transcoding
 nvidia_container_enabled: true
 
-# NFS mounts for media access
+# NFS mounts for NAS shares
+# Media and paperless are rw (needed by radarr/sonarr/sabnzbd/paperless-ngx)
+# Everything else is ro (backup, general access)
 nfs_mounts:
   - name: media
     src: 10.10.15.4:/volume1/Media
-    path: /mnt/media
+    path: /mnt/nas/Media
     opts: "rw,_netdev,hard,vers=3,noatime"
   - name: paperless
     src: 10.10.15.4:/volume1/paperless
-    path: /mnt/paperless
+    path: /mnt/nas/paperless
     opts: "rw,_netdev,hard,vers=3,noatime"
+  - name: backup
+    src: 10.10.15.4:/volume1/backup
+    path: /mnt/nas/backup
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: books
+    src: 10.10.15.4:/volume1/Books
+    path: /mnt/nas/Books
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: caitstuff
+    src: 10.10.15.4:/volume1/caitstuff
+    path: /mnt/nas/caitstuff
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: documents
+    src: 10.10.15.4:/volume1/Documents
+    path: /mnt/nas/Documents
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: git
+    src: 10.10.15.4:/volume1/git
+    path: /mnt/nas/git
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: swirbobackup
+    src: 10.10.15.4:/volume1/swirbobackup
+    path: /mnt/nas/swirbobackup
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: pictures
+    src: 10.10.15.4:/volume1/Pictures
+    path: /mnt/nas/Pictures
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: misc
+    src: 10.10.15.4:/volume1/Misc
+    path: /mnt/nas/Misc
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: downloads
+    src: 10.10.15.4:/volume1/Downloads
+    path: /mnt/nas/Downloads
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: tb
+    src: 10.10.15.4:/volume1/tb
+    path: /mnt/nas/tb
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: paperless-ngx
+    src: 10.10.15.4:/volume1/paperless-ngx
+    path: /mnt/nas/paperless-ngx
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: bp
+    src: 10.10.15.4:/volume1/bp
+    path: /mnt/nas/bp
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: syncthing-data
+    src: 10.10.15.4:/volume1/syncthing-data
+    path: /mnt/nas/syncthing-data
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: music
+    src: 10.10.15.4:/volume1/Music
+    path: /mnt/nas/Music
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: musicold
+    src: 10.10.15.4:/volume1/Musicold
+    path: /mnt/nas/Musicold
+    opts: "ro,_netdev,hard,vers=3,noatime"
+  - name: videoold
+    src: 10.10.15.4:/volume1/Videoold
+    path: /mnt/nas/Videoold
+    opts: "ro,_netdev,hard,vers=3,noatime"
