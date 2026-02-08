@@ -1,0 +1,153 @@
+---
+# Deploy backup tooling to the containers host
+# This sets up a persistent backup container with rclone + B2 credentials
+# for running long-duration syncs (initial seed, large restores, etc.)
+#
+# Usage: make ansible-backup-deploy
+#
+# What this does:
+#   1. Copies Dockerfile, scripts, paths configs to /opt/backup/
+#   2. Fetches B2 + rclone-crypt secrets from OpenBao
+#   3. Writes .env with credentials (Ansible-time secret delivery)
+#   4. Builds the backup container image
+#   5. Starts the container (persistent, sleeps until exec'd into)
+#
+# To use after deployment:
+#   ssh containers.lan.quietlife.net
+#   docker exec -it backup bash
+#   rclone lsd b2crypt:         # list encrypted bucket contents
+#   rclone sync /mnt/nas/Pictures b2crypt:Pictures --progress
+
+- name: Deploy backup tooling
+  hosts: container_hosts
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Create backup directory structure
+      ansible.builtin.file:
+        path: "/opt/backup/{{ item }}"
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: '0750'
+      loop:
+        - ""
+        - logs
+        - paths
+        - scripts
+
+    - name: Copy Dockerfile
+      ansible.builtin.copy:
+        src: /work-backup/Dockerfile
+        dest: /opt/backup/Dockerfile
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      register: dockerfile_result
+
+    - name: Copy entrypoint script
+      ansible.builtin.copy:
+        src: /work-backup/scripts/
+        dest: /opt/backup/scripts/
+        owner: deploy
+        group: deploy
+        mode: '0755'
+      register: scripts_result
+
+    - name: Copy path configs
+      ansible.builtin.copy:
+        src: /work-backup/paths/
+        dest: /opt/backup/paths/
+        owner: deploy
+        group: deploy
+        mode: '0644'
+
+    - name: Copy docker-compose file
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../files/backup/docker-compose.yml"
+        dest: /opt/backup/docker-compose.yml
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      register: compose_result
+
+    # Fetch secrets from OpenBao and write .env
+    - name: Retrieve backup credentials from OpenBao
+      block:
+        - name: Fetch B2 credentials
+          ansible.builtin.set_fact:
+            b2_creds: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                            'backup/backblaze',
+                            engine_mount_point='kv',
+                            url=openbao_addr,
+                            token=openbao_token,
+                            validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+
+        - name: Fetch rclone crypt credentials
+          ansible.builtin.set_fact:
+            crypt_creds: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                              'backup/rclone-crypt',
+                              engine_mount_point='kv',
+                              url=openbao_addr,
+                              token=openbao_token,
+                              validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+
+        - name: Validate credentials
+          ansible.builtin.assert:
+            that:
+              - b2_creds.account_id is defined
+              - b2_creds.account_id | length > 0
+              - b2_creds.application_key is defined
+              - b2_creds.application_key | length > 0
+              - crypt_creds.password is defined
+              - crypt_creds.password | length > 0
+            fail_msg: "Backup credentials incomplete - check OpenBao secrets"
+      rescue:
+        - name: Fail with helpful error
+          ansible.builtin.fail:
+            msg: >
+              Failed to retrieve backup credentials from OpenBao.
+              Ensure BAO_TOKEN is valid and secrets exist at:
+                kv/backup/backblaze (fields: account_id, application_key)
+                kv/backup/rclone-crypt (fields: password; optional: password2)
+
+    - name: Deploy backup environment file
+      ansible.builtin.copy:
+        content: |
+          # Managed by Ansible - do not edit manually
+          # Re-deploy with: make ansible-backup-deploy
+          # Backup credentials fetched from OpenBao at deploy time
+          RCLONE_CONFIG_B2_TYPE=b2
+          RCLONE_CONFIG_B2_ACCOUNT={{ b2_creds.account_id }}
+          RCLONE_CONFIG_B2_KEY={{ b2_creds.application_key }}
+          RCLONE_CONFIG_B2CRYPT_TYPE=crypt
+          RCLONE_CONFIG_B2CRYPT_REMOTE=b2:cwagenas-backup
+          RCLONE_CONFIG_B2CRYPT_PASSWORD={{ crypt_creds.password }}
+          RCLONE_CONFIG_B2CRYPT_PASSWORD2={{ crypt_creds.password2 | default('') }}
+        dest: /opt/backup/.env
+        owner: deploy
+        group: deploy
+        mode: '0600'
+      register: env_result
+      no_log: true
+
+    - name: Build backup container image
+      ansible.builtin.command:
+        cmd: docker compose build
+        chdir: /opt/backup
+      become_user: deploy
+      when:
+        - not ansible_check_mode
+        - dockerfile_result.changed or scripts_result.changed
+      register: build_result
+
+    - name: Ensure backup container is running
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: /opt/backup
+      become_user: deploy
+      when:
+        - not ansible_check_mode
