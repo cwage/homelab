@@ -7,6 +7,7 @@ services:
     working_dir: /work
     volumes:
       - ./:/work:Z
+      - ../backup:/work-backup:ro,Z
     environment:
       - ANSIBLE_CONFIG=/work/ansible.cfg
       - HOME=/work
