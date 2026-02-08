@@ -1,7 +1,7 @@
 # Paths to back up to Backblaze B2 (encrypted)
 # One path per line, relative to /mnt/nas
 # Only include critical data - this costs money!
-# Comment out lines to skip a share
+# Uncomment lines to include a share in the backup
 # Pictures
 # Documents
 # paperless-ngx
