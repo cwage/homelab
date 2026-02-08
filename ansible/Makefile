@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive all check-all run adhoc sh build-tinyfugue trufflehog
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -93,6 +93,12 @@ gaming-archive: ## Archive and purge a profile (requires PROFILE=name, CONFIRM=y
 	@archive_profile_value="$$(printf '%s' "$(PROFILE)")"; \
 	archive_confirm_value="$$(printf '%s' "$(CONFIRM)")"; \
 	$(DC) run --rm ansible ansible-playbook playbooks/gaming-archive.yml -vv -e archive_profile="$$archive_profile_value" $(if $(CONFIRM),-e archive_confirm="$$archive_confirm_value",) $(OPTS)
+
+backup-deploy: ## Deploy backup tooling to containers host (builds image, writes creds)
+	$(DC) run --rm ansible ansible-playbook playbooks/backup-deploy.yml -vv $(OPTS)
+
+backup-deploy-check: ## Dry-run backup deployment with --check/--diff
+	$(DC) run --rm ansible ansible-playbook playbooks/backup-deploy.yml -vv --check --diff $(OPTS)
 
 all: ## Run standard playbooks (proxmox, firewall, felix)
 	$(MAKE) proxmox
