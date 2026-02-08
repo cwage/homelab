@@ -9,18 +9,6 @@ services:
         required: false
       - path: .env
         required: false
-    environment:
-      - BAO_ADDR=${BAO_ADDR:-}
-      - BAO_TOKEN=${BAO_TOKEN:-}
-      - BAO_SKIP_VERIFY=${BAO_SKIP_VERIFY:-}
-      # rclone env vars can be set in .env as fallback
-      - RCLONE_CONFIG_B2_TYPE=${RCLONE_CONFIG_B2_TYPE:-}
-      - RCLONE_CONFIG_B2_ACCOUNT=${RCLONE_CONFIG_B2_ACCOUNT:-}
-      - RCLONE_CONFIG_B2_KEY=${RCLONE_CONFIG_B2_KEY:-}
-      - RCLONE_CONFIG_B2CRYPT_TYPE=${RCLONE_CONFIG_B2CRYPT_TYPE:-}
-      - RCLONE_CONFIG_B2CRYPT_REMOTE=${RCLONE_CONFIG_B2CRYPT_REMOTE:-}
-      - RCLONE_CONFIG_B2CRYPT_PASSWORD=${RCLONE_CONFIG_B2CRYPT_PASSWORD:-}
-      - RCLONE_CONFIG_B2CRYPT_PASSWORD2=${RCLONE_CONFIG_B2CRYPT_PASSWORD2:-}
     volumes:
       # NAS shares (read-only for backup)
       - /mnt/nas:/mnt/nas:ro
