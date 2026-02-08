@@ -1,7 +1,21 @@
 # Paths to back up to Backblaze B2 (encrypted)
 # One path per line, relative to /mnt/nas
 # Only include critical data - this costs money!
-# Example:
+# Uncomment lines to include a share in the backup
 # Pictures
 # Documents
 # paperless-ngx
+# Books
+# bp
+# caitstuff
+# syncthing-data
+# backup
+# Misc
+# Music
+# Musicold
+# Videoold
+# Media
+# Downloads
+# git
+# swirbobackup
+# tb
