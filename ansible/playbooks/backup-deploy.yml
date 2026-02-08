@@ -39,7 +39,7 @@
 
     - name: Copy Dockerfile
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../../backup/Dockerfile"
+        src: /work-backup/Dockerfile
         dest: /opt/backup/Dockerfile
         owner: deploy
         group: deploy
@@ -48,7 +48,7 @@
 
     - name: Copy entrypoint script
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../../backup/scripts/"
+        src: /work-backup/scripts/
         dest: /opt/backup/scripts/
         owner: deploy
         group: deploy
@@ -57,7 +57,7 @@
 
     - name: Copy path configs
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../../backup/paths/"
+        src: /work-backup/paths/
         dest: /opt/backup/paths/
         owner: deploy
         group: deploy
