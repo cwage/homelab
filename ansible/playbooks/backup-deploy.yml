@@ -112,7 +112,7 @@
               Failed to retrieve backup credentials from OpenBao.
               Ensure BAO_TOKEN is valid and secrets exist at:
                 kv/backup/backblaze (fields: account_id, application_key)
-                kv/backup/rclone-crypt (fields: password, password2)
+                kv/backup/rclone-crypt (fields: password; optional: password2)
 
     - name: Deploy backup environment file
       ansible.builtin.copy:
@@ -144,11 +144,10 @@
         - dockerfile_result.changed or scripts_result.changed
       register: build_result
 
-    - name: Start backup container
+    - name: Ensure backup container is running
       ansible.builtin.command:
         cmd: docker compose up -d
         chdir: /opt/backup
       become_user: deploy
       when:
         - not ansible_check_mode
-        - compose_result.changed or env_result.changed or (build_result.changed | default(false))
