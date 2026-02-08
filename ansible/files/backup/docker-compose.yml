@@ -1,0 +1,18 @@
+# Backup container for running on the containers host
+# Deployed by: make ansible-backup-deploy
+# Managed by Ansible - do not edit manually on the host
+services:
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backup
+    restart: "no"
+    env_file:
+      - .env
+    volumes:
+      - /mnt/nas:/mnt/nas:ro
+      - ./logs:/var/log/backup
+      - ./paths:/opt/backup/paths:ro
+    working_dir: /opt/backup
+    command: ["sleep", "infinity"]
