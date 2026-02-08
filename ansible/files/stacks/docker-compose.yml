@@ -42,7 +42,7 @@ services:
     volumes:
       - jellyfin_config:/config
       - jellyfin_cache:/cache
-      - /mnt/media:/media
+      - /mnt/nas/Media:/media
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.lan.quietlife.net`)"
@@ -69,7 +69,7 @@ services:
       - TZ=America/Chicago
     volumes:
       - sabnzbd_config:/config
-      - /mnt/media:/media
+      - /mnt/nas/Media:/media
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sabnzbd.rule=Host(`sabnzbd.lan.quietlife.net`)"
@@ -89,7 +89,7 @@ services:
       - TZ=America/Chicago
     volumes:
       - radarr_config:/config
-      - /mnt/media:/media
+      - /mnt/nas/Media:/media
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.radarr.rule=Host(`radarr.lan.quietlife.net`)"
@@ -109,7 +109,7 @@ services:
       - TZ=America/Chicago
     volumes:
       - sonarr_config:/config
-      - /mnt/media:/media
+      - /mnt/nas/Media:/media
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.lan.quietlife.net`)"
@@ -141,10 +141,10 @@ services:
       - PAPERLESS_TIME_ZONE=America/Chicago
       - PAPERLESS_URL=https://paperless.lan.quietlife.net
     volumes:
-      - /mnt/paperless/data:/usr/src/paperless/data
-      - /mnt/paperless/media:/usr/src/paperless/media
-      - /mnt/paperless/export:/usr/src/paperless/export
-      - /mnt/paperless/consume:/usr/src/paperless/consume
+      - /mnt/nas/paperless/data:/usr/src/paperless/data
+      - /mnt/nas/paperless/media:/usr/src/paperless/media
+      - /mnt/nas/paperless/export:/usr/src/paperless/export
+      - /mnt/nas/paperless/consume:/usr/src/paperless/consume
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.paperless.rule=Host(`paperless.lan.quietlife.net`)"
