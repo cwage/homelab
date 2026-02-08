@@ -154,6 +154,23 @@ services:
     networks:
       - proxy
 
+  owncast:
+    image: owncast/owncast:0.2.1
+    container_name: owncast
+    restart: unless-stopped
+    ports:
+      - "1935:1935"
+    volumes:
+      - owncast_data:/app/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.owncast.rule=Host(`owncast.lan.quietlife.net`)"
+      - "traefik.http.routers.owncast.entrypoints=websecure"
+      - "traefik.http.routers.owncast.tls=true"
+      - "traefik.http.services.owncast.loadbalancer.server.port=8080"
+    networks:
+      - proxy
+
   cloudflared:
     image: cloudflare/cloudflared:2026.1.2
     container_name: cloudflared
@@ -165,6 +182,7 @@ services:
       - proxy
     depends_on:
       - jellyfin
+      - owncast
     profiles:
       - tunnel
 
@@ -179,3 +197,4 @@ volumes:
   radarr_config:
   sonarr_config:
   paperless_redis:
+  owncast_data:
