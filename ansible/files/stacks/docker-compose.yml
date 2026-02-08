@@ -159,7 +159,7 @@ services:
     container_name: owncast
     restart: unless-stopped
     ports:
-      - "1935:1935"
+      - "10.10.15.12:1935:1935"
     volumes:
       - owncast_data:/app/data
     labels:
