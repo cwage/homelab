@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     jq \
     ca-certificates \
+    vim-tiny \
+    less \
     && rm -rf /var/lib/apt/lists/*
 
 # Install OpenBao CLI (vault CLI is compatible)

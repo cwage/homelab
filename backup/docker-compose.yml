@@ -11,11 +11,13 @@ services:
         required: false
     volumes:
       # NAS shares (read-only for backup)
-      - /mnt/nas:/mnt/nas:ro
+      - /mnt/nas:/mnt/nas:ro,rslave
       # USB drive (read-write for local backup)
       - /media/${USER:-cwage}/nasbak:/backup/local
       # Logs
       - ./logs:/var/log/backup
       # Path configs
       - ./paths:/opt/backup/paths:ro
+      # Scripts (live mount for iteration)
+      - ./scripts:/opt/backup/scripts:ro
     working_dir: /opt/backup
