@@ -13,9 +13,20 @@ set -uo pipefail
 #   backup-remote.sh --interactive --dry-run  # both
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-PATHS_FILE="${BASE_DIR}/paths/remote.txt"
+# Determine base directory for backup configuration.
+# Use BACKUP_BASE_DIR env var if set, otherwise derive from script location
+# with a fallback to /opt/backup (handles Dockerfile COPY flattening).
+CANDIDATE_BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [[ -n "${BACKUP_BASE_DIR:-}" ]]; then
+    BASE_DIR="$BACKUP_BASE_DIR"
+elif [[ -d "$CANDIDATE_BASE_DIR/paths" ]]; then
+    BASE_DIR="$CANDIDATE_BASE_DIR"
+else
+    BASE_DIR="/opt/backup"
+fi
+
+PATHS_FILE="${BACKUP_PATHS_FILE:-"$BASE_DIR/paths/remote.txt"}"
 NAS_ROOT="/mnt/nas"
 REMOTE="b2crypt"
 LOG_DIR="/var/log/backup"
@@ -99,7 +110,7 @@ fi
 # ---------------------------------------------------------------------------
 # Read paths (skip comments and blank lines)
 # ---------------------------------------------------------------------------
-mapfile -t PATHS < <(grep -v '^\s*#' "$PATHS_FILE" | grep -v '^\s*$' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+mapfile -t PATHS < <(grep -v '^[[:space:]]*#' "$PATHS_FILE" | grep -v '^[[:space:]]*$' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
 if [[ ${#PATHS[@]} -eq 0 ]]; then
     log "No paths enabled in $PATHS_FILE — nothing to do."
