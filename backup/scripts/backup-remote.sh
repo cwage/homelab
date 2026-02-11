@@ -101,12 +101,6 @@ if ! command -v rclone &>/dev/null; then
     exit 1
 fi
 
-# Verify rclone can reach the remote (checks credentials)
-if ! rclone lsd "${REMOTE}:" --max-depth 0 &>/dev/null; then
-    echo "ERROR: cannot list ${REMOTE}: — check rclone credentials" >&2
-    exit 1
-fi
-
 # ---------------------------------------------------------------------------
 # Read paths (skip comments and blank lines)
 # ---------------------------------------------------------------------------
