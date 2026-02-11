@@ -1,0 +1,117 @@
+---
+# Deploy resume preview container to the containers host
+# Clones the resume repo from GitHub and serves Jekyll on port 4000.
+# Cloudflared routes preview.quietlife.net to this container.
+#
+# Usage: make ansible-testing-deploy
+#
+# Override branch: make ansible-testing-deploy OPTS="-e resume_branch=master"
+
+- name: Deploy resume testing container
+  hosts: container_hosts
+  become: true
+  gather_facts: false
+
+  vars:
+    resume_branch: "add-github-experience-multiline-yaml"
+
+  tasks:
+    # Fetch deploy key from OpenBao
+    - name: Retrieve deploy key from OpenBao
+      block:
+        - name: Fetch deploy key
+          ansible.builtin.set_fact:
+            deploy_key_creds: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                                   'infra/deploy-keys/resume',
+                                   engine_mount_point='kv',
+                                   url=openbao_addr,
+                                   token=openbao_token,
+                                   validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+
+        - name: Validate deploy key
+          ansible.builtin.assert:
+            that:
+              - deploy_key_creds.private_key is defined
+              - deploy_key_creds.private_key | length > 0
+            fail_msg: "Deploy key missing - check OpenBao secret at kv/infra/deploy-keys/resume"
+      rescue:
+        - name: Fail with helpful error
+          ansible.builtin.fail:
+            msg: >
+              Failed to retrieve deploy key from OpenBao.
+              Ensure BAO_TOKEN is valid and secret exists at:
+                kv/infra/deploy-keys/resume (field: private_key)
+
+    - name: Create testing directory
+      ansible.builtin.file:
+        path: /opt/testing
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: '0750'
+
+    - name: Copy Dockerfile
+      ansible.builtin.copy:
+        src: /work-testing/Dockerfile
+        dest: /opt/testing/Dockerfile
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      register: dockerfile_result
+
+    - name: Copy entrypoint script
+      ansible.builtin.copy:
+        src: /work-testing/entrypoint.sh
+        dest: /opt/testing/entrypoint.sh
+        owner: deploy
+        group: deploy
+        mode: '0755'
+      register: entrypoint_result
+
+    - name: Copy docker-compose file
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../files/testing/docker-compose.yml"
+        dest: /opt/testing/docker-compose.yml
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      register: compose_result
+
+    - name: Deploy SSH deploy key
+      ansible.builtin.copy:
+        content: "{{ deploy_key_creds.private_key }}"
+        dest: /opt/testing/deploy_key
+        owner: deploy
+        group: deploy
+        mode: '0600'
+      no_log: true
+
+    - name: Deploy environment file
+      ansible.builtin.copy:
+        content: |
+          # Managed by Ansible - do not edit manually
+          # Re-deploy with: make ansible-testing-deploy
+          RESUME_BRANCH={{ resume_branch }}
+        dest: /opt/testing/.env
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      register: env_result
+
+    - name: Build testing container image
+      ansible.builtin.command:
+        cmd: docker compose build
+        chdir: /opt/testing
+      become_user: deploy
+      when:
+        - not ansible_check_mode
+        - dockerfile_result.changed or entrypoint_result.changed
+
+    - name: Ensure testing container is running
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: /opt/testing
+      become_user: deploy
+      when:
+        - not ansible_check_mode
