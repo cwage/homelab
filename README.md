@@ -3,6 +3,7 @@
 Homelab infrastructure repo. Components:
 - `ansible/` — host configuration management
 - `tofu/` — VM provisioning with OpenTofu/Terraform
+- `testing/` — testing/preview containers (e.g., resume preview via Jekyll)
 - `docs/` — shared design notes (e.g., `dns-plan.md`)
 
 ## Make targets
@@ -94,6 +95,20 @@ To restore later:
 1. Set `active: true` in group_vars
 2. Run `make ansible-gaming PROFILE=<name>`
 3. Extract the tarball to restore world data
+
+### Resume preview (testing container)
+
+Preview a resume branch at `preview.quietlife.net` before merging to master/GitHub Pages.
+
+| Command | Description |
+|---------|-------------|
+| `make ansible-testing-deploy` | Full deploy (copy files, build, start container) |
+| `make ansible-testing-deploy-check` | Dry-run deploy |
+| `make ansible-testing-refresh` | Restart container (pulls latest from current branch) |
+| `make ansible-testing-switch BRANCH=master` | Switch to a different branch and restart |
+| `make testing-build` | Build the Docker image locally |
+
+Day-to-day workflow: edit resume locally, `git push`, then `make ansible-testing-refresh` to see changes at `preview.quietlife.net`.
 
 ### Secrets and local state
 - OpenTofu API creds live in `tofu/.env` (gitignored).
