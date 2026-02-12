@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check testing-deploy testing-deploy-check testing-refresh testing-switch all check-all run adhoc sh build-tinyfugue trufflehog
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -99,6 +99,19 @@ backup-deploy: ## Deploy backup tooling to containers host (builds image, writes
 
 backup-deploy-check: ## Dry-run backup deployment with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/backup-deploy.yml -vv --check --diff $(OPTS)
+
+testing-deploy: ## Deploy resume preview container to containers host [OPTS="-e resume_branch=master"]
+	$(DC) run --rm ansible ansible-playbook playbooks/testing-deploy.yml -vv $(OPTS)
+
+testing-deploy-check: ## Dry-run testing deployment with --check/--diff
+	$(DC) run --rm ansible ansible-playbook playbooks/testing-deploy.yml -vv --check --diff $(OPTS)
+
+testing-refresh: ## Restart testing container (pulls latest code from GitHub)
+	$(DC) run --rm ansible ansible-playbook playbooks/testing-refresh.yml -vv $(OPTS)
+
+testing-switch: ## Switch testing branch and restart [BRANCH=branch-name]
+	@if [ -z "$(BRANCH)" ]; then echo "BRANCH required. Example: make testing-switch BRANCH=master"; exit 1; fi
+	$(DC) run --rm ansible ansible-playbook playbooks/testing-refresh.yml -vv -e resume_branch=$(BRANCH) $(OPTS)
 
 all: ## Run standard playbooks (proxmox, firewall, felix)
 	$(MAKE) proxmox
