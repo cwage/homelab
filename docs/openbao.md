@@ -199,6 +199,35 @@ sudo chmod 600 /etc/openbao/backup-token
 sudo chown root:root /etc/openbao/backup-token
 ```
 
+## Backup-Remote Token Setup (One-Time)
+
+The NAS-to-Backblaze B2 backup system uses a separate token scoped to only the B2 and rclone-crypt KV paths. This token is deployed to the containers host via Ansible and used by the backup container at runtime to fetch credentials.
+
+```bash
+# Create the backup-remote policy
+bao policy write backup-remote - <<'EOF'
+path "kv/data/backup/backblaze" {
+  capabilities = ["read"]
+}
+path "kv/data/backup/rclone-crypt" {
+  capabilities = ["read"]
+}
+EOF
+
+# Create periodic token with that policy
+bao token create \
+  -policy=backup-remote \
+  -no-default-policy \
+  -orphan \
+  -period=8760h \
+  -display-name="backup-remote"
+
+# Store the token for Ansible retrieval
+bao kv put kv/backup/remote-token token="<token-from-above>"
+```
+
+See [`backup/README.md`](../backup/README.md) for full setup procedures, token rotation, and troubleshooting.
+
 ## Backups
 
 Automated daily Raft snapshots are stored on NFS:

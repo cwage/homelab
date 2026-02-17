@@ -6,14 +6,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: backup
     restart: "no"
     env_file:
       - .env
     volumes:
       - /mnt/nas:/mnt/nas:ro,rslave
       - ./logs:/var/log/backup
-      - ./paths:/opt/backup/paths
+      - ./paths:/opt/backup/paths:ro
       - ./scripts:/opt/backup/scripts:ro
     working_dir: /opt/backup
-    command: ["sleep", "infinity"]
