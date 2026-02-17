@@ -6,7 +6,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: backup
     restart: "no"
     env_file:
       - .env
@@ -16,4 +15,3 @@ services:
       - ./paths:/opt/backup/paths
       - ./scripts:/opt/backup/scripts:ro
     working_dir: /opt/backup
-    command: ["sleep", "infinity"]
