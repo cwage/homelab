@@ -2,20 +2,13 @@
 # One path per line, relative to /mnt/nas
 # Only include critical data - this costs money!
 # Uncomment lines to include a share in the backup
-# Pictures
-# Documents
-# paperless-ngx
-# Books
-# bp
-# caitstuff
-# syncthing-data
-# backup
-# Misc
-# Music
-# Musicold
-# Videoold
+Pictures
+Documents
+paperless
+Books
+bp
+caitstuff
+syncthing-data
+backup
+Misc
 # Media
-# Downloads
-# git
-# swirbobackup
-# tb

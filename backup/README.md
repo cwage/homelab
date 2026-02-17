@@ -1,48 +1,33 @@
 # Backup Tooling
 
-Dockerized backup tooling for NAS shares to local USB and Backblaze B2.
+Dockerized backup tooling for syncing NAS shares to Backblaze B2 with client-side encryption (rclone crypt).
 
 See [issue #113](https://github.com/cwage/homelab/issues/113) for the full backup strategy and disaster recovery plan.
 
-## Quick Start
+## Overview
+
+The backup system runs as an **ephemeral Docker container** on the containers host. A daily cron job launches the container, which fetches B2 credentials from OpenBao at runtime, syncs all configured NAS shares to Backblaze B2, and exits. No plaintext B2 credentials are stored on disk.
+
+## OpenBao Secrets Setup
+
+All commands below run on the OpenBao server (or from a workstation with `bao` CLI configured).
+
+### 1. Store B2 credentials
+
+Get your Backblaze B2 API credentials from Backblaze B2 > App Keys.
 
 ```bash
-# Build the container
-make backup-build
+export BAO_ADDR="https://bao.lan.quietlife.net:8200"
+bao login  # enter root token
 
-# Open interactive shell with rclone configured
-make backup-shell
-```
-
-## Prerequisites
-
-### Option A: OpenBao Secrets (Recommended)
-
-Create the following secrets in OpenBao:
-
-#### `kv/backup/backblaze`
-
-Backblaze B2 API credentials. Get these from Backblaze B2 > App Keys.
-
-| Field | Description |
-|-------|-------------|
-| `account_id` | B2 Account ID or Application Key ID |
-| `application_key` | B2 Application Key |
-
-```bash
 bao kv put kv/backup/backblaze \
-  account_id="your_account_id" \
-  application_key="your_application_key"
+  account_id="your_b2_account_id" \
+  application_key="your_b2_application_key"
 ```
 
-#### `kv/backup/rclone-crypt`
+### 2. Store rclone crypt credentials
 
-Client-side encryption credentials for the rclone crypt overlay.
-
-| Field | Description |
-|-------|-------------|
-| `password` | Encryption password (required) |
-| `password2` | Salt for filename encryption (optional but recommended) |
+These are the client-side encryption keys for the rclone crypt overlay.
 
 ```bash
 bao kv put kv/backup/rclone-crypt \
@@ -50,16 +35,172 @@ bao kv put kv/backup/rclone-crypt \
   password2="your_salt"
 ```
 
-### Option B: Environment File Fallback
+### 3. Create the `backup-remote` policy
 
-If OpenBao is not available, copy `.env.example` to `.env` and fill in your credentials:
+This policy scopes the backup container's token to only the two KV paths it needs:
 
 ```bash
-cp .env.example .env
-# Edit .env with your credentials
+bao policy write backup-remote - <<'EOF'
+path "kv/data/backup/backblaze" {
+  capabilities = ["read"]
+}
+path "kv/data/backup/rclone-crypt" {
+  capabilities = ["read"]
+}
+EOF
 ```
 
-The entrypoint will use `.env` values if OpenBao credentials aren't available.
+### 4. Create a periodic token
+
+```bash
+bao token create \
+  -policy=backup-remote \
+  -no-default-policy \
+  -orphan \
+  -period=8760h \
+  -display-name="backup-remote"
+```
+
+Save the token from the output.
+
+### 5. Store the token in KV
+
+This allows Ansible to retrieve it at deploy time:
+
+```bash
+bao kv put kv/backup/remote-token token="<token-from-step-4>"
+```
+
+## Deployment
+
+Deploy the backup system to the containers host:
+
+```bash
+make ansible-backup-deploy
+```
+
+This playbook:
+1. Copies Dockerfile, scripts, and path configs to `/opt/backup/`
+2. Fetches the `backup-remote` token from `kv/backup/remote-token` (using the Ansible deploy token)
+3. Writes `/opt/backup/.env` with OpenBao connection params only (`BAO_ADDR`, `BAO_TOKEN`). TLS verification is enabled by default; `BAO_SKIP_VERIFY` is only set to `true` if the Ansible environment has it enabled (bootstrap only).
+4. Builds the backup container image
+5. Removes any legacy persistent backup container
+6. Installs a daily cron job for the `deploy` user
+
+## Scheduled Backups
+
+| Setting | Value |
+|---------|-------|
+| Schedule | Daily at 3:00 AM |
+| Host | `containers.lan.quietlife.net` |
+| User | `deploy` |
+| Cron name | `backup-remote-daily` |
+| Container | Ephemeral (`docker compose run --rm`) |
+| Credentials | Fetched from OpenBao at runtime |
+
+The cron job runs:
+
+```bash
+flock -n /opt/backup/logs/backup-remote.cron.lock -c 'cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup-remote.sh >> /opt/backup/logs/cron.log 2>&1'
+```
+
+The `flock` wrapper prevents overlapping runs — if a previous backup is still running when cron fires, the new invocation exits immediately rather than starting a concurrent sync.
+
+View the cron entry:
+
+```bash
+crontab -u deploy -l
+```
+
+## Token Rotation
+
+When the `backup-remote` token needs to be rotated:
+
+```bash
+export BAO_ADDR="https://bao.lan.quietlife.net:8200"
+bao login  # enter root token
+
+# 1. Revoke the old token
+bao token revoke <old-token>
+
+# 2. Create a new token
+bao token create \
+  -policy=backup-remote \
+  -no-default-policy \
+  -orphan \
+  -period=8760h \
+  -display-name="backup-remote"
+
+# 3. Update the stored token
+bao kv put kv/backup/remote-token token="<new-token>"
+```
+
+Then re-deploy to push the new token to the containers host:
+
+```bash
+make ansible-backup-deploy
+```
+
+## Manual Runs / Troubleshooting
+
+### Run a backup manually
+
+```bash
+ssh containers.lan.quietlife.net
+cd /opt/backup
+docker compose run --rm backup /opt/backup/scripts/backup-remote.sh --interactive
+```
+
+### Dry run (no changes)
+
+```bash
+docker compose run --rm backup /opt/backup/scripts/backup-remote.sh --dry-run
+```
+
+### Interactive shell
+
+```bash
+docker compose run --rm backup bash
+# Inside the container:
+rclone lsd b2crypt:          # list encrypted bucket contents
+rclone ls b2crypt:Pictures   # list files in a share
+```
+
+### Logs
+
+Backup logs are stored in `/opt/backup/logs/` on the containers host:
+- `remote-YYYYMMDD-HHMMSS.log` — per-run rclone logs
+- `cron.log` — cron job stdout/stderr
+
+### Local development
+
+For local testing, copy `.env.example` to `.env` and fill in credentials:
+
+```bash
+cd backup/
+cp .env.example .env
+# Edit .env with your credentials
+make backup-build
+make backup-shell
+```
+
+## Security Model
+
+The backup system uses a two-layer credential approach:
+
+1. **On disk** (`/opt/backup/.env`): Only an OpenBao token scoped to `backup-remote` policy (can only read `kv/backup/backblaze` and `kv/backup/rclone-crypt`)
+2. **At runtime**: The container entrypoint fetches B2 and rclone-crypt credentials from OpenBao via API, exports them as environment variables, and runs the backup. Credentials are never written to disk.
+
+If the `.env` file is compromised, the attacker gets an OpenBao token that can only read two specific KV paths — not the full secrets engine or any other infrastructure secrets.
+
+## rclone Remotes
+
+The entrypoint configures two rclone remotes via environment variables:
+
+| Remote | Description |
+|--------|-------------|
+| `b2:` | Raw Backblaze B2 access (unencrypted) |
+| `b2crypt:` | Encrypted overlay — use this for backups |
 
 ## Makefile Targets
 
@@ -71,68 +212,20 @@ The entrypoint will use `.env` values if OpenBao credentials aren't available.
 | `make backup-clean` | Remove the backup container image |
 | `make backup-help` | Show available targets |
 
-## rclone Remotes
-
-The entrypoint configures two rclone remotes via environment variables:
-
-| Remote | Description |
-|--------|-------------|
-| `b2:` | Raw Backblaze B2 access (unencrypted) |
-| `b2crypt:` | Encrypted overlay - use this for backups |
-
-### Example Commands
-
-```bash
-# Inside the container (make backup-shell):
-
-# List B2 buckets
-rclone lsd b2:
-
-# List files in bucket (shows encrypted filenames)
-rclone ls b2:cwagenas-backup
-
-# List files via crypt overlay (shows decrypted filenames)
-rclone ls b2crypt:
-
-# Check what would be synced (dry-run)
-rclone sync /mnt/nas/Pictures b2crypt:Pictures --dry-run
-
-# Sync with progress
-rclone sync /mnt/nas/Pictures b2crypt:Pictures --progress
-```
-
-## Volume Mounts
-
-The container mounts the following paths:
-
-| Container Path | Host Path | Mode | Purpose |
-|----------------|-----------|------|---------|
-| `/mnt/nas` | `/mnt/nas` | read-only | NAS shares to back up |
-| `/backup/local` | `/media/$USER/nasbak` | read-write | USB drive for local backups |
-| `/var/log/backup` | `./logs` | read-write | Backup logs |
-| `/opt/backup/paths` | `./paths` | read-only | Path configuration files |
-
-## Security Notes
-
-- The OpenBao CLI binary is pinned to a specific version with SHA256 verification (for interactive/admin use)
-- The entrypoint fetches secrets from OpenBao via HTTP API using curl/jq, not the CLI
-- No secrets are written to disk in the container; rclone is configured via environment variables
-- The `.env` file is gitignored
-- NAS shares are mounted read-only to prevent accidental modification
-
 ## Files
 
 ```
 backup/
 ├── Dockerfile              # Container image definition
-├── docker-compose.yml      # Service configuration
+├── docker-compose.yml      # Local dev service configuration
 ├── Makefile                # Build and run targets
-├── .env.example            # Template for fallback credentials
+├── .env.example            # Template for credentials
 ├── README.md               # This file
 ├── logs/                   # Backup logs (gitignored)
 ├── paths/
 │   ├── local.txt           # Paths for USB backup (future)
-│   └── remote.txt          # Paths for B2 backup (future)
+│   └── remote.txt          # Paths for B2 backup
 └── scripts/
-    └── entrypoint.sh       # Fetches secrets and configures rclone
+    ├── entrypoint.sh       # Fetches secrets and configures rclone
+    └── backup-remote.sh    # Automated B2 sync script
 ```
