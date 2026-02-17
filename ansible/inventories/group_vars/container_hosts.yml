@@ -17,6 +17,9 @@ docker_users:
 # NVIDIA container toolkit for GPU transcoding
 nvidia_container_enabled: true
 
+# ntfy.sh topic URL for backup notifications
+ntfy_backup_topic: "https://ntfy.sh/cwage-homelab-backup"
+
 # NFS mounts for NAS shares
 # Media and paperless are rw (needed by radarr/sonarr/sabnzbd/paperless-ngx)
 # Everything else is ro (backup, general access)
