@@ -82,7 +82,7 @@ make ansible-backup-deploy
 This playbook:
 1. Copies Dockerfile, scripts, and path configs to `/opt/backup/`
 2. Fetches the `backup-remote` token from `kv/backup/remote-token` (using the Ansible deploy token)
-3. Writes `/opt/backup/.env` with OpenBao connection params only (`BAO_ADDR`, `BAO_TOKEN`, `BAO_SKIP_VERIFY`)
+3. Writes `/opt/backup/.env` with OpenBao connection params only (`BAO_ADDR`, `BAO_TOKEN`). TLS verification is enabled by default; `BAO_SKIP_VERIFY` is only set to `true` if the Ansible environment has it enabled (bootstrap only).
 4. Builds the backup container image
 5. Removes any legacy persistent backup container
 6. Installs a daily cron job for the `deploy` user

@@ -106,7 +106,7 @@
           # The container entrypoint fetches B2/crypt credentials from OpenBao at runtime
           BAO_ADDR={{ openbao_addr }}
           BAO_TOKEN={{ backup_remote_token }}
-          BAO_SKIP_VERIFY=true
+          BAO_SKIP_VERIFY={{ 'true' if openbao_skip_verify else 'false' }}
         dest: /opt/backup/.env
         owner: deploy
         group: deploy
