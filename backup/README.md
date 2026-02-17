@@ -101,8 +101,10 @@ This playbook:
 The cron job runs:
 
 ```bash
-cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup-remote.sh >> /opt/backup/logs/cron.log 2>&1
+flock -n /opt/backup/logs/backup-remote.cron.lock -c 'cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup-remote.sh >> /opt/backup/logs/cron.log 2>&1'
 ```
+
+The `flock` wrapper prevents overlapping runs — if a previous backup is still running when cron fires, the new invocation exits immediately rather than starting a concurrent sync.
 
 View the cron entry:
 

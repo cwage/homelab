@@ -106,7 +106,7 @@
           # The container entrypoint fetches B2/crypt credentials from OpenBao at runtime
           BAO_ADDR={{ openbao_addr }}
           BAO_TOKEN={{ backup_remote_token }}
-          BAO_SKIP_VERIFY={{ 'true' if openbao_skip_verify else 'false' }}
+          {% if openbao_skip_verify %}BAO_SKIP_VERIFY=true{% endif %}
         dest: /opt/backup/.env
         owner: deploy
         group: deploy
@@ -131,7 +131,12 @@
       become_user: deploy
       when: not ansible_check_mode
       register: down_result
-      changed_when: "'Removed' in down_result.stderr"
+      changed_when: down_result.stdout is search('Removed')
+
+    - name: Ensure cron is installed
+      ansible.builtin.apt:
+        name: cron
+        state: present
 
     - name: Install daily backup cron job
       ansible.builtin.cron:
@@ -139,4 +144,4 @@
         user: deploy
         hour: "3"
         minute: "0"
-        job: "cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup-remote.sh >> /opt/backup/logs/cron.log 2>&1"
+        job: "flock -n /opt/backup/logs/backup-remote.cron.lock -c 'cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup-remote.sh >> /opt/backup/logs/cron.log 2>&1'"
