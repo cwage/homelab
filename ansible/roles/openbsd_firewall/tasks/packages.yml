@@ -1,0 +1,6 @@
+---
+- name: Install hping
+  ansible.builtin.raw: /usr/sbin/pkg_add -I hping
+  become: true
+  register: pkg_result
+  changed_when: "'hping' in pkg_result.stdout and 'already installed' not in pkg_result.stdout"
