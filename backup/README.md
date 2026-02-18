@@ -128,7 +128,7 @@ The ntfy topic URL is configured via the `NTFY_TOPIC` environment variable in `.
 To test notifications manually:
 
 ```bash
-curl -d "test notification" https://ntfy.sh/cwage-homelab-backup
+curl -d "test notification" https://ntfy.sh/your-topic-here
 ```
 
 ## Token Rotation
