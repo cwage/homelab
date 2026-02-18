@@ -1,4 +1,8 @@
 ---
+- name: Include package installation tasks
+  ansible.builtin.include_tasks: packages.yml
+  tags: ['packages', 'firewall']
+
 - name: Include pf.conf management tasks
   ansible.builtin.include_tasks: pf.yml
   tags: ['pf', 'firewall']
