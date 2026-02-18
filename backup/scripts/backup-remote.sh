@@ -86,11 +86,14 @@ log() {
 ntfy_send() {
     local priority="$1" title="$2" body="$3" tags="${4:-}"
     [[ -z "${NTFY_TOPIC:-}" ]] && return 0
+    # Strip control characters from body for defense in depth
+    local sanitized_body
+    sanitized_body=$(printf '%s' "$body" | tr -d '[:cntrl:]') || sanitized_body=""
     local -a curl_args=(-sf -o /dev/null)
     [[ -n "$priority" ]] && curl_args+=(-H "Priority: ${priority}")
     [[ -n "$title" ]]    && curl_args+=(-H "Title: ${title}")
     [[ -n "$tags" ]]     && curl_args+=(-H "Tags: ${tags}")
-    curl "${curl_args[@]}" -d "${body}" "${NTFY_TOPIC}" || true
+    curl "${curl_args[@]}" -d "${sanitized_body}" "${NTFY_TOPIC}" || true
 }
 
 format_duration() {
