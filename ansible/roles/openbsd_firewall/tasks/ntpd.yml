@@ -1,0 +1,21 @@
+---
+# Ensure ntpd is enabled with -s flag so it steps the clock on startup
+# when the offset is large (e.g. after power outage with stale RTC)
+
+- name: Check current ntpd flags
+  ansible.builtin.raw: /usr/sbin/rcctl get ntpd flags
+  become: true
+  register: ntpd_flags
+  changed_when: false
+  check_mode: false
+
+- name: Set ntpd flags to -s
+  ansible.builtin.raw: /usr/sbin/rcctl set ntpd flags -s
+  become: true
+  when: ntpd_flags.stdout | trim != '-s'
+  notify: restart ntpd
+
+- name: Ensure ntpd is enabled
+  ansible.builtin.raw: /usr/sbin/rcctl enable ntpd
+  become: true
+  changed_when: false

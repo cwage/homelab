@@ -10,3 +10,7 @@
 - name: reload unbound
   ansible.builtin.raw: /usr/sbin/rcctl reload unbound
   become: true
+
+- name: restart ntpd
+  ansible.builtin.raw: /usr/sbin/rcctl restart ntpd
+  become: true
