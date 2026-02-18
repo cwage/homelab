@@ -112,6 +112,25 @@ View the cron entry:
 crontab -u deploy -l
 ```
 
+## Notifications
+
+Backup results are sent to [ntfy.sh](https://ntfy.sh) for push notifications to your phone.
+
+| Event | Priority | Tags |
+|-------|----------|------|
+| All paths synced successfully | `default` | `white_check_mark` |
+| One or more paths failed | `urgent` | `x` |
+
+Notifications include duration and a summary of what succeeded/failed. Dry runs do not send notifications.
+
+The ntfy topic URL is configured via the `NTFY_TOPIC` environment variable in `.env`. If unset or empty, notifications are silently skipped (the backup still runs normally). The topic is deployed by Ansible from the `ntfy_backup_topic` variable in `group_vars/container_hosts.yml`.
+
+To test notifications manually:
+
+```bash
+curl -d "test notification" https://ntfy.sh/your-topic-here
+```
+
 ## Token Rotation
 
 When the `backup-remote` token needs to be rotated:

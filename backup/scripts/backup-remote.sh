@@ -35,6 +35,7 @@ LOCK_FILE="/tmp/backup-remote.lock"
 INTERACTIVE=false
 DRY_RUN=false
 LOG_LEVEL="INFO"
+START_TIME=$(date +%s)
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -76,6 +77,33 @@ log() {
     fi
     if $INTERACTIVE || [[ -z "$LOG_FILE" ]]; then
         echo "$msg"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# Notifications (ntfy.sh)
+# ---------------------------------------------------------------------------
+ntfy_send() {
+    local priority="$1" title="$2" body="$3" tags="${4:-}"
+    [[ -z "${NTFY_TOPIC:-}" ]] && return 0
+    # Strip control characters from body for defense in depth
+    local sanitized_body
+    sanitized_body=$(printf '%s' "$body" | tr -d '[:cntrl:]') || sanitized_body=""
+    local -a curl_args=(-sf -o /dev/null)
+    [[ -n "$priority" ]] && curl_args+=(-H "Priority: ${priority}")
+    [[ -n "$title" ]]    && curl_args+=(-H "Title: ${title}")
+    [[ -n "$tags" ]]     && curl_args+=(-H "Tags: ${tags}")
+    curl "${curl_args[@]}" -d "${sanitized_body}" "${NTFY_TOPIC}" || true
+}
+
+format_duration() {
+    local secs=$1
+    if (( secs >= 3600 )); then
+        printf '%dh %dm %ds' $((secs/3600)) $((secs%3600/60)) $((secs%60))
+    elif (( secs >= 60 )); then
+        printf '%dm %ds' $((secs/60)) $((secs%60))
+    else
+        printf '%ds' "$secs"
     fi
 }
 
@@ -163,15 +191,27 @@ done
 # ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
+DURATION=$(format_duration $(( $(date +%s) - START_TIME )))
+
 log "---"
-log "Backup complete: ${#SUCCEEDED[@]} succeeded, ${#FAILED[@]} failed"
+log "Backup complete: ${#SUCCEEDED[@]} succeeded, ${#FAILED[@]} failed (${DURATION})"
 
 if [[ ${#FAILED[@]} -gt 0 ]]; then
     log "Failed paths:"
     for p in "${FAILED[@]}"; do
         log "  - $p"
     done
+    FAIL_LIST=$(printf '%s, ' "${FAILED[@]}")
+    ntfy_send urgent "Backup FAILED" \
+        "${#FAILED[@]}/${#PATHS[@]} paths failed (${DURATION}): ${FAIL_LIST%, }" \
+        "x"
     exit 1
+fi
+
+if ! $DRY_RUN; then
+    ntfy_send default "Backup completed" \
+        "${#SUCCEEDED[@]} paths synced in ${DURATION}" \
+        "white_check_mark"
 fi
 
 exit 0
