@@ -18,3 +18,7 @@
 - name: Include resolv.conf management tasks
   ansible.builtin.include_tasks: resolv.yml
   tags: ['resolv', 'dns', 'firewall']
+
+- name: Include ntpd management tasks
+  ansible.builtin.include_tasks: ntpd.yml
+  tags: ['ntpd', 'firewall']
