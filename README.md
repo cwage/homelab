@@ -29,7 +29,7 @@ Provisions VMs on Proxmox  →  Configures hosts: packages,
 cloud-init, GPU passthrough)  services, Docker stacks, certs
 ```
 
-OpenTofu creates the VMs, Ansible configures everything that runs on them. Both are wrapped in Dockerized Makefiles so the workflow is the same regardless of what workstation you're on.
+OpenTofu creates the VMs, Ansible configures everything that runs on them. Both have Makefiles that run all commands inside Docker containers, so the workflow is the same regardless of what workstation you're on.
 
 ### Secrets
 
