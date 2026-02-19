@@ -106,12 +106,12 @@
           # The container entrypoint fetches B2/crypt credentials from OpenBao at runtime
           BAO_ADDR={{ openbao_addr }}
           BAO_TOKEN={{ backup_remote_token }}
-          {%- if openbao_skip_verify %}
+          {% if openbao_skip_verify %}
           BAO_SKIP_VERIFY=true
-          {%- endif %}
-          {%- if ntfy_backup_topic is defined and ntfy_backup_topic %}
+          {% endif %}
+          {% if ntfy_backup_topic is defined and ntfy_backup_topic %}
           NTFY_TOPIC={{ ntfy_backup_topic }}
-          {%- endif %}
+          {% endif %}
         dest: /opt/backup/.env
         owner: deploy
         group: deploy
@@ -148,5 +148,5 @@
         name: backup-remote-daily
         user: deploy
         hour: "3"
-        minute: "0"
+        minute: "40"
         job: "flock -n /opt/backup/logs/backup-remote.cron.lock -c 'cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup-remote.sh >> /opt/backup/logs/cron.log 2>&1'"
