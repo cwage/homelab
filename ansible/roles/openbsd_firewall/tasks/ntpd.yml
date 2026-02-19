@@ -8,6 +8,7 @@
   register: ntpd_flags
   changed_when: false
   check_mode: false
+  failed_when: false
 
 - name: Set ntpd flags to -s
   ansible.builtin.raw: /usr/sbin/rcctl set ntpd flags -s
@@ -19,3 +20,16 @@
   ansible.builtin.raw: /usr/sbin/rcctl enable ntpd
   become: true
   changed_when: false
+
+- name: Check if ntpd is running
+  ansible.builtin.raw: /usr/sbin/rcctl check ntpd
+  become: true
+  register: ntpd_status
+  changed_when: false
+  check_mode: false
+  failed_when: ntpd_status.rc not in [0, 1]
+
+- name: Start ntpd if not running
+  ansible.builtin.raw: /usr/sbin/rcctl start ntpd
+  become: true
+  when: ntpd_status.rc == 1
