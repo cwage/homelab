@@ -2,6 +2,57 @@
 
 Physical and virtual hardware in the homelab.
 
+## Infrastructure overview
+
+```mermaid
+graph TD
+    subgraph WAN["WAN (Linode)"]
+        felix["felix<br/><small>45.56.113.70</small><br/><small>VPS</small>"]
+        gaming1["gaming1<br/><small>45.56.118.89</small><br/><small>Game servers</small>"]
+    end
+
+    subgraph CF["Cloudflare"]
+        tunnel["Cloudflare Tunnel"]
+    end
+
+    internet(("Internet"))
+
+    subgraph LAN["LAN — 10.10.15.0/24"]
+        subgraph pve1["pve1 — Proxmox VE (.18)<br/><small>Ryzen 7 1800X · 64 GB · GTX 1050 Ti</small>"]
+            dns1["dns1 (.10)<br/><small>1 vCPU · 512 MB</small><br/><small>NSD authoritative DNS</small>"]
+            openbao["openbao (.11)<br/><small>1 vCPU · 2 GB</small><br/><small>Secrets management</small>"]
+            subgraph containers["containers (.12) — 4 vCPU · 8 GB · GPU passthrough"]
+                traefik["Traefik<br/><small>reverse proxy + TLS</small>"]
+                jellyfin["Jellyfin<br/><small>media + NVENC</small>"]
+                radarr["Radarr"]
+                sonarr["Sonarr"]
+                sabnzbd["SABnzbd"]
+                paperless["Paperless-ngx"]
+                owncast["Owncast<br/><small>live streaming</small>"]
+                cloudflared["cloudflared"]
+            end
+        end
+
+        fw1["fw1 (.1)<br/><small>OpenBSD</small><br/><small>pf · DHCP · Unbound · WireGuard</small>"]
+        portanas["portanas (.4)<br/><small>Synology DS1815+</small><br/><small>NFS storage</small>"]
+    end
+
+    subgraph VPN["WireGuard VPN"]
+        vpn_clients["Remote clients<br/><small>(laptop, phone)</small>"]
+    end
+
+    internet --> tunnel --> cloudflared
+    cloudflared --> jellyfin
+    cloudflared --> owncast
+    traefik --> jellyfin & radarr & sonarr & sabnzbd & paperless & owncast
+
+    fw1 --- dns1
+    fw1 ---|gateway| pve1
+    portanas -.-|NFS| containers
+
+    vpn_clients ---|WireGuard| fw1
+```
+
 ## Physical hosts
 
 ### pve1 — Proxmox VE hypervisor

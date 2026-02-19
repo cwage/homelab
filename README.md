@@ -6,7 +6,7 @@ Infrastructure-as-code monorepo for a home network running on Proxmox VE, manage
 
 ### Network and hosts
 
-The LAN is `10.10.15.0/24` under the domain `lan.quietlife.net`. A couple of external Linode VPS instances live outside the LAN.
+The LAN is `10.10.15.0/24` under the domain `lan.quietlife.net`. A couple of external Linode VPS instances live outside the LAN. See [docs/hardware.md](docs/hardware.md) for a full infrastructure diagram and hardware specs.
 
 | Host | IP | Role |
 |------|----|------|
