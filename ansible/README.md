@@ -1,103 +1,100 @@
-# Homelab Ansible
+# ansible — host configuration
 
-Minimal Ansible setup to manage a Proxmox host.
+Ansible roles and playbooks for configuring all homelab hosts: Proxmox hypervisor, OpenBSD firewall, DNS server, Docker container host, NAS, and VPS instances. All operations run inside Docker containers.
 
 ## Setup
 
-- Requires Ansible installed locally (ansible-core or ansible).
-- Inventory defines a `proxmox` group with host alias `pve1` at `10.10.15.18`.
+Ansible reads credentials from the root `.env` file (shared with OpenTofu). See the root [README](../README.md) getting-started section for initial `.env` setup.
 
-### SSH key placement
-
-- Put the private key for the `deploy` user at: `keys/deploy/id_ed25519`
-  - Ensure permissions are `0600` on the file.
-  - The corresponding public key must be in `/home/deploy/.ssh/authorized_keys` on the Proxmox node.
-- `ansible.cfg` is preconfigured to use:
-  - `remote_user = deploy`
-  - `private_key_file = keys/deploy/id_ed25519`
-  - `inventory = inventories/hosts.yml`
-
-### Proxmox host
-
-- Inventory file: `inventories/hosts.yml`
-  - Group: `proxmox`
-  - Host alias: `pve1` -> `10.10.15.18`
-
-### Test connectivity
-
-Once the `deploy` user exists on the Proxmox host with passwordless sudo and the SSH key is installed, test with either command:
-
-```
-ansible -i inventories/hosts.yml proxmox -m ping
+```bash
+make init          # set UID/GID in .env for Docker user mapping
+make build         # build the Ansible Docker image
+make galaxy        # install required Ansible collections
+make ping          # test connectivity to all hosts
 ```
 
-or
+### SSH keys
 
-```
-ansible-playbook playbooks/ping.yml
-```
+Two separate key directories:
 
-Notes:
-- Host key checking is disabled in `ansible.cfg` for convenience during bootstrap. Consider enabling it later.
-- Privilege escalation (`become: true` with `sudo`) is enabled by default.
+- **`keys/`** — Deploy key for Ansible automation (`keys/deploy` private, `keys/deploy.pub` public). The private key is gitignored.
+- **`inventories/keys/`** — User SSH public keys deployed to hosts via the `users` role.
 
-## Run via Docker/Compose (no local Ansible)
+## Common commands
 
-1) Copy `.env.example` to `.env` and set your UID/GID (Linux/macOS):
-
-```
-cp .env.example .env
-id -u | xargs -I{} sed -i "s/^UID=.*/UID={}/" .env
-id -g | xargs -I{} sed -i "s/^GID=.*/GID={}/" .env
-```
-
-2) Build the Ansible image:
-
-```
-docker compose build --pull
+```bash
+make ping                     # test connectivity
+make firewall                 # configure fw1 (pf, DHCP, Unbound, WireGuard)
+make firewall-check           # dry-run firewall
+make dns                      # configure dns1 (NSD)
+make containers               # configure containers host (Docker, GPU, certs, stacks)
+make proxmox                  # configure pve1 (users, NFS mounts)
+make felix                    # configure VPS
+make gaming                   # provision game servers
+make all                      # apply all standard playbooks (use sparingly)
+make run PLAY=playbooks/firewall.yml LIMIT=fw1 OPTS="--check --diff"
+make adhoc HOSTS=pve1 MODULE=shell ARGS='uptime'
+make sh                       # interactive shell in Ansible container
 ```
 
-3) Verify Ansible inside the container:
+Run `make help` for the full list.
 
+## Inventory
+
+Hosts and groups defined in `inventories/hosts.yml`. Group variables in `inventories/group_vars/`, host-specific overrides in `inventories/host_vars/`.
+
+| Group | Hosts | Playbook |
+|-------|-------|----------|
+| `proxmox` | pve1 | `playbooks/proxmox.yml` |
+| `openbsd_firewalls` | fw1 | `playbooks/firewall.yml` |
+| `dns_servers` | dns1 | `playbooks/dns.yml` |
+| `container_hosts` | containers | `playbooks/containers.yml` |
+| `openbao` | openbao | `playbooks/openbao.yml` |
+| `linode_vps` | felix | `playbooks/vps.yml` |
+| `gaming_servers` | gaming1 | `playbooks/gaming.yml` |
+
+`portanas` (Synology NAS) is a standalone host managed via `playbooks/nas.yml`.
+
+## Roles
+
+| Role | Description |
+|------|-------------|
+| `users` | System users, SSH keys, sudo, home directories |
+| `openbsd_firewall` | pf, dhcpd, unbound, resolv.conf (OpenBSD, raw module) |
+| `wireguard_server` | WireGuard VPN on OpenBSD |
+| `nsd` | NSD authoritative DNS server |
+| `docker_host` | Docker + Compose installation |
+| `gpu_passthrough` | VFIO/IOMMU on Proxmox for PCI passthrough |
+| `nvidia_container` | NVIDIA driver + container toolkit |
+| `dns_client` | /etc/resolv.conf configuration |
+| `packages` | System packages from variable list |
+| `custom_packages` | Custom .deb packages (tinyfugue) |
+| `nfs_mounts` | Client-side NFS mount configuration |
+| `synology_nfs` | Manage NFS shares on Synology DSM via SSH |
+| `proxmox_certs` | Deploy wildcard TLS cert to Proxmox |
+| `nginx` | Install nginx, manage www-data group |
+| `hostname` | Set hostname and /etc/hosts |
+| `system` | Hostname, /etc/hosts, SSH socket config |
+| `gaming_server` | LinuxGSM game server management |
+| `openbao` | Install/configure OpenBao |
+| `pve_template` | Build Proxmox VM templates |
+
+## Docker workflow
+
+The Ansible container runs with `network_mode: host` so it can reach LAN hosts directly. It mounts the repo at `/work` and passes through OpenBao credentials from the root `.env` via `--env-file`.
+
+```bash
+make build            # rebuild the container image
+make version          # show Ansible version in container
+make sh               # interactive shell for debugging
 ```
-docker compose run --rm ansible ansible --version
+
+## Secret scanning
+
+```bash
+make trufflehog       # scan ansible/ tree for leaked secrets
 ```
 
-4) Test connectivity to Proxmox:
+## OpenBSD notes
 
-```
-docker compose run --rm ansible ansible-playbook playbooks/ping.yml -vv
-```
-
-The container mounts this repo at `/work`, uses `/work/ansible.cfg`, and reads the key at `keys/deploy`.
-
-SELinux note
-- The compose volume uses `./:/work:Z`. The `:Z` option relabels the bind mount with a private SELinux label so the container can access it on SELinux systems (Fedora/RHEL). It is ignored on non‑SELinux hosts.
-
-## Secret scanning and pre-commit hook
-
-TruffleHog runs inside Docker (service `trufflehog` defined in `docker-compose.yml`) to keep scans reproducible and avoid installing it locally.
-
-### One-off scans
-
-```
-make trufflehog
-```
-
-The target wraps `docker compose run --rm trufflehog filesystem /work --fail --no-update` with a repo-specific exclude file to skip vendored collections and secrets you already manage out-of-band (e.g., `keys/deploy`). Override the command via `TRUFFLEHOG_ARGS` if you need additional flags:
-
-```
-make trufflehog TRUFFLEHOG_ARGS="filesystem /work --fail --only-verified"
-```
-
-### Installing the git pre-commit hook
-
-To catch leaks before the CI pipeline, install the repo-managed hook into `.git/hooks/pre-commit`:
-
-```
-./scripts/install-precommit-hook.sh
-```
-
-After installation, every `git commit` runs the same Dockerized scan. Set `SKIP_TRUFFLEHOG=1` to bypass temporarily or `TRUFFLEHOG_PRECOMMIT_ARGS="..."` to customize the hook invocation (use sparingly and document why).
-
-Make sure CI mirrors `make trufflehog` (recommended) so pushes and PRs are blocked if the scan fails, even when someone skips the local hook.
+The `openbsd_firewall` and `wireguard_server` roles use `ansible.builtin.raw` exclusively since OpenBSD doesn't have Python. Configs are validated before deployment (`pfctl -nf`, `dhcpd -n`, `nsd-checkconf`) and services are reloaded via handlers.

@@ -361,4 +361,4 @@ pfctl -sr | grep wg_net
 - [OpenBSD wg(4) Manual](https://man.openbsd.org/wg)
 - [OpenBSD hostname.if(5) Manual](https://man.openbsd.org/hostname.if)
 - [WireGuard Protocol](https://www.wireguard.com/)
-- [Project VPN Documentation](../../docs/VPN.md)
+- [VPN Architecture Summary](../../docs/VPN.md)
