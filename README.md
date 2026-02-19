@@ -150,7 +150,7 @@ make install-precommit-hook  # install trufflehog pre-commit hook
 | [docs/hardware.md](docs/hardware.md) | Physical and virtual hardware specs |
 | [docs/tls-certificates.md](docs/tls-certificates.md) | Wildcard cert lifecycle: Let's Encrypt → OpenBao → Traefik/Proxmox |
 | [docs/adding-vm.md](docs/adding-vm.md) | Step-by-step guide to adding a new VM |
-| [docs/dns-plan.md](docs/dns-plan.md) | DNS architecture: NSD + Unbound design |
+| [docs/dns.md](docs/dns.md) | DNS setup: internal (NSD + Unbound) and external (Cloudflare) |
 | [docs/openbao.md](docs/openbao.md) | OpenBao operations: deploy, unseal, certs, backups |
 | [docs/openbao-secrets.md](docs/openbao-secrets.md) | KV secrets structure, policies, token management |
 | [docs/gpu-passthrough.md](docs/gpu-passthrough.md) | GPU passthrough setup on Proxmox |
