@@ -1,120 +1,151 @@
 # homelab
 
-Homelab infrastructure repo. Components:
-- `ansible/` — host configuration management
-- `tofu/` — VM provisioning with OpenTofu/Terraform
-- `testing/` — testing/preview containers (e.g., resume preview via Jekyll)
-- `docs/` — shared design notes (e.g., `dns-plan.md`)
+Infrastructure-as-code monorepo for a home network running on Proxmox VE, managed with OpenTofu (VM provisioning) and Ansible (host configuration). Everything runs in Docker containers — no local tool installs required beyond Docker and Make.
+
+## Architecture
+
+### Network and hosts
+
+The LAN is `10.10.15.0/24` under the domain `lan.quietlife.net`. A couple of external Linode VPS instances live outside the LAN.
+
+| Host | IP | Role |
+|------|----|------|
+| **pve1** | 10.10.15.18 | Proxmox VE hypervisor — runs all local VMs |
+| **fw1** | 10.10.15.1 | OpenBSD firewall/router — pf, DHCP, Unbound (recursive DNS), WireGuard VPN |
+| **dns1** | 10.10.15.10 | NSD authoritative DNS for `lan.quietlife.net` |
+| **openbao** | 10.10.15.11 | Secrets management (OpenBao, a HashiCorp Vault fork) |
+| **containers** | 10.10.15.12 | Docker host for containerized apps, GPU passthrough (GTX 1050 Ti) |
+| **portanas** | 10.10.15.4 | Synology NAS — storage, NFS exports |
+| **felix** | 45.56.113.70 | Linode VPS |
+| **gaming1** | 45.56.118.89 | Linode VPS — LinuxGSM game servers |
+
+### Two-layer IaC
+
+```
+OpenTofu (tofu/)              Ansible (ansible/)
+─────────────────             ──────────────────
+Provisions VMs on Proxmox  →  Configures hosts: packages,
+(cpu, memory, disk, network,  users, firewall rules, DNS,
+cloud-init, GPU passthrough)  services, Docker stacks, certs
+```
+
+OpenTofu creates the VMs, Ansible configures everything that runs on them. Both are wrapped in Dockerized Makefiles so the workflow is the same regardless of what workstation you're on.
+
+### Secrets
+
+Secrets (API tokens, deploy keys, TLS certs) are stored in OpenBao and fetched at deploy time via the `community.hashi_vault` Ansible collection. See [docs/openbao.md](docs/openbao.md) and [docs/openbao-secrets.md](docs/openbao-secrets.md).
+
+## Repository layout
+
+```
+├── ansible/          Host configuration (roles, playbooks, inventories)
+│   ├── playbooks/    Per-host-group playbooks (firewall.yml, dns.yml, etc.)
+│   ├── roles/        Reusable roles (openbsd_firewall, docker_host, nsd, etc.)
+│   └── inventories/  Host definitions and group variables
+├── tofu/             OpenTofu VM definitions for Proxmox
+├── backup/           Dockerized NAS → Backblaze B2 backup tooling
+├── lego/             Let's Encrypt certificate management (lego CLI)
+├── docs/             Design notes, runbooks, and operational guides
+├── testing/          Resume preview container
+└── scripts/          Repo-level utility scripts
+```
+
+## Getting started
+
+### Prerequisites
+
+- Docker and Docker Compose
+- GNU Make
+- SSH access to the target hosts (deploy key in `ansible/keys/`)
+
+### First-time setup
+
+```bash
+# Clone the repo
+git clone git@github.com:cwage/homelab.git && cd homelab
+
+# Ansible setup
+cd ansible
+make init          # creates .env with your UID/GID
+make build         # builds the Ansible Docker image
+make galaxy        # installs Ansible collections
+make ping          # test connectivity to all hosts
+cd ..
+
+# OpenTofu setup (if provisioning VMs)
+cd tofu
+cp .env.example .env   # add Proxmox API credentials
+make build             # builds the Tofu Docker image
+make plan              # preview what Tofu would do
+cd ..
+```
+
+### Day-to-day workflow
+
+All operations go through Make targets at the repo root. The root Makefile delegates to component Makefiles:
+
+```bash
+make ansible-<target>     # runs target in ansible/Makefile
+make tofu-<target>        # runs target in tofu/Makefile
+```
+
+Use `make ansible-help` and `make tofu-help` to list all available targets.
 
 ## Make targets
-- `make ansible-<target>` runs the corresponding target in `ansible/Makefile` (see `make ansible-help` for the list).
-- `make tofu-<target>` runs the corresponding target in `tofu/Makefile` (see `make tofu-help` for the list).
-- `make ansible` or `make tofu` drops you into the component Makefile for ad hoc use.
 
-Examples:
+### Ansible (host configuration)
+
 ```bash
-make ansible-firewall     # apply firewall config via Ansible container
-make ansible-firewall-check  # dry-run firewall (check+diff)
-make ansible-felix-check     # dry-run felix VPS playbook
-make ansible-gaming          # provision gaming servers (all active profiles)
-make ansible-gaming-check    # dry-run gaming server config
-make ansible-gaming PROFILE=vs-buttopia  # provision specific profile only
-make ansible-gaming-configs  # deploy configs/mods only (no deps/lgsm install)
-make ansible-run PLAY=playbooks/firewall.yml LIMIT=openbsd_firewalls OPTS="--check --diff"  # dry-run limited group
-make ansible-all            # run users + firewall + felix (apply)
-make ansible-check-all      # dry-run users + firewall + felix
-make tofu-plan            # show OpenTofu plan
-make tofu-shell           # interactive tofu container
-make ansible-trufflehog   # run secrets scan for Ansible tree
-make tofu-trufflehog      # run secrets scan for Tofu tree
-make trufflehog           # scan entire repo for secrets (root-level)
-make install-precommit-hook  # install root pre-commit hook (trufflehog)
+make ansible-ping             # test connectivity to all hosts
+make ansible-firewall         # apply firewall config (pf, DHCP, Unbound, WireGuard)
+make ansible-firewall-check   # dry-run firewall
+make ansible-dns              # apply NSD authoritative DNS config
+make ansible-containers       # configure Docker host (packages, GPU, certs, stacks)
+make ansible-proxmox          # configure Proxmox host (users, NFS mounts)
+make ansible-felix            # configure Linode VPS
+make ansible-felix-check      # dry-run VPS config
+make ansible-gaming           # provision game servers
+make ansible-all              # apply all standard playbooks (use sparingly)
+make ansible-check-all        # dry-run all standard playbooks
+make ansible-run PLAY=playbooks/firewall.yml LIMIT=fw1 OPTS="--check --diff"
 ```
 
-### Common scenarios
-- **Firewall only (apply)**: `make ansible-firewall`
-- **Firewall dry-run**: `make ansible-firewall-check` (or add `OPTS="--check --diff"` to other targets)
-- **Felix VPS dry-run**: `make ansible-felix-check`
-- **Limit to a group/host**: `make ansible-run PLAY=playbooks/firewall.yml LIMIT=openbsd_firewalls` (add `OPTS="--check --diff"` for dry-run)
-- **Apply to all standard playbooks**: `make ansible-all` (users, firewall, felix) — use sparingly
-- **Dry-run all standard playbooks**: `make ansible-check-all`
+### OpenTofu (VM provisioning)
 
-### Gaming servers
-Game servers on Linode VPS. Each game profile gets its own Linux user with isolated installation.
-
-#### Quick reference
-| Command | Description |
-|---------|-------------|
-| `make ansible-gaming` | Full provision (all active profiles) |
-| `make ansible-gaming PROFILE=name` | Full provision (single profile) |
-| `make ansible-gaming-check` | Dry-run with --check/--diff |
-| `make ansible-gaming-configs` | Deploy configs/mods only |
-| `make ansible-gaming-archive PROFILE=name` | Archive and purge a profile |
-
-#### New profile setup
-
-1. Add profile to `ansible/inventories/group_vars/gaming_servers.yml`
-2. Run `make ansible-gaming PROFILE=<name>` to provision user and dependencies
-3. Install the game server (see game-specific instructions below)
-4. Start the server and verify it works
-5. (Optional) Add configs/mods to `ansible/roles/gaming_server/files/profiles/<name>/`
-6. Deploy configs with `make ansible-gaming-configs PROFILE=<name>`
-
-#### Game-specific setup
-
-**Vintage Story / Valheim (LinuxGSM)**
-
-After provisioning, install the game via LGSM:
 ```bash
-ssh gaming.quietlife.net
-sudo -iu <profile>
-./<script> install    # e.g., ./vintsserver install, ./vhserver install
-./<script> start
+make tofu-plan       # show what Tofu would change
+make tofu-apply      # apply changes (create/modify VMs)
+make tofu-shell      # interactive shell in Tofu container
 ```
 
-#### Day-to-day operations
+### Security scanning
 
-Ansible never auto-restarts game servers. After config changes, manually restart:
 ```bash
-ssh gaming.quietlife.net
-sudo -iu <profile>
-./<script> restart
+make trufflehog              # scan entire repo for leaked secrets
+make ansible-trufflehog      # scan ansible/ tree only
+make tofu-trufflehog         # scan tofu/ tree only
+make install-precommit-hook  # install trufflehog pre-commit hook
 ```
 
-#### Archiving profiles
+## Secrets and local state
 
-To safely remove a profile and reclaim disk space:
+- OpenTofu API credentials: `tofu/.env` (gitignored)
+- Ansible deploy keys: `ansible/keys/` (gitignored)
+- OpenBao token/address: `ansible/.env` (gitignored)
+- Tofu state: `tofu/terraform.tfstate` (tracked in git — single-developer workflow)
 
-1. Set `active: false` in `ansible/inventories/group_vars/gaming_servers.yml`
-2. Stop the server: `sudo -iu <profile> ./<script> stop`
-3. Preview: `make ansible-gaming-archive PROFILE=<name>`
-4. Execute: `make ansible-gaming-archive PROFILE=<name> CONFIRM=yes`
-5. Copy the tarball: `scp gaming.quietlife.net:/tmp/<name>-*.tar.gz ./`
+## Documentation
 
-To restore later:
-1. Set `active: true` in group_vars
-2. Run `make ansible-gaming PROFILE=<name>`
-3. Extract the tarball to restore world data
-
-### Resume preview (testing container)
-
-Preview a resume branch at `preview.quietlife.net` before merging to master/GitHub Pages.
-
-| Command | Description |
-|---------|-------------|
-| `make ansible-testing-deploy` | Full deploy (copy files, build, start container) |
-| `make ansible-testing-deploy-check` | Dry-run deploy |
-| `make ansible-testing-refresh` | Restart container (pulls latest from current branch) |
-| `make ansible-testing-switch BRANCH=master` | Switch to a different branch and restart |
-| `make testing-build` | Build the Docker image locally |
-
-Day-to-day workflow: edit resume locally, `git push`, then `make ansible-testing-refresh` to see changes at `preview.quietlife.net`.
-
-### Secrets and local state
-- OpenTofu API creds live in `tofu/.env` (gitignored).
-- Ansible deploy keys live in `ansible/keys/` (gitignored).
-- Other local artifacts (.tfstate, .terraform, etc.) remain gitignored via component `.gitignore` files.
-
-### TruffleHog scanning
-- Root scanner: `make trufflehog` (uses `docker-compose.trufflehog.yml` in repo root, excludes defined in `.trufflehog-exclude.txt`).
-- Install pre-commit hook: `make install-precommit-hook` (respects `SKIP_TRUFFLEHOG=1` and `TRUFFLEHOG_PRECOMMIT_ARGS`).
+| Document | Description |
+|----------|-------------|
+| [docs/adding-vm.md](docs/adding-vm.md) | Step-by-step guide to adding a new VM |
+| [docs/dns-plan.md](docs/dns-plan.md) | DNS architecture: NSD + Unbound design |
+| [docs/openbao.md](docs/openbao.md) | OpenBao operations: deploy, unseal, certs, backups |
+| [docs/openbao-secrets.md](docs/openbao-secrets.md) | KV secrets structure, policies, token management |
+| [docs/gpu-passthrough.md](docs/gpu-passthrough.md) | GPU passthrough setup on Proxmox |
+| [docs/pve-templates.md](docs/pve-templates.md) | Building Proxmox VM templates |
+| [docs/gaming-servers.md](docs/gaming-servers.md) | Game server provisioning and operations |
+| [docs/resume-preview.md](docs/resume-preview.md) | Resume preview container workflow |
+| [backup/README.md](backup/README.md) | NAS → Backblaze B2 backup system |
+| [ansible/README.md](ansible/README.md) | Ansible-specific setup and workflow |
+| [tofu/README.md](tofu/README.md) | OpenTofu-specific setup and workflow |
