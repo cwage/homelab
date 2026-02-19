@@ -64,9 +64,15 @@ Secrets (API tokens, deploy keys, TLS certs) are stored in OpenBao and fetched a
 # Clone the repo
 git clone git@github.com:cwage/homelab.git && cd homelab
 
+# Create root .env from the example and fill in your credentials
+cp .env.example .env
+# Edit .env — at minimum set BAO_ADDR and BAO_TOKEN (required for Ansible
+# to fetch secrets from OpenBao). See docs/openbao-secrets.md for token setup.
+# Proxmox API credentials are also defined here (required for OpenTofu).
+
 # Ansible setup
 cd ansible
-make init          # creates .env with your UID/GID
+make init          # sets UID/GID in .env for Docker user mapping
 make build         # builds the Ansible Docker image
 make galaxy        # installs Ansible collections
 make ping          # test connectivity to all hosts
@@ -74,9 +80,8 @@ cd ..
 
 # OpenTofu setup (if provisioning VMs)
 cd tofu
-cp .env.example .env   # add Proxmox API credentials
-make build             # builds the Tofu Docker image
-make plan              # preview what Tofu would do
+make build         # builds the Tofu Docker image
+make plan          # preview what Tofu would do
 cd ..
 ```
 
@@ -129,9 +134,8 @@ make install-precommit-hook  # install trufflehog pre-commit hook
 
 ## Secrets and local state
 
-- OpenTofu API credentials: `tofu/.env` (gitignored)
+- Root `.env` (gitignored): OpenBao credentials (BAO_ADDR, BAO_TOKEN) and Proxmox API credentials — shared by both Ansible and OpenTofu via `--env-file`
 - Ansible deploy keys: `ansible/keys/` (gitignored)
-- OpenBao token/address: `ansible/.env` (gitignored)
 - Tofu state: `tofu/terraform.tfstate` (tracked in git — single-developer workflow)
 
 ## Documentation
