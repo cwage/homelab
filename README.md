@@ -14,8 +14,8 @@ The LAN is `10.10.15.0/24` under the domain `lan.quietlife.net`. A couple of ext
 | **fw1** | 10.10.15.1 | OpenBSD firewall/router — pf, DHCP, Unbound (recursive DNS), WireGuard VPN |
 | **dns1** | 10.10.15.10 | NSD authoritative DNS for `lan.quietlife.net` |
 | **openbao** | 10.10.15.11 | Secrets management (OpenBao, a HashiCorp Vault fork) |
-| **containers** | 10.10.15.12 | Docker host for containerized apps, GPU passthrough (GTX 1050 Ti) |
-| **portanas** | 10.10.15.4 | Synology NAS — storage, NFS exports |
+| **containers** | 10.10.15.12 | Docker host — [Traefik, Jellyfin, arr stack, Paperless, Owncast](docs/services.md), GPU passthrough |
+| **portanas** | 10.10.15.4 | Synology NAS — NFS storage backing media, documents, and [backups](backup/README.md) |
 | **felix** | 45.56.113.70 | Linode VPS |
 | **gaming1** | 45.56.118.89 | Linode VPS — LinuxGSM game servers |
 
@@ -31,9 +31,13 @@ cloud-init, GPU passthrough)  services, Docker stacks, certs
 
 OpenTofu creates the VMs, Ansible configures everything that runs on them. Both have Makefiles that run all commands inside Docker containers, so the workflow is the same regardless of what workstation you're on.
 
-### Secrets
+### Secrets and TLS
 
-Secrets (API tokens, deploy keys, TLS certs) are stored in OpenBao and fetched at deploy time via the `community.hashi_vault` Ansible collection. See [docs/openbao.md](docs/openbao.md) and [docs/openbao-secrets.md](docs/openbao-secrets.md).
+Secrets (API tokens, deploy keys, TLS certs) are stored in OpenBao and fetched at deploy time via the `community.hashi_vault` Ansible collection. A wildcard Let's Encrypt cert for `*.lan.quietlife.net` is managed via the `lego/` tooling and deployed to Traefik and Proxmox. See [docs/openbao.md](docs/openbao.md), [docs/openbao-secrets.md](docs/openbao-secrets.md), and [docs/tls-certificates.md](docs/tls-certificates.md).
+
+### Backups
+
+NAS data is backed up to Backblaze B2 via a Dockerized rclone container with encrypted remotes. See [backup/README.md](backup/README.md).
 
 ## Repository layout
 
@@ -142,6 +146,9 @@ make install-precommit-hook  # install trufflehog pre-commit hook
 
 | Document | Description |
 |----------|-------------|
+| [docs/services.md](docs/services.md) | Container services inventory, URLs, and deployment |
+| [docs/hardware.md](docs/hardware.md) | Physical and virtual hardware specs |
+| [docs/tls-certificates.md](docs/tls-certificates.md) | Wildcard cert lifecycle: Let's Encrypt → OpenBao → Traefik/Proxmox |
 | [docs/adding-vm.md](docs/adding-vm.md) | Step-by-step guide to adding a new VM |
 | [docs/dns-plan.md](docs/dns-plan.md) | DNS architecture: NSD + Unbound design |
 | [docs/openbao.md](docs/openbao.md) | OpenBao operations: deploy, unseal, certs, backups |
@@ -152,4 +159,5 @@ make install-precommit-hook  # install trufflehog pre-commit hook
 | [docs/resume-preview.md](docs/resume-preview.md) | Resume preview container workflow |
 | [backup/README.md](backup/README.md) | NAS → Backblaze B2 backup system |
 | [ansible/README.md](ansible/README.md) | Ansible-specific setup and workflow |
+| [ansible/roles/wireguard_server/README.md](ansible/roles/wireguard_server/README.md) | WireGuard VPN setup and client configuration |
 | [tofu/README.md](tofu/README.md) | OpenTofu-specific setup and workflow |
