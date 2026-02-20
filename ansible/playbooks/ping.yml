@@ -7,7 +7,8 @@
     - name: Ping host
       ansible.builtin.ping:
 
-# OpenBSD has no Python, so the standard ping module won't work
+# Python is deliberately not installed on the firewall (hardening),
+# so the standard ping module won't work
 - name: Connectivity check (OpenBSD)
   hosts: openbsd_firewalls
   gather_facts: false
