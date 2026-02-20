@@ -6,7 +6,7 @@
     state: stopped
 
 # NSD is authoritative-only (no recursion). Point the DNS server's own
-# resolv.conf at fw1/Unbound for recursive lookups (apt, etc.).
+# resolv.conf at fw1/Unbound for recursive lookups.
 - name: Configure static resolv.conf
   ansible.builtin.copy:
     content: |
