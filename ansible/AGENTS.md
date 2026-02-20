@@ -97,7 +97,7 @@ managed_users:
 
 ### OpenBSD Firewall Role Details
 
-The `openbsd_firewall` role uses `ansible.builtin.raw` module exclusively (no Python on OpenBSD):
+The `openbsd_firewall` role uses `ansible.builtin.raw` module exclusively (Python is deliberately not installed on the firewall for hardening):
 
 - Validates pf.conf with `pfctl -nf` before deployment
 - Validates dhcpd.conf with `dhcpd -n` before deployment
@@ -163,7 +163,7 @@ roles/rolename/
 
 ### OpenBSD-Specific Considerations
 
-- Use `ansible.builtin.raw` module (no Python dependency)
+- Use `ansible.builtin.raw` module (Python deliberately not installed on firewall)
 - Always validate configs before deployment (`pfctl -nf`, `dhcpd -n`, etc.)
 - Use `become: true` sparingly (doas vs sudo)
 - Handler triggers for service reloads: `rcctl reload pf`, `rcctl restart dhcpd`

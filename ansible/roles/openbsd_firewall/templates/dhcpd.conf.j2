@@ -1,5 +1,10 @@
 # {{ ansible_managed }}
 # OpenBSD DHCP daemon configuration
+#
+# Static reservations below must stay in sync with DNS A records in
+# ansible/roles/nsd/templates/lan.quietlife.net.zone.j2.
+# VMs (dns1, containers, openbao) get their IPs from cloud-init (tofu),
+# not DHCP, so they don't appear here.
 
 option  domain-name "quietlife.net";
 option  domain-name-servers 10.10.15.1;
@@ -7,45 +12,49 @@ option  domain-search "lan.quietlife.net";
 
 subnet 10.10.15.0 netmask 255.255.255.0 {
         option routers 10.10.15.1;
+        # .10-.99 reserved for infrastructure (static/cloud-init)
         range 10.10.15.100 10.10.15.254;
 }
 
-host wap {
+# --- Physical infrastructure ---
+host wap {                                          # wireless access point
   hardware ethernet 78:d2:94:a3:95:1f;
   fixed-address 10.10.15.2;
 }
 
-host portaplotz {
-  hardware ethernet a0:36:bc:ad:d2:74;
-  fixed-address 10.10.15.3;
-}
-
-host portanas {
+host portanas {                                     # Synology DS1815+ NAS
   hardware ethernet 00:11:32:6c:7a:f3;
   fixed-address 10.10.15.4;
 }
 
-host portaptty {
-  hardware ethernet 18:1d:ea:ab:d3:ee;
-  fixed-address 10.10.15.5;
-}
-
-host portapttyeth {
-  hardware ethernet 48:2a:e3:1d:28:97;
-  fixed-address 10.10.15.6;
-}
-
-host pve {
+host pve {                                          # Proxmox VE hypervisor
   hardware ethernet e0:d5:5e:21:c7:80;
   fixed-address 10.10.15.18;
 }
 
-host lattepanda {
+# --- Workstations ---
+host portaplotz {                                   # desktop
+  hardware ethernet a0:36:bc:ad:d2:74;
+  fixed-address 10.10.15.3;
+}
+
+host portaptty {                                    # laptop (wifi)
+  hardware ethernet 18:1d:ea:ab:d3:ee;
+  fixed-address 10.10.15.5;
+}
+
+host portapttyeth {                                 # laptop (ethernet)
+  hardware ethernet 48:2a:e3:1d:28:97;
+  fixed-address 10.10.15.6;
+}
+
+# --- Other devices ---
+host lattepanda {                                   # LattePanda SBC (wifi)
   hardware ethernet 80:5e:4f:b4:79:64;
   fixed-address 10.10.15.20;
 }
 
-host lattepandaeth {
+host lattepandaeth {                                # LattePanda SBC (ethernet)
   hardware ethernet 00:e0:4c:36:65:2b;
   fixed-address 10.10.15.130;
 }
@@ -55,7 +64,7 @@ host nintendoswitch {
   fixed-address 10.10.15.13;
 }
 
-host remarkable {
+host remarkable {                                   # reMarkable tablet
   hardware ethernet b8:2d:28:76:04:d4;
   fixed-address 10.10.15.115;
 }

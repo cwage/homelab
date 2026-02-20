@@ -17,7 +17,7 @@ resource "proxmox_virtual_environment_vm" "containers" {
     type  = "host"
   }
 
-  machine = "q35"
+  machine = "q35" # Required for PCIe passthrough (VFIO)
 
   memory {
     dedicated = 8192
@@ -69,6 +69,8 @@ resource "proxmox_virtual_environment_vm" "containers" {
 
   boot_order = ["scsi0"]
 
+  # Prevent Tofu from recreating the VM when cloud-init config drifts
+  # after initial provisioning. Ansible manages config from here on.
   lifecycle {
     ignore_changes = [initialization]
   }

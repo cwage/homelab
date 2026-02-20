@@ -97,4 +97,4 @@ make trufflehog       # scan ansible/ tree for leaked secrets
 
 ## OpenBSD notes
 
-The `openbsd_firewall` and `wireguard_server` roles use `ansible.builtin.raw` exclusively since OpenBSD doesn't have Python. Configs are validated before deployment (`pfctl -nf`, `dhcpd -n`, `nsd-checkconf`) and services are reloaded via handlers.
+The `openbsd_firewall` and `wireguard_server` roles use `ansible.builtin.raw` exclusively — Python is deliberately not installed on the firewall for hardening. Configs are validated before deployment (`pfctl -nf`, `dhcpd -n`, `nsd-checkconf`) and services are reloaded via handlers.
