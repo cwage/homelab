@@ -1,7 +1,9 @@
 ---
 # Role ordering: NFS mounts must be in place before Docker starts
 # containers that bind-mount NAS paths (/mnt/nas/Media, etc.).
-# nvidia_container runs last since it restarts Docker.
+# nvidia_container may restart Docker (handler) when configuring the
+# NVIDIA runtime; since handlers fire after all roles but before
+# play-level tasks, the compose-up below always runs with Docker ready.
 - name: Configure container hosts
   hosts: container_hosts
   become: true
