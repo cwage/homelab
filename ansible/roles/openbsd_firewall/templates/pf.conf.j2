@@ -1,5 +1,6 @@
 # {{ ansible_managed }}
 # OpenBSD Packet Filter (pf) configuration
+# See also: docs/dns.md (DNS architecture), docs/vpn.md (WireGuard VPN)
 
 wired = "em1"
 {% if wireguard_interface is defined %}
@@ -7,19 +8,33 @@ wg_if = "{{ wireguard_interface }}"
 wg_port = "{{ wireguard_port }}"
 wg_net = "{{ wireguard_vpn_network }}"
 {% endif %}
+
+# RFC 5735 / RFC 6890 bogon addresses — block these on the external interface
+# to prevent spoofed traffic. Note: 10.0.0.0/8 is listed because it should
+# never appear on egress (our LAN traffic NATs to the egress address).
 table <martians> { 0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16     \
                    172.16.0.0/12 192.0.0.0/24 192.0.2.0/24 224.0.0.0/3 \
                    192.168.0.0/16 198.18.0.0/15 198.51.100.0/24        \
                    203.0.113.0/24 }
+
 set block-policy drop
 set loginterface egress
 set skip on lo0
+
+# Scrub: normalize packets, clear DF bit, randomize IP IDs, clamp MSS
 match in all scrub (no-df random-id max-mss 1440)
+# NAT: rewrite source address for LAN traffic going out the external interface
 match out on egress inet from !(egress:network) to any nat-to (egress:0)
+
+# Prevent IP spoofing on external and LAN interfaces
 antispoof quick for { egress $wired }
+
+# Default deny
 block all
+
 {% if wireguard_interface is defined %}
-# WireGuard rules
+# WireGuard VPN — allow tunnel traffic and forwarding between VPN and LAN.
+# No NAT needed: fw1 is already the LAN gateway, so return routing works.
 pass in on egress proto udp to port $wg_port
 pass in on $wg_if from $wg_net to {{ wireguard_lan_network }}
 pass out on $wired from $wg_net to {{ wireguard_lan_network }}
@@ -27,6 +42,10 @@ pass in on $wired from {{ wireguard_lan_network }} to $wg_net
 pass out on $wg_if from {{ wireguard_lan_network }} to $wg_net
 pass on $wg_if from $wg_net to $wg_net
 {% endif %}
+
+# Allow all outbound traffic from the firewall itself
 pass out quick inet
+# Allow all inbound traffic from the LAN
 pass in on { $wired } inet
+# Port forward: Plex (32400) from WAN to NAS
 pass in on egress proto tcp from any to any port 32400 rdr-to 10.10.15.4

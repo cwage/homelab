@@ -36,7 +36,7 @@ firewall        IN      CNAME   fw1
 nas             IN      CNAME   portanas
 proxmox         IN      CNAME   pve1
 
-; Container services
+; Container services — all route through Traefik on the containers host
 traefik         IN      CNAME   containers
 jellyfin        IN      CNAME   containers
 sabnzbd         IN      CNAME   containers
