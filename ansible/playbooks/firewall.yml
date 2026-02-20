@@ -1,5 +1,5 @@
 ---
-# OpenBSD has no Python, so gather_facts and become are disabled.
+# Python is deliberately not installed on the firewall (hardening).
 # Both roles use ansible.builtin.raw exclusively and handle privilege
 # escalation (doas) internally. WireGuard must be configured before
 # the firewall role deploys pf.conf, which references the wg0 interface.
