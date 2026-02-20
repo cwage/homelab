@@ -3,8 +3,8 @@ output "debian_bookworm_cloud_image_file_id" {
   value       = proxmox_virtual_environment_download_file.debian_bookworm.id
 }
 
-# Hardcoded rather than derived from resource attributes because the
-# Proxmox provider doesn't cleanly expose cloud-init IPs as outputs.
+# Hardcoded to match cloud-init config — these IPs are predetermined,
+# not dynamically assigned.
 output "dns1_ip" {
   description = "IP address of dns1 VM"
   value       = "10.10.15.10"

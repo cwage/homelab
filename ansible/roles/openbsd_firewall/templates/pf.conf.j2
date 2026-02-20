@@ -9,9 +9,8 @@ wg_port = "{{ wireguard_port }}"
 wg_net = "{{ wireguard_vpn_network }}"
 {% endif %}
 
-# RFC 5735 / RFC 6890 bogon addresses — block these on the external interface
-# to prevent spoofed traffic. Note: 10.0.0.0/8 is listed because it should
-# never appear on egress (our LAN traffic NATs to the egress address).
+# RFC 5735 / RFC 6890 bogon addresses. TODO: this table is defined but not
+# currently referenced by any block rule — see issue #147.
 table <martians> { 0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16     \
                    172.16.0.0/12 192.0.0.0/24 192.0.2.0/24 224.0.0.0/3 \
                    192.168.0.0/16 198.18.0.0/15 198.51.100.0/24        \
