@@ -2,7 +2,7 @@
 
 This was the original design document for the WireGuard VPN setup. The implementation is complete and the operational documentation now lives in the role README:
 
-**[ansible/roles/wireguard_server/README.md](../roles/wireguard_server/README.md)**
+**[ansible/roles/wireguard_server/README.md](../ansible/roles/wireguard_server/README.md)**
 
 That covers setup instructions, key management, client configuration (including Android QR codes), firewall integration, testing, and troubleshooting.
 
