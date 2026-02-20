@@ -5,6 +5,8 @@
     enabled: false
     state: stopped
 
+# NSD is authoritative-only (no recursion). Point the DNS server's own
+# resolv.conf at fw1/Unbound for recursive lookups (apt, etc.).
 - name: Configure static resolv.conf
   ansible.builtin.copy:
     content: |
@@ -22,6 +24,8 @@
     state: present
     update_cache: true
 
+# Ansible runs the validate command before placing each file. If validation
+# fails, the file is not deployed and the play errors out safely.
 - name: Create NSD configuration
   ansible.builtin.template:
     src: nsd.conf.j2

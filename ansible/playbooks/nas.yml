@@ -1,4 +1,6 @@
 ---
+# Synology DSM is not standard Linux — no become (no sudo/doas),
+# no gather_facts (limited Python environment on DSM).
 - name: Manage Synology NAS (portanas)
   hosts: portanas
   become: false

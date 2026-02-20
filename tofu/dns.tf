@@ -1,5 +1,5 @@
 # DNS server VM - NSD authoritative for lan.quietlife.net
-# See docs/dns-plan.md for architecture details
+# See docs/dns.md for architecture details
 
 resource "proxmox_virtual_environment_vm" "dns1" {
   name      = "dns1"
@@ -58,6 +58,7 @@ resource "proxmox_virtual_environment_vm" "dns1" {
 
   boot_order = ["scsi0"]
 
+  # Prevent Tofu from recreating the VM when cloud-init config drifts
   lifecycle {
     ignore_changes = [initialization]
   }

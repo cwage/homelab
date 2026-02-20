@@ -59,6 +59,7 @@ resource "proxmox_virtual_environment_vm" "openbao" {
 
   boot_order = ["scsi0"]
 
+  # Prevent Tofu from recreating the VM when cloud-init config drifts
   lifecycle {
     ignore_changes = [initialization]
   }
