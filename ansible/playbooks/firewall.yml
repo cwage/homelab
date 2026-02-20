@@ -1,4 +1,9 @@
 ---
+# Python is deliberately not installed on the firewall (hardening), so
+# gather_facts is disabled and both roles use ansible.builtin.raw exclusively.
+# become is disabled at the play level; tasks opt into it as needed via
+# ansible_become_method=doas (configured in inventory). WireGuard must be
+# configured before the firewall role deploys pf.conf, which references wg0.
 - name: Manage OpenBSD Firewall
   hosts: openbsd_firewalls
   become: false

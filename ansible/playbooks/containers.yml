@@ -1,4 +1,9 @@
 ---
+# Role ordering: NFS mounts must be in place before Docker starts
+# containers that bind-mount NAS paths (/mnt/nas/Media, etc.).
+# nvidia_container may restart Docker (handler) when configuring the
+# NVIDIA runtime; since handlers fire after all roles but before
+# play-level tasks, the compose-up below always runs with Docker ready.
 - name: Configure container hosts
   hosts: container_hosts
   become: true
@@ -135,6 +140,8 @@
         mode: '0644'
       register: compose_result
 
+    # Restart containers when any config/cert/compose file changed, or when
+    # force_restart is set (e.g. make ansible-containers OPTS="-e force_restart=true")
     - name: Determine if containers need restart
       ansible.builtin.set_fact:
         containers_need_restart: >-
@@ -145,6 +152,9 @@
              env_result.changed or
              (force_restart | default(false)) }}
 
+    # Run as deploy user (in the docker group) rather than root.
+    # The "tunnel" compose profile brings up cloudflared only when
+    # a Cloudflare Tunnel token is present in OpenBao.
     - name: Start containers
       ansible.builtin.command:
         cmd: "docker compose {{ '--profile tunnel' if tunnel_enabled else '' }} up -d"

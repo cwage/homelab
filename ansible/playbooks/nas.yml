@@ -1,4 +1,8 @@
 ---
+# Synology DSM is not standard Linux — gather_facts is disabled because
+# DSM's Python environment can't run the Ansible setup module. The role
+# uses ansible.builtin.raw exclusively (like the OpenBSD firewall role).
+# become works fine (sudo is available on DSM).
 - name: Manage Synology NAS (portanas)
   hosts: portanas
   become: false
