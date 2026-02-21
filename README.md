@@ -50,7 +50,6 @@ NAS data is backed up to Backblaze B2 via a Dockerized rclone container with enc
 ├── backup/           Dockerized NAS → Backblaze B2 backup tooling
 ├── lego/             Let's Encrypt certificate management (lego CLI)
 ├── docs/             Design notes, runbooks, and operational guides
-├── testing/          Resume preview container
 └── scripts/          Repo-level utility scripts
 ```
 
@@ -156,7 +155,6 @@ make install-precommit-hook  # install trufflehog pre-commit hook
 | [docs/gpu-passthrough.md](docs/gpu-passthrough.md) | GPU passthrough setup on Proxmox |
 | [docs/pve-templates.md](docs/pve-templates.md) | Building Proxmox VM templates |
 | [docs/gaming-servers.md](docs/gaming-servers.md) | Game server provisioning and operations |
-| [docs/resume-preview.md](docs/resume-preview.md) | Resume preview container workflow |
 | [backup/README.md](backup/README.md) | NAS → Backblaze B2 backup system |
 | [ansible/README.md](ansible/README.md) | Ansible-specific setup and workflow |
 | [ansible/roles/wireguard_server/README.md](ansible/roles/wireguard_server/README.md) | WireGuard VPN setup and client configuration |
