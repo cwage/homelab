@@ -119,11 +119,56 @@
       ansible.builtin.set_fact:
         tunnel_enabled: "{{ (cloudflare_tunnel.token | default('')) | length > 0 }}"
 
+    - name: Retrieve staticomment deploy key from OpenBao
+      block:
+        - name: Fetch staticomment deploy key from OpenBao
+          ansible.builtin.set_fact:
+            staticomment_deploy_key: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                              'infra/staticomment/deploy-key',
+                              engine_mount_point='kv',
+                              url=openbao_addr,
+                              token=openbao_token,
+                              validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+      rescue:
+        - name: Warn if staticomment deploy key not found (non-fatal)
+          ansible.builtin.debug:
+            msg: >
+              staticomment deploy key not found in OpenBao at kv/infra/staticomment/deploy-key.
+              The staticomment container will not be able to push comments.
+              Store key with: cat key | bao kv put kv/infra/staticomment/deploy-key private_key=-
+        - name: Set empty deploy key
+          ansible.builtin.set_fact:
+            staticomment_deploy_key:
+              private_key: ""
+
+    - name: Create staticomment SSH directory
+      ansible.builtin.file:
+        path: /opt/stacks/staticomment-ssh
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: '0700'
+      when: (staticomment_deploy_key.private_key | default('')) | length > 0
+
+    - name: Deploy staticomment SSH key
+      ansible.builtin.copy:
+        content: "{{ staticomment_deploy_key.private_key }}"
+        dest: /opt/stacks/staticomment-ssh/id_ed25519
+        owner: deploy
+        group: deploy
+        mode: '0600'
+      no_log: true
+      when: (staticomment_deploy_key.private_key | default('')) | length > 0
+
     - name: Deploy stacks environment file
       ansible.builtin.copy:
         content: |
           # Managed by Ansible - do not edit manually
           CLOUDFLARE_TUNNEL_TOKEN={{ cloudflare_tunnel.token | default('') }}
+          STATICOMMENT_GIT_REPO=git@github.com:cwage/staticomment-test.git
+          STATICOMMENT_BRANCH=main
+          STATICOMMENT_ALLOWED_ORIGINS=https://staticomment.lan.quietlife.net
         dest: /opt/stacks/.env
         owner: deploy
         group: deploy
