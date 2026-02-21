@@ -11,6 +11,8 @@ services:
       - ..:/workspace
       # Preserve SSH keys for git operations if needed
       - ${HOME}/.ssh:/home/tofu/.ssh:ro
+      # NFS-mounted tofu state (path varies per workstation, set in .env)
+      - ${TOFU_STATE_PATH}:/state
     environment:
       # Proxmox API credentials - TF_VAR_ prefix maps to OpenTofu variables
       - TF_VAR_pm_api_url=${PM_API_URL}
