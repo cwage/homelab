@@ -1,4 +1,10 @@
 terraform {
+  # State lives on the NAS (NFS-mounted at /state inside the container).
+  # Each workstation sets TOFU_STATE_PATH in .env to its local mount point.
+  backend "local" {
+    path = "/state/terraform.tfstate"
+  }
+
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
