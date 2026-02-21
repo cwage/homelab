@@ -140,7 +140,7 @@ make install-precommit-hook  # install trufflehog pre-commit hook
 
 - Root `.env` (gitignored): OpenBao credentials (BAO_ADDR, BAO_TOKEN) and Proxmox API credentials — shared by both Ansible and OpenTofu via `--env-file`
 - Ansible deploy keys: `ansible/keys/` (gitignored)
-- Tofu state: `tofu/terraform.tfstate` (tracked in git — single-developer workflow)
+- Tofu state: stored on NAS via NFS (not in git — see `TOFU_STATE_PATH` in `.env`)
 
 ## Documentation
 
