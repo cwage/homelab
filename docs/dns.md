@@ -18,7 +18,7 @@ LAN clients → fw1 (Unbound, recursive) → dns1 (NSD, authoritative)
 Managed in `ansible/roles/nsd/templates/lan.quietlife.net.zone.j2`. Current records include:
 
 - A records for infrastructure: fw1, dns1, pve1, containers, portanas, bao, etc.
-- CNAMEs for services: jellyfin, radarr, sonarr, sabnzbd, paperless, owncast, traefik, preview — all pointing to `containers`
+- CNAMEs for services: jellyfin, radarr, sonarr, sabnzbd, paperless, owncast, traefik — all pointing to `containers`
 - Convenience aliases: `firewall` → fw1, `nas` → portanas, `proxmox` → pve1
 
 ### Deployment
