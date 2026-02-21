@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check testing-deploy testing-deploy-check testing-refresh testing-switch all check-all run adhoc sh build-tinyfugue trufflehog
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check testing-deploy testing-deploy-check testing-refresh testing-switch all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -136,6 +136,28 @@ sh: ## Interactive shell inside the Ansible container
 
 trufflehog: ## Run a TruffleHog secrets scan (use root-level scanner)
 	$(MAKE) -C .. trufflehog
+
+refresh-known-hosts: ## Refresh SSH known_hosts from all inventory hosts
+	@echo "Scanning SSH host keys from inventory..."
+	@> known_hosts.tmp
+	@for entry in \
+		"10.10.15.18:22" \
+		"10.10.15.1:22" \
+		"45.56.113.70:5344" \
+		"10.10.15.10:22" \
+		"10.10.15.12:22" \
+		"10.10.15.11:22" \
+		"45.56.118.89:22" \
+		"10.10.15.4:5344"; \
+	do \
+		host=$${entry%%:*}; port=$${entry##*:}; \
+		echo "  Scanning $$host:$$port..."; \
+		ssh-keyscan -p $$port $$host 2>/dev/null | grep ssh-ed25519 >> known_hosts.tmp; \
+	done
+	@echo "# Managed host key fingerprints — regenerate with: make ansible-refresh-known-hosts" > known_hosts
+	@cat known_hosts.tmp >> known_hosts
+	@rm known_hosts.tmp
+	@echo "Updated known_hosts with $$(wc -l < known_hosts) entries"
 
 build-tinyfugue: ## Build tinyfugue .deb package in Docker container
 	$(DC) build tinyfugue-builder
