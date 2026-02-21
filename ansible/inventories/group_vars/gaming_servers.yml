@@ -14,7 +14,12 @@ managed_users:
     shell: /bin/bash
     groups: ["sudo"]
     sudo_nopasswd: false
-    password_hash: "$6$7fU9thowiE/0QSde$jpnJcpG0DVZpQ5OzOOgeuPg5OTBsiKsL0ats0geIZRoR5m0RLlnmGBrjnJtNk7Rfn4gm6wp8BBlHJCWZ6xFIT1"
+    password_hash: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                       'infra/users/cwage',
+                       engine_mount_point=openbao_kv_mount,
+                       url=openbao_addr,
+                       token=openbao_token,
+                       validate_certs=openbao_validate_certs).secret.password_hash }}"
     ssh_pubkey_files:
       - "inventories/keys/cwage-portaplotz.pub"
       - "inventories/keys/cwage-portaptty.pub"
