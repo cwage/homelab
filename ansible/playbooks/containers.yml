@@ -166,9 +166,9 @@
         content: |
           # Managed by Ansible - do not edit manually
           CLOUDFLARE_TUNNEL_TOKEN={{ cloudflare_tunnel.token | default('') }}
-          STATICOMMENT_GIT_REPO=git@github.com:cwage/staticomment-test.git
-          STATICOMMENT_BRANCH=main
-          STATICOMMENT_ALLOWED_ORIGINS=https://staticomment.lan.quietlife.net
+          STATICOMMENT_GIT_REPO=git@github.com:cwage/quietlife.net.git
+          STATICOMMENT_BRANCH=master
+          STATICOMMENT_ALLOWED_ORIGINS=https://quietlife.net
         dest: /opt/stacks/.env
         owner: deploy
         group: deploy
