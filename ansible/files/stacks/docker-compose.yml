@@ -172,7 +172,7 @@ services:
       - proxy
 
   staticomment:
-    image: ghcr.io/cwage/staticomment:0.1.0
+    image: ghcr.io/cwage/staticomment:0.2.0
     container_name: staticomment
     restart: unless-stopped
     environment:
