@@ -1,8 +1,10 @@
 locals {
   debian_bookworm_cloud_image = {
     # Proxmox download API wants .iso/.img extensions for iso content
-    file_name = "debian-12-genericcloud-amd64.img"
-    url       = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2"
+    # Using 'generic' (not 'genericcloud') for full kernel with hardware
+    # driver support (USB passthrough, GPU passthrough, etc.)
+    file_name = "debian-12-generic-amd64.img"
+    url       = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
     format    = "qcow2" # Source image format; name stays .img to satisfy API
   }
 }

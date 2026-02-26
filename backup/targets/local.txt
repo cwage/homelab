@@ -1,0 +1,14 @@
+# Paths to back up to local USB drive
+# One path per line, relative to /mnt/nas
+# Local backup is free - include everything
+Pictures
+Documents
+paperless
+Books
+bp
+caitstuff
+syncthing-data
+backup
+Misc
+Media
+tb

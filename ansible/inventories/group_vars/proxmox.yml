@@ -2,7 +2,7 @@
 pve_templates:
   - name: debian12-cloud
     vmid: 9000
-    image_file: debian-12-genericcloud-amd64.img
+    image_file: debian-12-generic-amd64.img
     datastore: local-lvm
     bridge: vmbr0
     memory: 2048

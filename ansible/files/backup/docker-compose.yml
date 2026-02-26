@@ -11,7 +11,8 @@ services:
       - .env
     volumes:
       - /mnt/nas:/mnt/nas:ro,rslave
+      - /mnt/nasbak:/backup/local
       - ./logs:/var/log/backup
-      - ./paths:/opt/backup/paths:ro
+      - ./targets:/opt/backup/targets:ro
       - ./scripts:/opt/backup/scripts:ro
     working_dir: /opt/backup

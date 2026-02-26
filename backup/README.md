@@ -1,12 +1,19 @@
 # Backup Tooling
 
-Dockerized backup tooling for syncing NAS shares to Backblaze B2 with client-side encryption (rclone crypt).
+Dockerized backup tooling for syncing NAS shares to multiple targets using rclone.
 
 See [issue #113](https://github.com/cwage/homelab/issues/113) for the full backup strategy and disaster recovery plan.
 
 ## Overview
 
-The backup system runs as an **ephemeral Docker container** on the containers host. A daily cron job launches the container, which fetches B2 credentials from OpenBao at runtime, syncs all configured NAS shares to Backblaze B2, and exits. No plaintext B2 credentials are stored on disk.
+The backup system runs as an **ephemeral Docker container** on the containers host. A unified `backup.sh` script supports multiple targets via the `--target` flag:
+
+| Target | Destination | Encryption | Cost |
+|--------|-------------|------------|------|
+| `b2` | Backblaze B2 | rclone crypt (client-side) | Paid |
+| `local` | USB drive (`/backup/local`) | None | Free |
+
+A daily cron job launches the container for B2 backups, which fetches credentials from OpenBao at runtime. Local USB backups can be run manually or scheduled separately.
 
 ## OpenBao Secrets Setup
 
@@ -80,7 +87,7 @@ make ansible-backup-deploy
 ```
 
 This playbook:
-1. Copies Dockerfile, scripts, and path configs to `/opt/backup/`
+1. Copies Dockerfile, scripts, and target configs to `/opt/backup/`
 2. Fetches the `backup-remote` token from `kv/backup/remote-token` (using the Ansible deploy token)
 3. Writes `/opt/backup/.env` with OpenBao connection params only (`BAO_ADDR`, `BAO_TOKEN`). TLS verification is enabled by default; `BAO_SKIP_VERIFY` is only set to `true` if the Ansible environment has it enabled (bootstrap only).
 4. Builds the backup container image
@@ -91,17 +98,17 @@ This playbook:
 
 | Setting | Value |
 |---------|-------|
-| Schedule | Daily at 3:00 AM |
+| Schedule | Daily — B2 at 3:40 AM, local at 2:00 AM |
 | Host | `containers.lan.quietlife.net` |
 | User | `deploy` |
-| Cron name | `backup-remote-daily` |
+| Cron names | `backup-b2-daily`, `backup-local-daily` |
 | Container | Ephemeral (`docker compose run --rm`) |
-| Credentials | Fetched from OpenBao at runtime |
+| Credentials | B2: fetched from OpenBao at runtime. Local: none needed |
 
 The cron job runs:
 
 ```bash
-flock -n /opt/backup/logs/backup-remote.cron.lock -c 'cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup-remote.sh >> /opt/backup/logs/cron.log 2>&1'
+flock -n /opt/backup/logs/backup-b2.cron.lock -c 'cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup.sh --target b2 >> /opt/backup/logs/cron.log 2>&1'
 ```
 
 The `flock` wrapper prevents overlapping runs — if a previous backup is still running when cron fires, the new invocation exits immediately rather than starting a concurrent sync.
@@ -112,6 +119,16 @@ View the cron entry:
 crontab -u deploy -l
 ```
 
+## USB Drive Setup (Local Backups)
+
+The Seagate 12TB USB drive is passed through to the containers VM via Proxmox USB passthrough (device `0bc2:2038`).
+
+Inside the containers VM:
+1. Drive is mounted at `/mnt/nasbak` via fstab (`UUID=479d8cc7-5779-4707-bb19-87b555d7580b`, `nofail`)
+2. Docker Compose mounts `/mnt/nasbak:/backup/local` into the container
+
+The backup script checks that `/backup/local` is mounted before proceeding with local backups.
+
 ## Notifications
 
 Backup results are sent to [ntfy.sh](https://ntfy.sh) for push notifications to your phone.
@@ -121,7 +138,7 @@ Backup results are sent to [ntfy.sh](https://ntfy.sh) for push notifications to 
 | All paths synced successfully | `default` | `white_check_mark` |
 | One or more paths failed | `urgent` | `x` |
 
-Notifications include duration and a summary of what succeeded/failed. Dry runs do not send notifications.
+Notifications include the target name (B2/LOCAL), duration, and a summary of what succeeded/failed. Dry runs do not send notifications.
 
 The ntfy topic URL is configured via the `NTFY_TOPIC` environment variable in `.env`. If unset or empty, notifications are silently skipped (the backup still runs normally). The topic is deployed by Ansible from the `ntfy_backup_topic` variable in `group_vars/container_hosts.yml`.
 
@@ -162,18 +179,25 @@ make ansible-backup-deploy
 
 ## Manual Runs / Troubleshooting
 
-### Run a backup manually
+### Run a B2 backup manually
 
 ```bash
 ssh containers.lan.quietlife.net
 cd /opt/backup
-docker compose run --rm backup /opt/backup/scripts/backup-remote.sh --interactive
+docker compose run --rm backup /opt/backup/scripts/backup.sh --target b2 --interactive
+```
+
+### Run a local USB backup
+
+```bash
+docker compose run --rm backup /opt/backup/scripts/backup.sh --target local --interactive
 ```
 
 ### Dry run (no changes)
 
 ```bash
-docker compose run --rm backup /opt/backup/scripts/backup-remote.sh --dry-run
+docker compose run --rm backup /opt/backup/scripts/backup.sh --target b2 --dry-run
+docker compose run --rm backup /opt/backup/scripts/backup.sh --target local --dry-run
 ```
 
 ### Interactive shell
@@ -183,12 +207,14 @@ docker compose run --rm backup bash
 # Inside the container:
 rclone lsd b2crypt:          # list encrypted bucket contents
 rclone ls b2crypt:Pictures   # list files in a share
+ls /backup/local/            # list local backup contents
 ```
 
 ### Logs
 
 Backup logs are stored in `/opt/backup/logs/` on the containers host:
-- `remote-YYYYMMDD-HHMMSS.log` — per-run rclone logs
+- `b2-YYYYMMDD-HHMMSS.log` — per-run B2 rclone logs
+- `local-YYYYMMDD-HHMMSS.log` — per-run local rclone logs
 - `cron.log` — cron job stdout/stderr
 
 ### Local development
@@ -199,8 +225,8 @@ For local testing, copy `.env.example` to `.env` and fill in credentials:
 cd backup/
 cp .env.example .env
 # Edit .env with your credentials
-make backup-build
-make backup-shell
+make build
+make shell
 ```
 
 ## Security Model
@@ -221,6 +247,8 @@ The entrypoint configures two rclone remotes via environment variables:
 | `b2:` | Raw Backblaze B2 access (unencrypted) |
 | `b2crypt:` | Encrypted overlay — use this for backups |
 
+Local backups use plain filesystem paths (`/backup/local/`) — no rclone remote needed.
+
 ## Makefile Targets
 
 | Target | Description |
@@ -229,6 +257,10 @@ The entrypoint configures two rclone remotes via environment variables:
 | `make backup-shell` | Open interactive shell with rclone configured |
 | `make backup-shell CMD='...'` | Run a specific command in the container |
 | `make backup-clean` | Remove the backup container image |
+| `make backup-b2` | Sync NAS to Backblaze B2 (encrypted) |
+| `make backup-b2-dry` | Dry-run B2 backup |
+| `make backup-local` | Sync NAS to USB drive |
+| `make backup-local-dry` | Dry-run local backup |
 | `make backup-help` | Show available targets |
 
 ## Files
@@ -241,10 +273,10 @@ backup/
 ├── .env.example            # Template for credentials
 ├── README.md               # This file
 ├── logs/                   # Backup logs (gitignored)
-├── paths/
-│   ├── local.txt           # Paths for USB backup (future)
-│   └── remote.txt          # Paths for B2 backup
+├── targets/
+│   ├── b2.txt              # Paths for B2 backup
+│   └── local.txt           # Paths for USB backup
 └── scripts/
     ├── entrypoint.sh       # Fetches secrets and configures rclone
-    └── backup-remote.sh    # Automated B2 sync script
+    └── backup.sh           # Unified backup script (--target b2|local)
 ```

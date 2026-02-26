@@ -10,7 +10,7 @@
 
 DC := docker compose
 
-.PHONY: help build shell clean
+.PHONY: help build shell clean local local-dry b2 b2-dry
 
 .DEFAULT_GOAL := help
 
@@ -33,3 +33,15 @@ shell: ## Open interactive shell in backup container (CMD=... for custom command
 
 clean: ## Remove backup container image
 	$(DC) down --rmi local 2>/dev/null || true
+
+local: ## Sync NAS to USB drive
+	$(DC) run --rm backup /opt/backup/scripts/backup.sh --target local --interactive
+
+local-dry: ## Dry-run local backup
+	$(DC) run --rm backup /opt/backup/scripts/backup.sh --target local --interactive --dry-run
+
+b2: ## Sync NAS to Backblaze B2 (encrypted)
+	$(DC) run --rm backup /opt/backup/scripts/backup.sh --target b2 --interactive
+
+b2-dry: ## Dry-run B2 backup
+	$(DC) run --rm backup /opt/backup/scripts/backup.sh --target b2 --interactive --dry-run

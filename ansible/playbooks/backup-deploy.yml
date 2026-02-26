@@ -6,15 +6,15 @@
 # Usage: make ansible-backup-deploy
 #
 # What this does:
-#   1. Copies Dockerfile, scripts, paths configs to /opt/backup/
+#   1. Copies Dockerfile, scripts, target configs to /opt/backup/
 #   2. Fetches the backup-remote token from OpenBao
 #   3. Writes .env with OpenBao connection params only (BAO_ADDR, BAO_TOKEN)
 #   4. Builds the backup container image
 #   5. Removes any legacy persistent backup container
-#   6. Installs a daily cron job to run backup-remote.sh
+#   6. Installs a daily cron job to run backup.sh --target b2
 #
 # Backups run as ephemeral containers via:
-#   docker compose run --rm -T backup /opt/backup/scripts/backup-remote.sh
+#   docker compose run --rm -T backup /opt/backup/scripts/backup.sh --target b2
 
 - name: Deploy backup tooling
   hosts: container_hosts
@@ -32,7 +32,7 @@
       loop:
         - ""
         - logs
-        - paths
+        - targets
         - scripts
 
     - name: Copy Dockerfile
@@ -53,10 +53,10 @@
         mode: '0755'
       register: scripts_result
 
-    - name: Copy path configs
+    - name: Copy target configs
       ansible.builtin.copy:
-        src: /work-backup/paths/
-        dest: /opt/backup/paths/
+        src: /work-backup/targets/
+        dest: /opt/backup/targets/
         owner: deploy
         group: deploy
         mode: '0644'
@@ -143,10 +143,29 @@
         name: cron
         state: present
 
-    - name: Install daily backup cron job
+    - name: Remove legacy backup-remote cron job
       ansible.builtin.cron:
         name: backup-remote-daily
         user: deploy
+        state: absent
+
+    - name: Install daily B2 backup cron job
+      ansible.builtin.cron:
+        name: backup-b2-daily
+        user: deploy
         hour: "3"
         minute: "40"
-        job: "flock -n /opt/backup/logs/backup-remote.cron.lock -c 'cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup-remote.sh >> /opt/backup/logs/cron.log 2>&1'"
+        job: "flock -n /opt/backup/logs/backup-b2.cron.lock -c 'cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup.sh --target b2 >> /opt/backup/logs/cron.log 2>&1'"
+
+    - name: Install daily local backup cron job
+      ansible.builtin.cron:
+        name: backup-local-daily
+        user: deploy
+        hour: "2"
+        minute: "0"
+        job: "flock -n /opt/backup/logs/backup-local.cron.lock -c 'cd /opt/backup && docker compose run --rm -T backup /opt/backup/scripts/backup.sh --target local >> /opt/backup/logs/cron.log 2>&1'"
+
+    - name: Clean up legacy paths directory
+      ansible.builtin.file:
+        path: /opt/backup/paths
+        state: absent
