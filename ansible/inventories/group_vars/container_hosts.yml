@@ -5,6 +5,7 @@
 
 # System packages for container hosts
 system_packages:
+  - cron
   - curl
   - htop
   - tmux

@@ -70,25 +70,58 @@ status_msg() {
     fi
 }
 
-show_rclone_status() {
+show_status() {
+    local target="$1"
     echo ""
-    echo "rclone configuration status:"
-    echo "  B2 account:     $(status_msg "${RCLONE_CONFIG_B2_ACCOUNT:-}")"
-    echo "  B2 key:         $(status_msg "${RCLONE_CONFIG_B2_KEY:-}")"
-    echo "  Crypt remote:   ${RCLONE_CONFIG_B2CRYPT_REMOTE:-NOT SET}"
-    echo "  Crypt password: $(status_msg "${RCLONE_CONFIG_B2CRYPT_PASSWORD:-}")"
-    echo "  Crypt salt:     $(status_msg "${RCLONE_CONFIG_B2CRYPT_PASSWORD2:-}" "not set (optional)")"
+    case "$target" in
+        b2)
+            echo "rclone configuration status:"
+            echo "  B2 account:     $(status_msg "${RCLONE_CONFIG_B2_ACCOUNT:-}")"
+            echo "  B2 key:         $(status_msg "${RCLONE_CONFIG_B2_KEY:-}")"
+            echo "  Crypt remote:   ${RCLONE_CONFIG_B2CRYPT_REMOTE:-NOT SET}"
+            echo "  Crypt password: $(status_msg "${RCLONE_CONFIG_B2CRYPT_PASSWORD:-}")"
+            echo "  Crypt salt:     $(status_msg "${RCLONE_CONFIG_B2CRYPT_PASSWORD2:-}" "not set (optional)")"
+            echo ""
+            echo "  Destination:    b2crypt: (encrypted)"
+            ;;
+        local)
+            echo "Local backup configuration:"
+            echo "  Destination:    /backup/local"
+            echo "  Encryption:     none"
+            if mountpoint -q /backup/local 2>/dev/null; then
+                echo "  Mount:          $(df -h /backup/local | awk 'NR==2 {print $1}')"
+                echo "  Disk usage:     $(df -h /backup/local | awk 'NR==2 {print $3 " used / " $2 " total (" $5 " full)"}')"
+            else
+                echo "  Mount:          NOT MOUNTED"
+            fi
+            ;;
+    esac
     echo ""
-    echo "Available rclone remotes (if configured):"
-    echo "  b2:        - Raw Backblaze B2 bucket"
-    echo "  b2crypt:   - Encrypted overlay on B2"
+}
+
+detect_target() {
+    local prev=""
+    for arg in "$@"; do
+        case "$arg" in
+            --target=*) echo "${arg#--target=}"; return ;;
+        esac
+        if [[ "$prev" == "--target" ]]; then
+            echo "$arg"; return
+        fi
+        prev="$arg"
+    done
     echo ""
 }
 
 main() {
     echo "=== Backup container starting ==="
-    setup_rclone_config
-    show_rclone_status
+    local target
+    target="$(detect_target "$@")"
+
+    if [[ "$target" == "b2" || -z "$target" ]]; then
+        setup_rclone_config
+    fi
+    show_status "$target"
 
     # Execute the command passed to the container
     exec "$@"

@@ -1,3 +1,17 @@
+# Seagate 12TB USB backup drive — cluster-level hardware mapping
+# Allows non-root API tokens to attach the device to VMs
+resource "proxmox_virtual_environment_hardware_mapping_usb" "seagate_backup" {
+  name    = "usb-seagate-backup"
+  comment = "Seagate 12TB USB backup drive"
+
+  map = [
+    {
+      id   = "0bc2:2038"
+      node = var.pm_node_name
+    },
+  ]
+}
+
 # Container host VM - Docker host for running containerized apps
 # With GTX 1050 Ti GPU passthrough for hardware transcoding
 
@@ -27,6 +41,13 @@ resource "proxmox_virtual_environment_vm" "containers" {
     datastore_id = var.pm_vm_datastore_id
     interface    = "scsi0"
     size         = 64
+  }
+
+  # Seagate 12TB USB backup drive passthrough
+  # Uses USB mapping (like GPU PCI mapping) so non-root API tokens can manage it
+  usb {
+    mapping = proxmox_virtual_environment_hardware_mapping_usb.seagate_backup.name
+    usb3   = true
   }
 
   # GTX 1050 Ti GPU passthrough (IOMMU Group 14)

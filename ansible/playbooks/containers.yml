@@ -34,6 +34,15 @@
         - paperless-redis
         - owncast
 
+    - name: Mount USB backup drive
+      ansible.posix.mount:
+        path: /mnt/nasbak
+        src: UUID=479d8cc7-5779-4707-bb19-87b555d7580b
+        fstype: ext4
+        opts: defaults,nofail
+        state: mounted
+      when: ansible_devices.sdb is defined
+
     - name: Create stacks directory
       ansible.builtin.file:
         path: /opt/stacks

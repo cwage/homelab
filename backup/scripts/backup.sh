@@ -1,16 +1,22 @@
 #!/bin/bash
 set -uo pipefail
 
-# backup-remote.sh — Sync NAS shares to Backblaze B2 (encrypted via rclone crypt)
+# backup.sh — Unified backup script for NAS shares
 #
-# Reads paths from paths/remote.txt (one share name per line, relative to /mnt/nas)
-# and syncs each to the b2crypt: remote.
+# Supports multiple backup targets via --target flag:
+#   b2     — Backblaze B2 (encrypted via rclone crypt)
+#   local  — Local USB drive (plain rsync via rclone)
+#
+# Target name maps to:
+#   - Targets file: targets/<target>.txt
+#   - Lock file:    /tmp/backup-<target>.lock
+#   - Log file:     <target>-YYYYMMDD-HHMMSS.log
 #
 # Usage:
-#   backup-remote.sh                  # quiet mode (for cron)
-#   backup-remote.sh --interactive    # show rclone progress
-#   backup-remote.sh --dry-run        # rclone dry-run, no changes
-#   backup-remote.sh --interactive --dry-run  # both
+#   backup.sh --target b2                  # quiet mode (for cron)
+#   backup.sh --target local --interactive # show rclone progress
+#   backup.sh --target b2 --dry-run       # rclone dry-run, no changes
+#   backup.sh --target local --interactive --dry-run  # both
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -20,18 +26,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CANDIDATE_BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 if [[ -n "${BACKUP_BASE_DIR:-}" ]]; then
     BASE_DIR="$BACKUP_BASE_DIR"
-elif [[ -d "$CANDIDATE_BASE_DIR/paths" ]]; then
+elif [[ -d "$CANDIDATE_BASE_DIR/targets" ]]; then
     BASE_DIR="$CANDIDATE_BASE_DIR"
 else
     BASE_DIR="/opt/backup"
 fi
 
-PATHS_FILE="${BACKUP_PATHS_FILE:-"$BASE_DIR/paths/remote.txt"}"
 NAS_ROOT="/mnt/nas"
-REMOTE="b2crypt"
 LOG_DIR="/var/log/backup"
-LOCK_FILE="/tmp/backup-remote.lock"
 
+TARGET=""
 INTERACTIVE=false
 DRY_RUN=false
 LOG_LEVEL="INFO"
@@ -42,23 +46,65 @@ START_TIME=$(date +%s)
 # ---------------------------------------------------------------------------
 for arg in "$@"; do
     case "$arg" in
+        --target=*)       TARGET="${arg#--target=}" ;;
         --interactive|-i) INTERACTIVE=true ;;
         --dry-run|-n)     DRY_RUN=true ;;
         --log-level=*)    LOG_LEVEL="${arg#--log-level=}" ;;
         --help|-h)
-            echo "Usage: $(basename "$0") [--interactive|-i] [--dry-run|-n] [--log-level=LEVEL]"
+            echo "Usage: $(basename "$0") --target <name> [--interactive|-i] [--dry-run|-n] [--log-level=LEVEL]"
             echo ""
+            echo "  --target <name>         Backup target (required): b2, local"
             echo "  --interactive, -i       Show rclone transfer progress"
             echo "  --dry-run, -n           Pass --dry-run to rclone (no changes made)"
             echo "  --log-level=LEVEL       Set rclone log level (DEBUG|INFO|NOTICE|ERROR)"
+            echo ""
+            echo "Targets:"
+            echo "  b2      Sync to Backblaze B2 (encrypted via rclone crypt)"
+            echo "  local   Sync to local USB drive (/backup/local)"
             exit 0
             ;;
         *)
-            echo "Unknown option: $arg" >&2
-            exit 1
+            # Support --target b2 (space-separated) by capturing next positional
+            if [[ "$arg" == "--target" ]]; then
+                # handled below
+                :
+            elif [[ "${PREV_ARG:-}" == "--target" ]]; then
+                TARGET="$arg"
+            else
+                echo "Unknown option: $arg" >&2
+                exit 1
+            fi
             ;;
     esac
+    PREV_ARG="$arg"
 done
+
+if [[ -z "$TARGET" ]]; then
+    echo "ERROR: --target is required. Use --help for usage." >&2
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Target configuration
+# ---------------------------------------------------------------------------
+TARGETS_FILE="${BASE_DIR}/targets/${TARGET}.txt"
+LOCK_FILE="/tmp/backup-${TARGET}.lock"
+
+# Map target name to rclone destination
+case "$TARGET" in
+    b2)
+        REMOTE="b2crypt"
+        dest_prefix=""
+        ;;
+    local)
+        REMOTE="/backup/local"
+        dest_prefix=""
+        ;;
+    *)
+        echo "ERROR: Unknown target '$TARGET'. Valid targets: b2, local" >&2
+        exit 1
+        ;;
+esac
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -66,7 +112,7 @@ done
 LOG_FILE=""
 mkdir -p "$LOG_DIR" 2>/dev/null
 if [[ -w "$LOG_DIR" ]]; then
-    LOG_FILE="${LOG_DIR}/remote-$(date +%Y%m%d-%H%M%S).log"
+    LOG_FILE="${LOG_DIR}/${TARGET}-$(date +%Y%m%d-%H%M%S).log"
 fi
 
 log() {
@@ -108,19 +154,19 @@ format_duration() {
 }
 
 # ---------------------------------------------------------------------------
-# Locking (flock-based — prevents overlapping runs)
+# Locking (flock-based — prevents overlapping runs per target)
 # ---------------------------------------------------------------------------
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
-    echo "Another backup-remote instance is already running (lock: $LOCK_FILE)" >&2
+    echo "Another backup instance for target '$TARGET' is already running (lock: $LOCK_FILE)" >&2
     exit 1
 fi
 
 # ---------------------------------------------------------------------------
 # Pre-flight checks
 # ---------------------------------------------------------------------------
-if [[ ! -f "$PATHS_FILE" ]]; then
-    echo "ERROR: paths file not found: $PATHS_FILE" >&2
+if [[ ! -f "$TARGETS_FILE" ]]; then
+    echo "ERROR: targets file not found: $TARGETS_FILE" >&2
     exit 1
 fi
 
@@ -129,17 +175,27 @@ if ! command -v rclone &>/dev/null; then
     exit 1
 fi
 
+# For local target, verify the USB drive is mounted
+if [[ "$TARGET" == "local" ]]; then
+    if ! mountpoint -q /backup/local 2>/dev/null && [[ ! "$(ls -A /backup/local 2>/dev/null)" ]]; then
+        MSG="Local backup target /backup/local is not mounted or empty — aborting"
+        echo "ERROR: $MSG" >&2
+        ntfy_send urgent "Backup FAILED" "$MSG" "x"
+        exit 1
+    fi
+fi
+
 # ---------------------------------------------------------------------------
 # Read paths (skip comments and blank lines)
 # ---------------------------------------------------------------------------
-mapfile -t PATHS < <(grep -v '^[[:space:]]*#' "$PATHS_FILE" | grep -v '^[[:space:]]*$' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+mapfile -t PATHS < <(grep -v '^[[:space:]]*#' "$TARGETS_FILE" | grep -v '^[[:space:]]*$' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
 if [[ ${#PATHS[@]} -eq 0 ]]; then
-    log "No paths enabled in $PATHS_FILE — nothing to do."
+    log "No paths enabled in $TARGETS_FILE — nothing to do."
     exit 0
 fi
 
-log "Starting remote backup — ${#PATHS[@]} path(s) to sync"
+log "Starting $TARGET backup — ${#PATHS[@]} path(s) to sync"
 if $DRY_RUN; then
     log "DRY RUN — no changes will be made"
 fi
@@ -149,6 +205,8 @@ fi
 # ---------------------------------------------------------------------------
 RCLONE_FLAGS=(
     --log-level "$LOG_LEVEL"
+    --exclude "@eaDir/**"
+    --exclude "#recycle/**"
 )
 
 if [[ -n "$LOG_FILE" ]]; then
@@ -178,8 +236,14 @@ for path in "${PATHS[@]}"; do
         continue
     fi
 
-    log "Syncing: $src -> ${REMOTE}:${path}"
-    if rclone sync "$src" "${REMOTE}:${path}" "${RCLONE_FLAGS[@]}"; then
+    # Build destination based on target type
+    case "$TARGET" in
+        b2)    dest="${REMOTE}:${path}" ;;
+        local) dest="${REMOTE}/${path}" ;;
+    esac
+
+    log "Syncing: $src -> $dest"
+    if rclone sync "$src" "$dest" "${RCLONE_FLAGS[@]}"; then
         log "OK: $path"
         SUCCEEDED+=("$path")
     else
@@ -192,9 +256,10 @@ done
 # Summary
 # ---------------------------------------------------------------------------
 DURATION=$(format_duration $(( $(date +%s) - START_TIME )))
+TARGET_UPPER=$(echo "$TARGET" | tr '[:lower:]' '[:upper:]')
 
 log "---"
-log "Backup complete: ${#SUCCEEDED[@]} succeeded, ${#FAILED[@]} failed (${DURATION})"
+log "Backup complete ($TARGET_UPPER): ${#SUCCEEDED[@]} succeeded, ${#FAILED[@]} failed (${DURATION})"
 
 if [[ ${#FAILED[@]} -gt 0 ]]; then
     log "Failed paths:"
@@ -202,14 +267,14 @@ if [[ ${#FAILED[@]} -gt 0 ]]; then
         log "  - $p"
     done
     FAIL_LIST=$(printf '%s, ' "${FAILED[@]}")
-    ntfy_send urgent "Backup FAILED" \
+    ntfy_send urgent "Backup FAILED ($TARGET_UPPER)" \
         "${#FAILED[@]}/${#PATHS[@]} paths failed (${DURATION}): ${FAIL_LIST%, }" \
         "x"
     exit 1
 fi
 
 if ! $DRY_RUN; then
-    ntfy_send default "Backup completed" \
+    ntfy_send default "Backup completed ($TARGET_UPPER)" \
         "${#SUCCEEDED[@]} paths synced in ${DURATION}" \
         "white_check_mark"
 fi

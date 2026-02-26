@@ -1,7 +1,9 @@
 ---
 - name: Reboot for NVIDIA driver
-  ansible.builtin.debug:
-    msg: "REBOOT REQUIRED: NVIDIA driver installed. Reboot the VM to load the driver."
+  ansible.builtin.reboot:
+    reboot_timeout: 300
+    msg: "Rebooting to load NVIDIA driver (nouveau blacklisted)"
+  become: true
   listen: "Reboot for NVIDIA driver"
 
 - name: Restart Docker

@@ -1,6 +1,19 @@
 ---
 # Install NVIDIA drivers and container toolkit for GPU passthrough
 
+- name: Blacklist nouveau driver
+  ansible.builtin.copy:
+    content: |
+      blacklist nouveau
+      options nouveau modeset=0
+    dest: /etc/modprobe.d/blacklist-nouveau.conf
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  when: nvidia_container_enabled | bool
+  notify: Reboot for NVIDIA driver
+
 - name: Install kernel headers
   ansible.builtin.apt:
     name:
