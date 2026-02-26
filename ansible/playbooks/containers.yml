@@ -41,7 +41,6 @@
         fstype: ext4
         opts: defaults,nofail
         state: mounted
-      when: ansible_devices.sdb is defined
 
     - name: Create stacks directory
       ansible.builtin.file:

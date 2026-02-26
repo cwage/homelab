@@ -98,12 +98,12 @@ This playbook:
 
 | Setting | Value |
 |---------|-------|
-| Schedule | Daily at 3:00 AM |
+| Schedule | Daily — B2 at 3:40 AM, local at 2:00 AM |
 | Host | `containers.lan.quietlife.net` |
 | User | `deploy` |
-| Cron name | `backup-b2-daily` |
+| Cron names | `backup-b2-daily`, `backup-local-daily` |
 | Container | Ephemeral (`docker compose run --rm`) |
-| Credentials | Fetched from OpenBao at runtime |
+| Credentials | B2: fetched from OpenBao at runtime. Local: none needed |
 
 The cron job runs:
 

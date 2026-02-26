@@ -95,6 +95,9 @@ show_status() {
                 echo "  Mount:          NOT MOUNTED"
             fi
             ;;
+        *)
+            echo "Unknown backup target '${target}'; valid targets: b2, local."
+            ;;
     esac
     echo ""
 }
