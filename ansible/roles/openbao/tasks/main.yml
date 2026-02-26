@@ -180,27 +180,31 @@
         group: root
         mode: "0750"
 
-    - name: Deploy backup service unit
-      ansible.builtin.template:
-        src: openbao-backup.service.j2
-        dest: /etc/systemd/system/openbao-backup.service
-        owner: root
-        group: root
-        mode: "0644"
-      notify: reload systemd
+    - name: Ensure cron is installed
+      ansible.builtin.apt:
+        name: cron
+        state: present
 
-    - name: Deploy backup timer unit
-      ansible.builtin.template:
-        src: openbao-backup.timer.j2
-        dest: /etc/systemd/system/openbao-backup.timer
-        owner: root
-        group: root
-        mode: "0644"
-      notify: reload systemd
+    - name: Install daily OpenBao backup cron job
+      ansible.builtin.cron:
+        name: openbao-backup-daily
+        user: root
+        hour: "{{ openbao_backup_schedule_hour }}"
+        minute: "{{ openbao_backup_schedule_minute }}"
+        job: "flock -n /var/lock/openbao-backup.lock -c '/usr/local/bin/openbao-backup.sh 2>&1 | /usr/bin/logger -t openbao-backup'"
 
-    - name: Enable backup timer
+    - name: Remove legacy systemd backup timer
       ansible.builtin.systemd:
         name: openbao-backup.timer
-        enabled: true
-        state: started
-        daemon_reload: true
+        enabled: false
+        state: stopped
+      failed_when: false
+
+    - name: Remove legacy systemd backup units
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/systemd/system/openbao-backup.service
+        - /etc/systemd/system/openbao-backup.timer
+      notify: reload systemd

@@ -26,4 +26,5 @@ openbao_ui_enabled: true
 openbao_backup_enabled: true
 openbao_backup_dir: "/mnt/backups/vm/openbao"
 openbao_backup_retention_days: 30
-openbao_backup_schedule: "daily"  # systemd timer OnCalendar value
+openbao_backup_schedule_hour: "0"
+openbao_backup_schedule_minute: "30"
