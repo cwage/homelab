@@ -24,6 +24,10 @@ ntfy_backup_topic: "https://ntfy.sh/cwage-homelab-backup"
 # Media and paperless are rw (needed by radarr/sonarr/sabnzbd/paperless-ngx)
 # Everything else is ro (backup, general access)
 nfs_mounts:
+  - name: containers-configs
+    src: 10.10.15.4:/volume1/containers-configs
+    path: /mnt/nas/containers-configs
+    opts: "rw,_netdev,hard,vers=3,noatime"
   - name: media
     src: 10.10.15.4:/volume1/Media
     path: /mnt/nas/Media
