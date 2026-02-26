@@ -235,22 +235,17 @@ Automated daily Raft snapshots are stored on NFS:
 - **Mount Point**: `/mnt/backups`
 - **Backup Directory**: `/mnt/backups/vm/openbao`
 - **Retention**: 30 days
-- **Schedule**: Daily (with up to 1 hour random delay)
-
-The backup is managed by a systemd timer:
+- **Schedule**: Daily at 00:30 UTC via cron
 
 ```bash
-# Check timer status
-systemctl status openbao-backup.timer
-
-# View next scheduled run
-systemctl list-timers openbao-backup.timer
+# Check cron job
+sudo crontab -l
 
 # Manually trigger a backup
-systemctl start openbao-backup.service
+sudo /usr/local/bin/openbao-backup.sh
 
 # View backup logs
-journalctl -u openbao-backup.service
+cat /var/log/openbao-backup.log
 ```
 
 Manual snapshots can also be taken:
@@ -266,6 +261,25 @@ bao operator raft snapshot restore /mnt/backups/vm/openbao/openbao-YYYYMMDD-HHMM
 ```
 
 The VM is also backed up via Proxmox VM backups.
+
+### Troubleshooting: Backup Token Expired
+
+The backup token is periodic (`-period=8760h`). If OpenBao is sealed for longer than the period, or the token is revoked, backups will fail with `permission denied`. To recreate:
+
+```bash
+export BAO_ADDR="https://127.0.0.1:8200"
+export BAO_SKIP_VERIFY=true
+bao login  # root token from Bitwarden
+
+bao token create -policy=backup -no-default-policy -orphan -period=8760h -display-name="backup-automation"
+
+sudo tee /etc/openbao/backup-token > /dev/null <<EOF
+<new-token>
+EOF
+
+# Verify
+sudo /usr/local/bin/openbao-backup.sh
+```
 
 ## Ansible Deploy Token Setup
 

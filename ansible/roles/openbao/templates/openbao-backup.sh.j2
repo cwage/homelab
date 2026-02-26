@@ -24,7 +24,10 @@ else
 fi
 
 # Check if OpenBao is unsealed
-if ! bao status 2>/dev/null | grep -q "Sealed.*false"; then
+# Capture output separately — bao status returns non-zero exit codes that
+# trip pipefail even when the vault is unsealed (e.g. exit 1 with token issues)
+seal_output=$(bao status 2>&1 || true)
+if ! echo "${seal_output}" | grep -q "Sealed.*false"; then
     echo "OpenBao is sealed or unreachable, skipping backup"
     exit 0
 fi
