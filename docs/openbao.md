@@ -235,7 +235,7 @@ Automated daily Raft snapshots are stored on NFS:
 - **Mount Point**: `/mnt/backups`
 - **Backup Directory**: `/mnt/backups/vm/openbao`
 - **Retention**: 30 days
-- **Schedule**: Daily at 00:30 UTC via cron
+- **Schedule**: Daily at 00:30 (server local time) via cron
 
 ```bash
 # Check cron job
@@ -245,7 +245,7 @@ sudo crontab -l
 sudo /usr/local/bin/openbao-backup.sh
 
 # View backup logs
-cat /var/log/openbao-backup.log
+journalctl -t openbao-backup --no-pager -n 20
 ```
 
 Manual snapshots can also be taken:
@@ -264,11 +264,13 @@ The VM is also backed up via Proxmox VM backups.
 
 ### Troubleshooting: Backup Token Expired
 
-The backup token is periodic (`-period=8760h`). If OpenBao is sealed for longer than the period, or the token is revoked, backups will fail with `permission denied`. To recreate:
+The backup token is periodic (`-period=8760h`). However, OpenBao's system-level
+`max_lease_ttl` (default: 32 days) caps the effective period. If the token is not
+renewed within that window — or if OpenBao is sealed long enough — the token expires
+and backups fail with `permission denied`. To recreate:
 
 ```bash
-export BAO_ADDR="https://127.0.0.1:8200"
-export BAO_SKIP_VERIFY=true
+export BAO_ADDR="https://bao.lan.quietlife.net:8200"
 bao login  # root token from Bitwarden
 
 bao token create -policy=backup -no-default-policy -orphan -period=8760h -display-name="backup-automation"
@@ -276,10 +278,15 @@ bao token create -policy=backup -no-default-policy -orphan -period=8760h -displa
 sudo tee /etc/openbao/backup-token > /dev/null <<EOF
 <new-token>
 EOF
+sudo chmod 600 /etc/openbao/backup-token
+sudo chown root:root /etc/openbao/backup-token
 
 # Verify
 sudo /usr/local/bin/openbao-backup.sh
 ```
+
+To prevent future expiry, consider increasing `max_lease_ttl` in the server config
+or on the `token/` auth mount to match the intended period.
 
 ## Ansible Deploy Token Setup
 

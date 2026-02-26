@@ -27,9 +27,15 @@ fi
 # Capture output separately — bao status returns non-zero exit codes that
 # trip pipefail even when the vault is unsealed (e.g. exit 1 with token issues)
 seal_output=$(bao status 2>&1 || true)
-if ! echo "${seal_output}" | grep -q "Sealed.*false"; then
-    echo "OpenBao is sealed or unreachable, skipping backup"
+if echo "${seal_output}" | grep -q "Sealed.*false"; then
+    :
+elif echo "${seal_output}" | grep -q "Sealed.*true"; then
+    echo "OpenBao is sealed, skipping backup"
     exit 0
+else
+    echo "Failed to determine OpenBao seal status, aborting. bao status output:"
+    echo "${seal_output}"
+    exit 1
 fi
 
 # Create backup directory if it doesn't exist (with secure permissions)

@@ -191,7 +191,7 @@
         user: root
         hour: "{{ openbao_backup_schedule_hour }}"
         minute: "{{ openbao_backup_schedule_minute }}"
-        job: "/usr/local/bin/openbao-backup.sh >> /var/log/openbao-backup.log 2>&1"
+        job: "flock -n /var/lock/openbao-backup.lock -c '/usr/local/bin/openbao-backup.sh 2>&1 | /usr/bin/logger -t openbao-backup'"
 
     - name: Remove legacy systemd backup timer
       ansible.builtin.systemd:
