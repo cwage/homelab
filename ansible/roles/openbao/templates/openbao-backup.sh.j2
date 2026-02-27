@@ -38,13 +38,16 @@ else
     exit 1
 fi
 
-# Create backup directory if it doesn't exist (with secure permissions)
+# Create backup directory if it doesn't exist
+# 0755 so the NAS backup pipeline can read snapshots via NFS
+# (snapshot contents are only useful with the unseal key)
 mkdir -p "${BACKUP_DIR}"
-chmod 0750 "${BACKUP_DIR}"
+chmod 0755 "${BACKUP_DIR}"
 
 # Take Raft snapshot
 echo "Taking Raft snapshot to ${SNAPSHOT_FILE}"
 bao operator raft snapshot save "${SNAPSHOT_FILE}"
+chmod 0644 "${SNAPSHOT_FILE}"
 
 # Clean up old backups
 echo "Removing backups older than ${RETENTION_DAYS} days"

@@ -170,7 +170,7 @@
         state: directory
         owner: root
         group: root
-        mode: "0750"
+        mode: "0755"
 
     - name: Deploy backup script
       ansible.builtin.template:
