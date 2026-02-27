@@ -13,3 +13,5 @@ backup
 Misc
 Media
 homelab-backups
+containers-configs
+tofu-state
