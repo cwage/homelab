@@ -12,3 +12,4 @@ syncthing-data
 backup
 Misc
 Media
+homelab-backups
