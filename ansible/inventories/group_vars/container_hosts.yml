@@ -105,3 +105,7 @@ nfs_mounts:
     src: 10.10.15.4:/volume1/homelab-backups
     path: /mnt/nas/homelab-backups
     opts: "ro,_netdev,hard,nofail,vers=3,noatime"
+  - name: tofu-state
+    src: 10.10.15.4:/volume1/tofu-state
+    path: /mnt/nas/tofu-state
+    opts: "ro,_netdev,hard,nofail,vers=3,noatime"
