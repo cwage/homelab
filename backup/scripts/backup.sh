@@ -209,7 +209,7 @@ RCLONE_FLAGS=(
     --exclude "#recycle/**"
     --exclude "*.db-wal"
     --exclude "*.db-shm"
-    --exclude "*/logs/**"
+    --exclude "**/logs/**"
 )
 
 if [[ -n "$LOG_FILE" ]]; then
