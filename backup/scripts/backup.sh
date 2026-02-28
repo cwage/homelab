@@ -207,6 +207,9 @@ RCLONE_FLAGS=(
     --log-level "$LOG_LEVEL"
     --exclude "@eaDir/**"
     --exclude "#recycle/**"
+    --exclude "*.db-wal"
+    --exclude "*.db-shm"
+    --exclude "*/logs/**"
 )
 
 if [[ -n "$LOG_FILE" ]]; then
