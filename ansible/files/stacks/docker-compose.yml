@@ -40,8 +40,8 @@ services:
       - PGID=1000
       - TZ=America/Chicago
     volumes:
-      - /mnt/nas/containers-configs/jellyfin:/config
-      - /mnt/nas/containers-configs/jellyfin-cache:/cache
+      - jellyfin_config:/config
+      - jellyfin_cache:/cache
       - /mnt/nas/Media:/media
     labels:
       - "traefik.enable=true"
@@ -68,7 +68,7 @@ services:
       - PGID=1000
       - TZ=America/Chicago
     volumes:
-      - /mnt/nas/containers-configs/sabnzbd:/config
+      - sabnzbd_config:/config
       - /mnt/nas/Media:/media
     labels:
       - "traefik.enable=true"
@@ -88,7 +88,7 @@ services:
       - PGID=1000
       - TZ=America/Chicago
     volumes:
-      - /mnt/nas/containers-configs/radarr:/config
+      - radarr_config:/config
       - /mnt/nas/Media:/media
     labels:
       - "traefik.enable=true"
@@ -108,7 +108,7 @@ services:
       - PGID=1000
       - TZ=America/Chicago
     volumes:
-      - /mnt/nas/containers-configs/sonarr:/config
+      - sonarr_config:/config
       - /mnt/nas/Media:/media
     labels:
       - "traefik.enable=true"
@@ -125,7 +125,7 @@ services:
     restart: unless-stopped
     user: "${UID:-1000}:${GID:-1000}"
     volumes:
-      - /mnt/nas/containers-configs/paperless-redis:/data
+      - paperless_redis:/data
     networks:
       - proxy
 
@@ -163,7 +163,7 @@ services:
     ports:
       - "10.10.15.12:1935:1935"
     volumes:
-      - /mnt/nas/containers-configs/owncast:/app/data
+      - owncast_data:/app/data
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.owncast.rule=Host(`owncast.lan.quietlife.net`)"
@@ -207,6 +207,15 @@ services:
       - owncast
     profiles:
       - tunnel
+
+volumes:
+  jellyfin_config:
+  jellyfin_cache:
+  sabnzbd_config:
+  radarr_config:
+  sonarr_config:
+  paperless_redis:
+  owncast_data:
 
 networks:
   proxy:

@@ -18,22 +18,6 @@
     - nvidia_container
 
   tasks:
-    - name: Create container config directories on NAS
-      ansible.builtin.file:
-        path: "/mnt/nas/containers-configs/{{ item }}"
-        state: directory
-        owner: deploy
-        group: deploy
-        mode: '0755'
-      loop:
-        - jellyfin
-        - jellyfin-cache
-        - sabnzbd
-        - radarr
-        - sonarr
-        - paperless-redis
-        - owncast
-
     - name: Mount USB backup drive
       ansible.posix.mount:
         path: /mnt/nasbak
