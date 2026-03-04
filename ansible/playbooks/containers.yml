@@ -100,6 +100,40 @@
         mode: '0644'
       register: traefik_tls_result
 
+    - name: Retrieve Traefik basicauth credentials from OpenBao
+      block:
+        - name: Fetch Traefik basicauth from OpenBao
+          ansible.builtin.set_fact:
+            traefik_basicauth: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                                   'infra/traefik/basicauth',
+                                   engine_mount_point='kv',
+                                   url=openbao_addr,
+                                   token=openbao_token,
+                                   validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+      rescue:
+        - name: Warn if Traefik basicauth not found (non-fatal)
+          ansible.builtin.debug:
+            msg: >
+              Traefik basicauth credentials not found in OpenBao at kv/infra/traefik/basicauth.
+              Dashboard will not have authentication.
+              Store with: htpasswd -nbB cwage <password> | bao kv put kv/infra/traefik/basicauth htpasswd=-
+        - name: Set empty basicauth
+          ansible.builtin.set_fact:
+            traefik_basicauth:
+              htpasswd: ""
+
+    - name: Deploy Traefik basicauth file
+      ansible.builtin.copy:
+        content: "{{ traefik_basicauth.htpasswd }}"
+        dest: /opt/stacks/traefik-basicauth
+        owner: deploy
+        group: deploy
+        mode: '0600'
+      register: traefik_basicauth_result
+      no_log: true
+      when: (traefik_basicauth.htpasswd | default('')) | length > 0
+
     - name: Retrieve Cloudflare Tunnel token from OpenBao
       block:
         - name: Fetch Cloudflare Tunnel token from OpenBao
@@ -202,6 +236,7 @@
              traefik_tls_result.changed or
              tls_cert_result.changed or
              tls_key_result.changed or
+             (traefik_basicauth_result.changed | default(false)) or
              env_result.changed or
              (force_restart | default(false)) }}
 
