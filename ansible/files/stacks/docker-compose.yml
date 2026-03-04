@@ -22,12 +22,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./certs:/etc/traefik/certs:ro
       - ./traefik-tls.yml:/etc/traefik/tls.yml:ro
+      - ./traefik-basicauth:/etc/traefik/basicauth:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik.lan.quietlife.net`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls=true"
       - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.usersfile=/etc/traefik/basicauth"
     networks:
       - proxy
 
