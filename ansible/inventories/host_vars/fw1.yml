@@ -10,3 +10,7 @@ wireguard_peers:
     public_key: "/Moaa5jW3PvvEhW1TnBNVye7OFzPToi5OJkNmbZGECw="
     allowed_ips: "10.10.16.3/32"
     persistent_keepalive: 0
+  - name: thinkpad-nixos
+    public_key: "N/gPS5QD6K4cKgt7iCYbpepXGmU9JZrp6+RJ0Mfm3D4="
+    allowed_ips: "10.10.16.4/32"
+    persistent_keepalive: 0
