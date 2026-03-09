@@ -222,6 +222,7 @@ services:
       - MM_SERVICESETTINGS_SITEURL=https://mm.quietlife.net
     ports:
       - "10.10.15.12:8443:8443/udp"
+      - "10.10.15.12:8443:8443/tcp"
     volumes:
       - mattermost_config:/mattermost/config
       - mattermost_data:/mattermost/data
