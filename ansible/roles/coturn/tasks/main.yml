@@ -1,0 +1,36 @@
+---
+- name: Install coturn
+  ansible.builtin.apt:
+    name: coturn
+    state: present
+    update_cache: true
+
+- name: Enable coturn daemon
+  ansible.builtin.lineinfile:
+    path: /etc/default/coturn
+    regexp: '^#?TURNSERVER_ENABLED='
+    line: 'TURNSERVER_ENABLED=1'
+  notify: Restart coturn
+
+- name: Create coturn log directory
+  ansible.builtin.file:
+    path: /var/log/turnserver
+    state: directory
+    owner: turnserver
+    group: turnserver
+    mode: '0750'
+
+- name: Deploy turnserver.conf
+  ansible.builtin.template:
+    src: turnserver.conf.j2
+    dest: /etc/turnserver.conf
+    owner: root
+    group: turnserver
+    mode: '0640'
+  notify: Restart coturn
+
+- name: Enable and start coturn
+  ansible.builtin.systemd:
+    name: coturn
+    enabled: true
+    state: started

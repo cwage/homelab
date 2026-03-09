@@ -203,6 +203,52 @@
       no_log: true
       when: (staticomment_deploy_key.private_key | default('')) | length > 0
 
+    - name: Retrieve coturn auth secret from OpenBao
+      block:
+        - name: Fetch coturn auth secret from OpenBao
+          ansible.builtin.set_fact:
+            coturn_auth: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                              'infra/coturn/auth',
+                              engine_mount_point='kv',
+                              url=openbao_addr,
+                              token=openbao_token,
+                              validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+      rescue:
+        - name: Warn if coturn auth secret not found (non-fatal)
+          ansible.builtin.debug:
+            msg: >
+              coturn auth secret not found in OpenBao at kv/infra/coturn/auth.
+              Mattermost Calls TURN integration will not work.
+              Store with: bao kv put kv/infra/coturn/auth secret=$(openssl rand -hex 32)
+        - name: Set empty coturn auth secret
+          ansible.builtin.set_fact:
+            coturn_auth:
+              secret: ""
+
+    - name: Retrieve Mattermost DB password from OpenBao
+      block:
+        - name: Fetch Mattermost DB password from OpenBao
+          ansible.builtin.set_fact:
+            mattermost_db: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                              'infra/mattermost/db',
+                              engine_mount_point='kv',
+                              url=openbao_addr,
+                              token=openbao_token,
+                              validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+      rescue:
+        - name: Warn if Mattermost DB password not found (non-fatal)
+          ansible.builtin.debug:
+            msg: >
+              Mattermost DB password not found in OpenBao at kv/infra/mattermost/db.
+              Mattermost will not start without a database password.
+              Store with: bao kv put kv/infra/mattermost/db password=<YOUR_PASSWORD>
+        - name: Set empty Mattermost DB password
+          ansible.builtin.set_fact:
+            mattermost_db:
+              password: ""
+
     - name: Deploy stacks environment file
       ansible.builtin.copy:
         content: |
@@ -211,6 +257,8 @@
           STATICOMMENT_GIT_REPO=git@github.com:cwage/quietlife.net.git
           STATICOMMENT_BRANCH=master
           STATICOMMENT_ALLOWED_ORIGINS=https://quietlife.net
+          MM_DB_PASSWORD={{ mattermost_db.password | default('') }}
+          COTURN_AUTH_SECRET={{ coturn_auth.secret | default('') }}
         dest: /opt/stacks/.env
         owner: deploy
         group: deploy

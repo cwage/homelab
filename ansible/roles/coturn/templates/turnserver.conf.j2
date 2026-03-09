@@ -1,0 +1,44 @@
+# {{ ansible_managed }}
+# coturn TURN/STUN server configuration
+
+# Network listening
+listening-port={{ coturn_listening_port }}
+tls-listening-port={{ coturn_tls_listening_port }}
+listening-ip=0.0.0.0
+listening-ip=::
+
+# Relay
+relay-ip=0.0.0.0
+min-port={{ coturn_relay_port_min }}
+max-port={{ coturn_relay_port_max }}
+
+# External IP mapping (public/private)
+# On a VPS with a public IP directly assigned, both are the same
+external-ip={{ coturn_external_ip }}
+
+# Realm
+realm={{ coturn_realm }}
+
+# Shared-secret authentication (HMAC-based, compatible with Mattermost Calls)
+use-auth-secret
+static-auth-secret={{ coturn_auth_secret }}
+
+# Logging
+log-file=/var/log/turnserver/turnserver.log
+simple-log
+
+# Security
+no-multicast-peers
+no-cli
+fingerprint
+
+# Deny relaying to private, link-local, and loopback address ranges
+denied-peer-ip=10.0.0.0-10.255.255.255
+denied-peer-ip=172.16.0.0-172.31.255.255
+denied-peer-ip=192.168.0.0-192.168.255.255
+denied-peer-ip=127.0.0.0-127.255.255.255
+denied-peer-ip=169.254.0.0-169.254.255.255
+denied-peer-ip=::1
+denied-peer-ip=fc00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+denied-peer-ip=fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+no-loopback-peers

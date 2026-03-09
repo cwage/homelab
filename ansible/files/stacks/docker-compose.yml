@@ -196,6 +196,49 @@ services:
     networks:
       - proxy
 
+  mattermost-db:
+    image: postgres:16-alpine
+    container_name: mattermost-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=mmuser
+      - POSTGRES_PASSWORD=${MM_DB_PASSWORD}
+      - POSTGRES_DB=mattermost
+    volumes:
+      - mattermost_db:/var/lib/postgresql/data
+    networks:
+      - proxy
+
+  mattermost:
+    image: mattermost/mattermost-team-edition:10.6
+    container_name: mattermost
+    restart: unless-stopped
+    depends_on:
+      - mattermost-db
+    environment:
+      - TZ=America/Chicago
+      - MM_SQLSETTINGS_DRIVERNAME=postgres
+      - MM_SQLSETTINGS_DATASOURCE=postgres://mmuser:${MM_DB_PASSWORD}@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10
+      - MM_SERVICESETTINGS_SITEURL=https://mm.quietlife.net
+    ports:
+      - "10.10.15.12:8443:8443/udp"
+      - "10.10.15.12:8443:8443/tcp"
+    volumes:
+      - mattermost_config:/mattermost/config
+      - mattermost_data:/mattermost/data
+      - mattermost_logs:/mattermost/logs
+      - mattermost_plugins:/mattermost/plugins
+      - mattermost_client_plugins:/mattermost/client/plugins
+      - mattermost_bleve:/mattermost/bleve-indexes
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mattermost.rule=Host(`mm.lan.quietlife.net`)"
+      - "traefik.http.routers.mattermost.entrypoints=websecure"
+      - "traefik.http.routers.mattermost.tls=true"
+      - "traefik.http.services.mattermost.loadbalancer.server.port=8065"
+    networks:
+      - proxy
+
   cloudflared:
     image: cloudflare/cloudflared:2026.1.2
     container_name: cloudflared
@@ -219,6 +262,13 @@ volumes:
   sonarr_config:
   paperless_redis:
   owncast_data:
+  mattermost_db:
+  mattermost_config:
+  mattermost_data:
+  mattermost_logs:
+  mattermost_plugins:
+  mattermost_client_plugins:
+  mattermost_bleve:
 
 networks:
   proxy:
