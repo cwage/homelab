@@ -1,0 +1,8 @@
+---
+# coturn TURN/STUN server defaults
+
+coturn_listening_port: 3478
+coturn_tls_listening_port: 5349
+coturn_relay_port_min: 49152
+coturn_relay_port_max: 49200
+coturn_realm: "turn.quietlife.net"
