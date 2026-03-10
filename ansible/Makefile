@@ -34,10 +34,10 @@ proxmox: ## Configure Proxmox hosts (users, mounts, etc.)
 proxmox-check: ## Dry-run Proxmox playbook with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/proxmox.yml -vv --check --diff $(OPTS)
 
-firewall: ## Apply firewall configuration (pf.conf, dhcpd.conf)
+firewall: ## Apply firewall configuration (requires BAO_TOKEN in .env)
 	$(DC) run --rm ansible ansible-playbook playbooks/firewall.yml -vv $(OPTS)
 
-firewall-check: ## Dry-run firewall configuration with --check/--diff
+firewall-check: ## Dry-run firewall configuration (requires BAO_TOKEN in .env)
 	$(DC) run --rm ansible ansible-playbook playbooks/firewall.yml -vv --check --diff $(OPTS)
 
 templates: ## Build Proxmox VM templates

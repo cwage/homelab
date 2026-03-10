@@ -8,6 +8,24 @@
   hosts: openbsd_firewalls
   become: false
   gather_facts: false
+  pre_tasks:
+    - name: Retrieve doas password from OpenBao
+      block:
+        - name: Fetch deploy user doas password
+          ansible.builtin.set_fact:
+            ansible_become_password: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                                         'infra/users/deploy',
+                                         engine_mount_point=openbao_kv_mount,
+                                         url=openbao_addr,
+                                         token=openbao_token,
+                                         validate_certs=openbao_validate_certs).secret.password }}"
+          no_log: true
+      rescue:
+        - name: Fail with helpful message
+          ansible.builtin.fail:
+            msg: >-
+              Failed to retrieve doas password from OpenBao.
+              Ensure BAO_ADDR and BAO_TOKEN are set in .env and that OpenBao is unsealed.
   roles:
     - wireguard_server
     - openbsd_firewall
