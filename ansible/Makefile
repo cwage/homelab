@@ -35,10 +35,10 @@ proxmox-check: ## Dry-run Proxmox playbook with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/proxmox.yml -vv --check --diff $(OPTS)
 
 firewall: ## Apply firewall configuration (pf.conf, dhcpd.conf)
-	$(DC) run --rm ansible ansible-playbook playbooks/firewall.yml -vv --ask-become-pass $(OPTS)
+	$(DC) run --rm ansible ansible-playbook playbooks/firewall.yml -vv $(OPTS)
 
 firewall-check: ## Dry-run firewall configuration with --check/--diff
-	$(DC) run --rm ansible ansible-playbook playbooks/firewall.yml -vv --ask-become-pass --check --diff $(OPTS)
+	$(DC) run --rm ansible ansible-playbook playbooks/firewall.yml -vv --check --diff $(OPTS)
 
 templates: ## Build Proxmox VM templates
 	$(DC) run --rm ansible ansible-playbook playbooks/pve-templates.yml -vv $(OPTS)

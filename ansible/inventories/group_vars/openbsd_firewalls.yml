@@ -4,6 +4,14 @@
 # Use doas instead of sudo for privilege escalation
 ansible_become_method: doas
 
+# Retrieve doas password from OpenBao (eliminates --ask-become-pass)
+ansible_become_password: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                             'infra/users/deploy',
+                             engine_mount_point=openbao_kv_mount,
+                             url=openbao_addr,
+                             token=openbao_token,
+                             validate_certs=openbao_validate_certs).secret.password }}"
+
 # No Python required - using raw module only
 # OpenBSD uses ksh by default, but we can specify if needed
 # ansible_shell_type: sh

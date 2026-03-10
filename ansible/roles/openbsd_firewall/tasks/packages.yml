@@ -4,3 +4,21 @@
   become: true
   register: pkg_result
   changed_when: "'hping' in pkg_result.stdout and 'already installed' not in pkg_result.stdout"
+
+- name: Install pktstat
+  ansible.builtin.raw: /usr/sbin/pkg_add -I pktstat
+  become: true
+  register: pkg_result
+  changed_when: "'pktstat' in pkg_result.stdout and 'already installed' not in pkg_result.stdout"
+
+- name: Install iftop
+  ansible.builtin.raw: /usr/sbin/pkg_add -I iftop
+  become: true
+  register: pkg_result
+  changed_when: "'iftop' in pkg_result.stdout and 'already installed' not in pkg_result.stdout"
+
+- name: Install ifstat
+  ansible.builtin.raw: /usr/sbin/pkg_add -I ifstat--
+  become: true
+  register: pkg_result
+  changed_when: "'ifstat' in pkg_result.stdout and 'already installed' not in pkg_result.stdout"
