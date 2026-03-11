@@ -18,6 +18,7 @@
   changed_when: "'iftop' in pkg_result.stdout and 'already installed' not in pkg_result.stdout"
 
 - name: Install ifstat
+  # Trailing '--' selects the default (no-flavor) package to avoid ambiguous prompt with pkg_add -I
   ansible.builtin.raw: /usr/sbin/pkg_add -I ifstat--
   become: true
   register: pkg_result

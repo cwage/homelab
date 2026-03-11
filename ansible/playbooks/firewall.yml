@@ -24,8 +24,10 @@
         - name: Fail with helpful message
           ansible.builtin.fail:
             msg: >-
-              Failed to retrieve doas password from OpenBao.
-              Ensure BAO_ADDR and BAO_TOKEN are set in .env and that OpenBao is unsealed.
+              Failed to retrieve doas password from OpenBao
+              (secret: kv/infra/users/deploy, field: password).
+              Check that BAO_TOKEN is set in .env, OpenBao is unsealed,
+              and the secret exists (bao kv get kv/infra/users/deploy).
   roles:
     - wireguard_server
     - openbsd_firewall
