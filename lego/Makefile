@@ -5,6 +5,8 @@
 #   - BAO_TOKEN and BAO_ADDR set in root .env
 #   - Cloudflare token stored at kv/infra/cloudflare in OpenBao
 
+export UID := $(shell id -u)
+export GID := $(shell id -g)
 DC := docker compose --env-file ../.env
 
 # Certificate configuration
@@ -26,7 +28,10 @@ CERT_FILE := $(CERT_DIR)/_.$(DOMAIN).crt
 KEY_FILE := $(CERT_DIR)/_.$(DOMAIN).key
 ISSUER_FILE := $(CERT_DIR)/_.$(DOMAIN).issuer.crt
 
-.PHONY: help run renew renew-staging renew-force list show fetch-creds store retrieve
+.PHONY: help ensure-dirs run renew renew-staging renew-force list show fetch-creds store retrieve
+
+ensure-dirs: ## Pre-create cert directories so Docker doesn't create them as root
+	@mkdir -p $(CERT_DIR)
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -58,10 +63,10 @@ define fetch_cf_creds
 	fi
 endef
 
-run: ## Run lego with custom arguments (ARGS="...")
+run: ensure-dirs ## Run lego with custom arguments (ARGS="...")
 	$(DC) run --rm lego $(ARGS)
 
-renew: ## Request or renew wildcard certificate (PRODUCTION - use sparingly)
+renew: ensure-dirs ## Request or renew wildcard certificate (PRODUCTION - use sparingly)
 	$(call fetch_cf_creds)
 	@echo "Requesting PRODUCTION certificate for $(WILDCARD) and $(DOMAIN)..."
 	$(DC) run --rm -e CF_DNS_API_TOKEN="$(CF_TOKEN)" -e CF_ZONE_ID="$(CF_ZONE_ID)" lego \
@@ -74,7 +79,7 @@ renew: ## Request or renew wildcard certificate (PRODUCTION - use sparingly)
 		--domains="$(DOMAIN)" \
 		run
 
-renew-staging: ## Request certificate from STAGING (for testing, fake certs)
+renew-staging: ensure-dirs ## Request certificate from STAGING (for testing, fake certs)
 	$(call fetch_cf_creds)
 	@echo "Requesting STAGING certificate for $(WILDCARD) and $(DOMAIN)..."
 	@echo "(This will issue a fake cert - use for testing only)"
@@ -88,7 +93,7 @@ renew-staging: ## Request certificate from STAGING (for testing, fake certs)
 		--domains="$(DOMAIN)" \
 		run
 
-renew-force: ## Force renewal even if certificate is still valid (PRODUCTION)
+renew-force: ensure-dirs ## Force renewal even if certificate is still valid (PRODUCTION)
 	$(call fetch_cf_creds)
 	@echo "Force renewing certificate for $(WILDCARD) and $(DOMAIN)..."
 	$(DC) run --rm -e CF_DNS_API_TOKEN="$(CF_TOKEN)" -e CF_ZONE_ID="$(CF_ZONE_ID)" lego \

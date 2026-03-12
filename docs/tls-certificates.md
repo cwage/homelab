@@ -38,6 +38,29 @@ Ansible retrieves the cert from OpenBao and deploys it to services:
 - **Traefik** (containers host): `make ansible-containers` deploys cert to `/opt/stacks/certs/` and configures `traefik-tls.yml` file provider
 - **Proxmox** (pve1): `make ansible-proxmox` deploys cert via the `proxmox_certs` role for the Proxmox web UI
 
+**Note:** Traefik does not automatically reload bind-mounted cert files. The playbook will restart Traefik automatically when it detects new certificates.
+
+### Renewal when the cert is already expired
+
+If the cert has already expired, OpenBao (which serves its own TLS on port 8200) will also have the expired cert. Both `make lego-store` (curl to OpenBao) and Ansible's OpenBao lookups will fail with `SSL: CERTIFICATE_VERIFY_FAILED`. To break the chicken-and-egg cycle:
+
+```bash
+# 1. Renew cert from Let's Encrypt (this doesn't talk to OpenBao)
+make lego-renew
+
+# 2. Store in OpenBao with TLS verification disabled
+BAO_SKIP_VERIFY=true make lego-store
+
+# 2. Deploy with TLS verification disabled (Traefik restarts automatically)
+make ansible-containers OPTS="-e openbao_skip_verify=true"
+
+# 3. Update OpenBao's own TLS cert (it listens on :8200 with its own cert)
+make ansible-openbao OPTS="-e openbao_skip_verify=true"
+
+# 4. Subsequent runs (proxmox, etc.) should work normally now
+make ansible-proxmox
+```
+
 ### OpenBao storage
 
 Certs are stored at `kv/infra/certs/lan.quietlife.net` with keys for the certificate chain, private key, and metadata.
