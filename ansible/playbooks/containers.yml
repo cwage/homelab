@@ -298,6 +298,13 @@
       become_user: deploy
       when: containers_need_restart
 
+    # Traefik doesn't watch bind-mounted cert files for changes, so
+    # docker compose up -d alone won't reload them. Restart explicitly.
+    - name: Restart Traefik to pick up new TLS certificates
+      ansible.builtin.command:
+        cmd: docker restart traefik
+      when: tls_cert_result.changed or tls_key_result.changed
+
     # SABnzbd hostname whitelist configuration
     # LinuxServer image doesn't support HOST_WHITELIST_ENTRIES env var,
     # so we configure it directly in sabnzbd.ini after container starts
