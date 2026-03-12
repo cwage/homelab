@@ -42,12 +42,14 @@ Ansible retrieves the cert from OpenBao and deploys it to services:
 
 ### Renewal when the cert is already expired
 
-If the cert has already expired, OpenBao (which sits behind Traefik) will also be serving the expired cert. Ansible's OpenBao lookups will fail with `SSL: CERTIFICATE_VERIFY_FAILED`. To break the chicken-and-egg cycle:
+If the cert has already expired, OpenBao (which serves its own TLS on port 8200) will also have the expired cert. Both `make lego-store` (curl to OpenBao) and Ansible's OpenBao lookups will fail with `SSL: CERTIFICATE_VERIFY_FAILED`. To break the chicken-and-egg cycle:
 
 ```bash
-# 1. Renew and store as normal
+# 1. Renew cert from Let's Encrypt (this doesn't talk to OpenBao)
 make lego-renew
-make lego-store
+
+# 2. Store in OpenBao with TLS verification disabled
+BAO_SKIP_VERIFY=true make lego-store
 
 # 2. Deploy with TLS verification disabled (Traefik restarts automatically)
 make ansible-containers OPTS="-e openbao_skip_verify=true"

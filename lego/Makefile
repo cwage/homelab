@@ -30,8 +30,8 @@ ISSUER_FILE := $(CERT_DIR)/_.$(DOMAIN).issuer.crt
 
 .PHONY: help ensure-dirs run renew renew-staging renew-force list show fetch-creds store retrieve
 
-ensure-dirs: ## Create cert directories with correct ownership (prevents Docker creating them as root)
-	@mkdir -p certs/certificates
+ensure-dirs: ## Pre-create cert directories so Docker doesn't create them as root
+	@mkdir -p $(CERT_DIR)
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
