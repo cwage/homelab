@@ -239,6 +239,22 @@ services:
     networks:
       - proxy
 
+  nash-services:
+    image: ghcr.io/cwage/nash-services:main
+    container_name: nash-services
+    restart: unless-stopped
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      - PYTHONUNBUFFERED=1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nash-services.rule=Host(`nash-services.lan.quietlife.net`)"
+      - "traefik.http.routers.nash-services.entrypoints=websecure"
+      - "traefik.http.routers.nash-services.tls=true"
+      - "traefik.http.services.nash-services.loadbalancer.server.port=5000"
+    networks:
+      - proxy
+
   cloudflared:
     image: cloudflare/cloudflared:2026.1.2
     container_name: cloudflared
