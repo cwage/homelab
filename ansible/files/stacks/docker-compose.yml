@@ -248,7 +248,7 @@ services:
       - PYTHONUNBUFFERED=1
       - DISPATCH_CACHE_DB=/data/service_cache.db
     volumes:
-      - nash-services-cache:/data
+      - nash_services_cache:/data
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nash-services.rule=Host(`nash-services.lan.quietlife.net`)"
@@ -288,7 +288,7 @@ volumes:
   mattermost_plugins:
   mattermost_client_plugins:
   mattermost_bleve:
-  nash-services-cache:
+  nash_services_cache:
 
 networks:
   proxy:
