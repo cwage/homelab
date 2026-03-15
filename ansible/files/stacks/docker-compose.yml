@@ -240,12 +240,15 @@ services:
       - proxy
 
   nash-services:
-    image: ghcr.io/cwage/nash-services:0.3.0
+    image: ghcr.io/cwage/nash-services:0.4.0
     container_name: nash-services
     restart: unless-stopped
     user: "${UID:-1000}:${GID:-1000}"
     environment:
       - PYTHONUNBUFFERED=1
+      - DISPATCH_CACHE_DB=/data/service_cache.db
+    volumes:
+      - nash-services-cache:/data
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.nash-services.rule=Host(`nash-services.lan.quietlife.net`)"
@@ -285,6 +288,7 @@ volumes:
   mattermost_plugins:
   mattermost_client_plugins:
   mattermost_bleve:
+  nash-services-cache:
 
 networks:
   proxy:
