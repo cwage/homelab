@@ -240,7 +240,7 @@ services:
       - proxy
 
   nash-services:
-    image: ghcr.io/cwage/nash-services:0.7.0
+    image: ghcr.io/cwage/nash-services:0.9.0
     container_name: nash-services
     restart: unless-stopped
     user: "${UID:-1000}:${GID:-1000}"
