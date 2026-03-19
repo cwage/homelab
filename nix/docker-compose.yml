@@ -12,8 +12,6 @@ services:
       - nix-store:/nix
       # Build output
       - ./output:/output
-      # SSH key for remote deploys
-      - ../ansible/keys/deploy:/root/.ssh/deploy:ro
     environment:
       - OUTPUT_UID=${UID:-1000}
       - OUTPUT_GID=${GID:-1000}

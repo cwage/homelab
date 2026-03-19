@@ -44,7 +44,9 @@ deploy: output/$(VMA_FILE)
 
 deploy-host:
 	@[ -n "$(HOST)" ] || (echo "ERROR: HOST required (e.g., HOST=nixos-test)" && exit 1)
+	@[ -f "$(SSH_KEY)" ] || (echo "ERROR: Deploy key not found at $(SSH_KEY)" && exit 1)
 	$(DC) run --rm --entrypoint bash \
+		-v $(abspath $(SSH_KEY)):/root/.ssh/deploy:ro \
 		-e DEPLOY_TARGET=$(or $(TARGET),$(HOST)) \
 		$(NIX_SVC) /workspace/nix/deploy.sh $(HOST)
 

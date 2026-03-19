@@ -28,7 +28,7 @@ let
 
     ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: secret: ''
     template {
-      contents = "{{ with secret \"${secret.path}\" }}{{ .Data.data.${secret.field} }}{{ end }}"
+      contents = "{{ with secret \"${secret.path}\" }}{{ index .Data.data \"${secret.field}\" }}{{ end }}"
       destination = "${secret.destination}"
       perms = "${secret.permissions}"
     }

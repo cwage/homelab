@@ -42,7 +42,7 @@ cmd_enable() {
 
     echo ""
     echo "AppRole auth enabled with policy '$NIXOS_POLICY_NAME'."
-    echo "Next: create a role for each NixOS host with 'make approle-create-role NAME=dns1 IP=10.10.15.10'"
+    echo "Next: create a role for each NixOS host with 'make openbao-approle-create-role NAME=dns1 IP=10.10.15.10'"
 }
 
 cmd_create_role() {
