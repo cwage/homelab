@@ -44,7 +44,7 @@ The configuration (`images.tf`) downloads the current Debian stable cloud image 
 
 ## State management
 
-State files (`terraform.tfstate`) are tracked in git. This is a single-developer workflow — pull before running `plan` or `apply` when switching machines.
+State is stored on the NAS via NFS (mounted at `TOFU_STATE_PATH` from `.env`). The container mounts this path to `/state` and the backend reads `/state/terraform.tfstate`. Make sure the NFS share is mounted on your workstation before running `plan` or `apply`.
 
 ## File overview
 
@@ -52,7 +52,7 @@ State files (`terraform.tfstate`) are tracked in git. This is a single-developer
 ├── main.tf           Proxmox provider configuration
 ├── variables.tf      Input variables with defaults
 ├── images.tf         Debian cloud image download
-├── dns.tf            dns1 VM
+├── dns1.tf           dns1 VM
 ├── containers.tf     containers VM (Docker host + GPU)
 ├── openbao.tf        openbao VM (secrets management)
 ├── outputs.tf        Output values
