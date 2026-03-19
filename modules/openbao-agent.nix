@@ -52,7 +52,7 @@ in
 
     tlsSkipVerify = lib.mkOption {
       type = lib.types.bool;
-      default = true;
+      default = false;
       description = "Skip TLS certificate verification.";
     };
 
