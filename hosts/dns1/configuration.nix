@@ -3,6 +3,12 @@
 {
   networking.hostName = "dns1";
 
+  # Prevent cloud-init from overriding the hostname (it cached "dns1-nixos" from
+  # the original VM creation and re-applies it on every boot)
+  environment.etc."cloud/cloud.cfg.d/99-preserve-hostname.cfg".text = ''
+    preserve_hostname: true
+  '';
+
   # --- NSD authoritative DNS for lan.quietlife.net ---
 
   # Disable systemd-resolved (conflicts with NSD on port 53)
