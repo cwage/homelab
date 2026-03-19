@@ -29,6 +29,15 @@
         ];
       };
 
+      nixosConfigurations.dns1 = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          "${nixpkgs}/nixos/modules/virtualisation/proxmox-image.nix"
+          ./modules/base.nix
+          ./modules/openbao-agent.nix
+          ./hosts/dns1/configuration.nix
+        ];
+      };
 
       packages.${system} = {
         proxmox-template =

@@ -5,7 +5,7 @@
 #
 # Usage:
 #   setup-approle.sh enable                     # one-time: enable AppRole auth
-#   setup-approle.sh create-role dns1 10.10.15.10   # create role for a host
+#   setup-approle.sh create-role dns1 10.10.15.15   # create role for a host
 #   setup-approle.sh show-role dns1             # show role_id for a host
 #   setup-approle.sh list                       # list all roles
 
@@ -42,7 +42,7 @@ cmd_enable() {
 
     echo ""
     echo "AppRole auth enabled with policy '$NIXOS_POLICY_NAME'."
-    echo "Next: create a role for each NixOS host with 'make openbao-approle-create-role NAME=dns1 IP=10.10.15.10'"
+    echo "Next: create a role for each NixOS host with 'make openbao-approle-create-role NAME=dns1 IP=10.10.15.15'"
 }
 
 cmd_create_role() {

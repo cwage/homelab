@@ -19,7 +19,7 @@ help:
 	@echo ""
 	@echo "Admin targets (auto-fetch admin token from KV):"
 	@echo "  make approle-enable                           Enable AppRole auth + create nixos-host policy (one-time)"
-	@echo "  make approle-create-role NAME=dns1 IP=10.10.15.10  Create CIDR-bound role for a NixOS host"
+	@echo "  make approle-create-role NAME=dns1 IP=10.10.15.15  Create CIDR-bound role for a NixOS host"
 	@echo "  make approle-show-role NAME=dns1              Show role_id for a host"
 	@echo "  make approle-list                             List all AppRole roles"
 	@echo ""
@@ -34,7 +34,7 @@ approle-enable:
 
 approle-create-role:
 	@[ -n "$(NAME)" ] || (echo "ERROR: NAME required (e.g., NAME=dns1)" && exit 1)
-	@[ -n "$(IP)" ] || (echo "ERROR: IP required (e.g., IP=10.10.15.10)" && exit 1)
+	@[ -n "$(IP)" ] || (echo "ERROR: IP required (e.g., IP=10.10.15.15)" && exit 1)
 	$(call run-admin,/workspace/scripts/setup-approle.sh create-role $(NAME) $(IP))
 
 approle-show-role:
