@@ -13,7 +13,7 @@
 
   services.nsd = {
     enable = true;
-    interfaces = [ "0.0.0.0" ];
+    interfaces = [ "10.10.15.15" "127.0.0.1" ];
     port = 53;
 
     remoteControl.enable = false;
@@ -104,11 +104,12 @@
   };
 
   # --- OpenBao agent for secrets ---
-  # NOTE: This needs a new AppRole role_id bound to 10.10.15.15.
-  # For initial testing, openbao-agent can be disabled if the role doesn't exist yet.
+  # Disabled until a new AppRole is created bound to 10.10.15.15:
+  #   make openbao-approle-create-role NAME=dns1 IP=10.10.15.15
+  # Then update roleId below and set enable = true.
   homelab.openbao-agent = {
-    enable = true;
-    roleId = "bffb2f64-c53f-8ee8-7b60-72a94a5a7315";  # TODO: replace with role bound to 10.10.15.15
+    enable = false;
+    roleId = null;
     secrets = {
       cwage-password-hash = {
         path = "kv/data/infra/users/cwage";

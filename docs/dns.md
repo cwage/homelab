@@ -11,7 +11,7 @@ LAN clients → fw1 (Unbound, recursive) → dns1 (NSD, authoritative)
 
 **fw1** (10.10.15.1) runs **Unbound** as the recursive resolver for all LAN and VPN clients. DHCP hands out fw1 as the DNS server. Unbound stubs queries for `lan.quietlife.net` and `15.10.10.in-addr.arpa` to dns1; all other queries go upstream.
 
-**dns1** (10.10.15.10) runs **NSD** as the authoritative server for the `lan.quietlife.net` forward zone. It serves A records for infrastructure hosts and CNAME records for container services pointing to `containers.lan.quietlife.net`.
+**dns1** (10.10.15.15) runs **NSD** as the authoritative server for the `lan.quietlife.net` forward zone (NixOS). It serves A records for infrastructure hosts and CNAME records for container services pointing to `containers.lan.quietlife.net`.
 
 ### Zone records
 

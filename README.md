@@ -12,7 +12,7 @@ The LAN is `10.10.15.0/24` under the domain `lan.quietlife.net`. A couple of ext
 |------|----|------|
 | **pve1** | 10.10.15.18 | Proxmox VE hypervisor — runs all local VMs |
 | **fw1** | 10.10.15.1 | OpenBSD firewall/router — pf, DHCP, Unbound (recursive DNS), WireGuard VPN |
-| **dns1** | 10.10.15.10 | NSD authoritative DNS for `lan.quietlife.net` |
+| **dns1** | 10.10.15.15 | NSD authoritative DNS for `lan.quietlife.net` (NixOS) |
 | **openbao** | 10.10.15.11 | Secrets management (OpenBao, a HashiCorp Vault fork) |
 | **containers** | 10.10.15.12 | Docker host — [Traefik, Jellyfin, arr stack, Paperless, Owncast](docs/services.md), GPU passthrough |
 | **portanas** | 10.10.15.4 | Synology NAS — NFS storage backing media, documents, and [backups](backup/README.md) |
@@ -146,7 +146,7 @@ make nix-clean      # remove Docker resources and build output
 
 ```bash
 make openbao-approle-enable                              # enable AppRole auth + create nixos-host policy (one-time)
-make openbao-approle-create-role NAME=dns1 IP=10.10.15.10  # create CIDR-bound role for a NixOS host
+make openbao-approle-create-role NAME=dns1 IP=10.10.15.15  # create CIDR-bound role for a NixOS host
 make openbao-approle-show-role NAME=dns1                 # show role_id for a host
 make openbao-approle-list                                # list all AppRole roles
 make openbao-shell                                       # interactive bao CLI shell
