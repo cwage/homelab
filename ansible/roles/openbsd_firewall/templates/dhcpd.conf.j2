@@ -2,7 +2,7 @@
 # OpenBSD DHCP daemon configuration
 #
 # Static reservations below must stay in sync with DNS A records in
-# ansible/roles/nsd/templates/lan.quietlife.net.zone.j2.
+# hosts/dns1/configuration.nix (NSD zone data).
 # VMs (dns1, containers, openbao) get their IPs from cloud-init (tofu),
 # not DHCP, so they don't appear here.
 

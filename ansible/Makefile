@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover dns dns-check containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive turn turn-check backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive turn turn-check backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -57,12 +57,6 @@ nas-check: ## Dry-run NAS configuration with --check/--diff
 
 nas-discover: ## Run discovery mode to gather current NAS configuration
 	$(DC) run --rm ansible ansible-playbook playbooks/nas.yml -vv --ask-become-pass -e discovery_mode=true --tags discovery $(OPTS)
-
-dns: ## Configure DNS servers (NSD)
-	$(DC) run --rm ansible ansible-playbook playbooks/dns.yml -vv $(OPTS)
-
-dns-check: ## Dry-run DNS server configuration with --check/--diff
-	$(DC) run --rm ansible ansible-playbook playbooks/dns.yml -vv --check --diff $(OPTS)
 
 containers: ## Configure container hosts (Docker)
 	$(DC) run --rm ansible ansible-playbook playbooks/containers.yml -vv $(OPTS)

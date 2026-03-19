@@ -63,7 +63,7 @@ The `containers.yml` playbook handles:
 ## Adding a new service
 
 1. Add the service to `ansible/files/stacks/docker-compose.yml` with Traefik labels
-2. Add a DNS CNAME record in `ansible/roles/nsd/templates/lan.quietlife.net.zone.j2`
-3. Deploy DNS: `make ansible-dns`
+2. Add a DNS CNAME record in `hosts/dns1/configuration.nix` (NSD zone data)
+3. Deploy DNS: `make nix-deploy-host HOST=dns1 TARGET=10.10.15.15`
 4. Deploy containers: `make ansible-containers`
 5. (Optional) If the service needs external access, add a route in the Cloudflare Zero Trust dashboard

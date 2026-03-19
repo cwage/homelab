@@ -47,7 +47,6 @@ Hosts and groups defined in `inventories/hosts.yml`. Group variables in `invento
 |-------|-------|----------|
 | `proxmox` | pve1 | `playbooks/proxmox.yml` |
 | `openbsd_firewalls` | fw1 | `playbooks/firewall.yml` |
-| `dns_servers` | dns1 | `playbooks/dns.yml` |
 | `container_hosts` | containers | `playbooks/containers.yml` |
 | `openbao` | openbao | `playbooks/openbao.yml` |
 | `linode_vps` | felix | `playbooks/vps.yml` |
