@@ -1,6 +1,10 @@
 { config, lib, pkgs, ... }:
 
 {
+  # Manage user accounts declaratively — passwords are set from hashedPasswordFile
+  # on every activation rather than only at initial user creation
+  users.mutableUsers = false;
+
   # Deploy user (matches Ansible deploy user on Debian hosts)
   users.users.deploy = {
     isNormalUser = true;

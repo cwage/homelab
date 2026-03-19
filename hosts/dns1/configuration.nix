@@ -110,12 +110,9 @@
   };
 
   # --- OpenBao agent for secrets ---
-  # Disabled until a new AppRole is created bound to 10.10.15.15:
-  #   make openbao-approle-create-role NAME=dns1 IP=10.10.15.15
-  # Then update roleId below and set enable = true.
   homelab.openbao-agent = {
-    enable = false;
-    roleId = null;
+    enable = true;
+    roleId = "bffb2f64-c53f-8ee8-7b60-72a94a5a7315";
     secrets = {
       cwage-password-hash = {
         path = "kv/data/infra/users/cwage";
