@@ -1,5 +1,6 @@
 FROM nixos/nix:2.34.1
 
+# filter-syscalls: seccomp filtering breaks Nix builds inside Docker
 RUN mkdir -p /etc/nix && \
     echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf && \
     echo "filter-syscalls = false" >> /etc/nix/nix.conf && \

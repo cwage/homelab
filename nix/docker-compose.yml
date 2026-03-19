@@ -4,7 +4,6 @@ services:
       context: .
       dockerfile: Dockerfile
     image: homelab-nix:latest
-    container_name: homelab-nix
     working_dir: /workspace
     volumes:
       # Repo root (flake.nix lives here)
