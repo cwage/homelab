@@ -6,8 +6,8 @@ output "debian_bookworm_cloud_image_file_id" {
 # Hardcoded to match cloud-init config — these IPs are predetermined,
 # not dynamically assigned.
 output "dns1_ip" {
-  description = "IP address of dns1 VM"
-  value       = "10.10.15.10"
+  description = "IP address of dns1 VM (NixOS)"
+  value       = "10.10.15.15"
 }
 
 output "containers_ip" {

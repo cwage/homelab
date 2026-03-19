@@ -1,15 +1,14 @@
-# DNS server VM - NSD authoritative for lan.quietlife.net
-# See docs/dns.md for architecture details
+# DNS server VM — NixOS with NSD authoritative for lan.quietlife.net
 
 resource "proxmox_virtual_environment_vm" "dns1" {
   name      = "dns1"
   node_name = var.pm_node_name
-  vm_id     = 101
+  vm_id     = 150
 
-  description = "NSD authoritative DNS for lan.quietlife.net"
+  description = "NSD authoritative DNS for lan.quietlife.net (NixOS)"
 
   clone {
-    vm_id = var.pm_template_id
+    vm_id = var.pm_nixos_template_id
   }
 
   cpu {
@@ -23,7 +22,7 @@ resource "proxmox_virtual_environment_vm" "dns1" {
 
   disk {
     datastore_id = var.pm_vm_datastore_id
-    interface    = "scsi0"
+    interface    = "virtio0"
     size         = 8
   }
 
@@ -36,7 +35,7 @@ resource "proxmox_virtual_environment_vm" "dns1" {
 
     ip_config {
       ipv4 {
-        address = "10.10.15.10/24"
+        address = "10.10.15.15/24"
         gateway = "10.10.15.1"
       }
     }
@@ -56,9 +55,8 @@ resource "proxmox_virtual_environment_vm" "dns1" {
     enabled = true
   }
 
-  boot_order = ["scsi0"]
+  boot_order = ["virtio0"]
 
-  # Prevent Tofu from recreating the VM when cloud-init config drifts
   lifecycle {
     ignore_changes = [initialization]
   }
