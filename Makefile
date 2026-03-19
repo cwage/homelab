@@ -10,7 +10,7 @@ ANSIBLE_TARGETS := help init build galaxy version ping access_check proxmox prox
 TOFU_TARGETS := help build shell init plan apply destroy fmt validate trufflehog clean
 LEGO_TARGETS := help run renew renew-staging renew-force list show fetch-creds store retrieve
 BACKUP_TARGETS := help build shell clean local local-dry b2 b2-dry
-NIX_TARGETS := help build shell template deploy clean
+NIX_TARGETS := help build shell template deploy clean clean-all
 TRUFFLEHOG_ARGS ?= filesystem /repo --fail --no-update --exclude-paths /repo/.trufflehog-exclude.txt
 
 .DEFAULT_GOAL := help

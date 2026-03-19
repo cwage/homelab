@@ -1,4 +1,4 @@
-.PHONY: help build shell template deploy clean
+.PHONY: help build shell template deploy clean clean-all
 
 DC := docker compose --env-file ../.env
 VMA_FILE := vzdump-qemu-nixos-template.vma.zst
@@ -9,6 +9,9 @@ SSH_KEY := ../ansible/keys/deploy
 SSH_USER := deploy
 SSH_OPTS := -i $(SSH_KEY) -o StrictHostKeyChecking=accept-new
 
+# Use KVM-accelerated service if /dev/kvm exists, otherwise fall back to TCG
+NIX_SVC := $(if $(wildcard /dev/kvm),nix-kvm,nix)
+
 help:
 	@echo "homelab-nix - NixOS image builder"
 	@echo ""
@@ -17,7 +20,8 @@ help:
 	@echo "  shell     - Open interactive shell in Nix container"
 	@echo "  template  - Build the NixOS Proxmox VMA template image"
 	@echo "  deploy    - Upload VMA to Proxmox, restore as VM, convert to template"
-	@echo "  clean     - Remove Docker resources and build output"
+	@echo "  clean     - Remove Docker resources and build output (keeps Nix store cache)"
+	@echo "  clean-all - Remove everything including Nix store cache volume"
 
 build:
 	$(DC) build
@@ -27,7 +31,7 @@ shell:
 
 template:
 	@mkdir -p output
-	$(DC) run --rm --entrypoint bash nix /workspace/nix/build.sh
+	$(DC) run --rm --entrypoint bash $(NIX_SVC) /workspace/nix/build.sh
 
 deploy: output/$(VMA_FILE)
 	scp $(SSH_OPTS) output/$(VMA_FILE) $(SSH_USER)@$(PVE_HOST):/tmp/$(VMA_FILE)
@@ -45,3 +49,6 @@ clean:
 	$(DC) down
 	docker rmi homelab-nix:latest 2>/dev/null || true
 	rm -rf output/
+
+clean-all: clean
+	docker volume rm nix_nix-store 2>/dev/null || true
