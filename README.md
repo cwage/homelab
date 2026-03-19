@@ -22,14 +22,14 @@ The LAN is `10.10.15.0/24` under the domain `lan.quietlife.net`. A couple of ext
 ### Two-layer IaC
 
 ```
-OpenTofu (tofu/)              Ansible (ansible/)
-─────────────────             ──────────────────
-Provisions VMs on Proxmox  →  Configures hosts: packages,
-(cpu, memory, disk, network,  users, firewall rules, DNS,
-cloud-init, GPU passthrough)  services, Docker stacks, certs
+OpenTofu (tofu/)              Ansible (ansible/)            NixOS (flake.nix, modules/)
+─────────────────             ──────────────────            ───────────────────────────
+Provisions VMs on Proxmox  →  Configures hosts: packages,  Declarative host config for
+(cpu, memory, disk, network,  users, firewall rules, DNS,  Proxmox VMs (replaces Ansible
+cloud-init, GPU passthrough)  services, Docker stacks       for NixOS hosts over time)
 ```
 
-OpenTofu creates the VMs, Ansible configures everything that runs on them. Both have Makefiles that run all commands inside Docker containers, so the workflow is the same regardless of what workstation you're on.
+OpenTofu creates the VMs, Ansible configures everything that runs on them. NixOS configurations (built via a Dockerized Nix builder) are being introduced for Proxmox VMs, starting with a base template. All three stacks have Makefiles that run all commands inside Docker containers, so the workflow is the same regardless of what workstation you're on.
 
 ### Secrets and TLS
 
@@ -42,6 +42,9 @@ NAS data is backed up to Backblaze B2 via a Dockerized rclone container with enc
 ## Repository layout
 
 ```
+├── flake.nix         NixOS entry point — host definitions and image builds
+├── modules/          Shared NixOS modules (base config, future per-service modules)
+├── nix/              Dockerized Nix builder for Proxmox VMA images
 ├── ansible/          Host configuration (roles, playbooks, inventories)
 │   ├── playbooks/    Per-host-group playbooks (firewall.yml, dns.yml, etc.)
 │   ├── roles/        Reusable roles (openbsd_firewall, docker_host, nsd, etc.)
@@ -124,6 +127,16 @@ make ansible-run PLAY=playbooks/firewall.yml LIMIT=fw1 OPTS="--check --diff"
 make tofu-plan       # show what Tofu would change
 make tofu-apply      # apply changes (create/modify VMs)
 make tofu-shell      # interactive shell in Tofu container
+```
+
+### NixOS (Proxmox image builder)
+
+```bash
+make nix-build      # build the Nix Docker image
+make nix-template   # build NixOS Proxmox VMA template image (outputs to nix/output/)
+make nix-deploy     # upload VMA to Proxmox, restore as VMID 9001, convert to template
+make nix-shell      # interactive shell in Nix container
+make nix-clean      # remove Docker resources and build output
 ```
 
 ### Security scanning

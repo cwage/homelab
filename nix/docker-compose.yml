@@ -1,0 +1,25 @@
+services:
+  nix:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: homelab-nix:latest
+    container_name: homelab-nix
+    working_dir: /workspace
+    volumes:
+      # Repo root (flake.nix lives here)
+      - ..:/workspace
+      # Persist Nix store between builds
+      - nix-store:/nix
+      # Build output
+      - ./output:/output
+    devices:
+      - /dev/kvm:/dev/kvm
+    group_add:
+      - ${KVM_GID:-109}
+    environment:
+      - OUTPUT_UID=${UID:-1000}
+      - OUTPUT_GID=${GID:-1000}
+
+volumes:
+  nix-store:

@@ -3,5 +3,10 @@
 **/.env.*
 !**/.env.example
 
+# Nix build output
+nix/output/
+result
+result-*
+
 # Backup logs
 backup/logs/

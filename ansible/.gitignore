@@ -14,6 +14,7 @@ venv/
 # Keys (keep directory, ignore contents)
 keys/*
 !keys/.gitkeep
+!keys/deploy.pub
 
 # Local Ansible runtime artifacts
 .ansible/

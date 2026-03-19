@@ -37,3 +37,9 @@ variable "pm_template_id" {
   type        = number
   default     = 9000 # debian12-cloud template
 }
+
+variable "pm_nixos_template_id" {
+  description = "NixOS VM template ID to clone from (built by nix/Makefile)"
+  type        = number
+  default     = 9001 # nixos-template
+}
