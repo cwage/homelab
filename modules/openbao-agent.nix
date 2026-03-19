@@ -4,6 +4,11 @@ let
   cfg = config.homelab.openbao-agent;
 
   # Generate agent config HCL from module options
+  # Collect unique parent directories of all secret destinations
+  secretDirs = lib.unique (lib.mapAttrsToList
+    (_: secret: builtins.dirOf secret.destination)
+    cfg.secrets);
+
   agentConfig = ''
     vault {
       address = "${cfg.address}"
@@ -101,9 +106,8 @@ in
     # secrets available before the agent reconnects on next boot)
     systemd.tmpfiles.rules = [
       "d /etc/openbao 0750 root root -"
-      "d /etc/secrets 0750 root root -"
       "d /run/openbao-agent 0750 root root -"
-    ];
+    ] ++ map (dir: "d ${dir} 0750 root root -") secretDirs;
 
     # Write role_id if provided in config (not secret with CIDR binding)
     environment.etc."openbao/role_id" = lib.mkIf (cfg.roleId != null) {
@@ -136,10 +140,7 @@ in
         RestartSec = "5s";
         # Hardening
         ProtectSystem = "strict";
-        ReadWritePaths = [
-          "/run/openbao-agent"
-          "/etc/secrets"
-        ];
+        ReadWritePaths = [ "/run/openbao-agent" ] ++ secretDirs;
         ProtectHome = true;
         NoNewPrivileges = true;
       };
