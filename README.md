@@ -43,8 +43,10 @@ NAS data is backed up to Backblaze B2 via a Dockerized rclone container with enc
 
 ```
 ├── flake.nix         NixOS entry point — host definitions and image builds
-├── modules/          Shared NixOS modules (base config, future per-service modules)
+├── hosts/            Per-host NixOS configurations
+├── modules/          Shared NixOS modules (base config, openbao-agent, etc.)
 ├── nix/              Dockerized Nix builder for Proxmox VMA images
+├── openbao/          Dockerized OpenBao CLI tooling (AppRole management)
 ├── ansible/          Host configuration (roles, playbooks, inventories)
 │   ├── playbooks/    Per-host-group playbooks (firewall.yml, dns.yml, etc.)
 │   ├── roles/        Reusable roles (openbsd_firewall, docker_host, nsd, etc.)
@@ -129,14 +131,25 @@ make tofu-apply      # apply changes (create/modify VMs)
 make tofu-shell      # interactive shell in Tofu container
 ```
 
-### NixOS (Proxmox image builder)
+### NixOS (Proxmox image builder and host deployment)
 
 ```bash
 make nix-build      # build the Nix Docker image
 make nix-template   # build NixOS Proxmox VMA template image (outputs to nix/output/)
 make nix-deploy     # upload VMA to Proxmox, restore as VMID 9001, convert to template
+make nix-deploy-host HOST=<name> [TARGET=<ip>]  # build and deploy NixOS config to a remote host
 make nix-shell      # interactive shell in Nix container
 make nix-clean      # remove Docker resources and build output
+```
+
+### OpenBao (secrets management CLI)
+
+```bash
+make openbao-approle-enable                              # enable AppRole auth + create nixos-host policy (one-time)
+make openbao-approle-create-role NAME=dns1 IP=10.10.15.10  # create CIDR-bound role for a NixOS host
+make openbao-approle-show-role NAME=dns1                 # show role_id for a host
+make openbao-approle-list                                # list all AppRole roles
+make openbao-shell                                       # interactive bao CLI shell
 ```
 
 ### Security scanning
@@ -171,4 +184,5 @@ make install-precommit-hook  # install trufflehog pre-commit hook
 | [backup/README.md](backup/README.md) | NAS → Backblaze B2 backup system |
 | [ansible/README.md](ansible/README.md) | Ansible-specific setup and workflow |
 | [ansible/roles/wireguard_server/README.md](ansible/roles/wireguard_server/README.md) | WireGuard VPN setup and client configuration |
+| [docs/nixos-migration.md](docs/nixos-migration.md) | NixOS migration: pipeline, AppRole secrets, per-host walkthrough |
 | [tofu/README.md](tofu/README.md) | OpenTofu-specific setup and workflow |

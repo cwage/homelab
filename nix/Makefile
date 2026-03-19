@@ -1,4 +1,4 @@
-.PHONY: help build shell template deploy clean clean-all
+.PHONY: help build shell template deploy deploy-host clean clean-all
 
 DC := docker compose --env-file ../.env
 VMA_FILE := vzdump-qemu-nixos-template.vma.zst
@@ -20,6 +20,7 @@ help:
 	@echo "  shell     - Open interactive shell in Nix container"
 	@echo "  template  - Build the NixOS Proxmox VMA template image"
 	@echo "  deploy    - Upload VMA to Proxmox, restore as VM, convert to template"
+	@echo "  deploy-host HOST=<name> [TARGET=<ip>] - Build and deploy NixOS config to a remote host"
 	@echo "  clean     - Remove Docker resources and build output (keeps Nix store cache)"
 	@echo "  clean-all - Remove everything including Nix store cache volume"
 
@@ -40,6 +41,14 @@ deploy: output/$(VMA_FILE)
 	ssh $(SSH_OPTS) $(SSH_USER)@$(PVE_HOST) sudo qm template $(TEMPLATE_VMID)
 	@echo ""
 	@echo "Template $(TEMPLATE_VMID) created on $(PVE_HOST)"
+
+deploy-host:
+	@[ -n "$(HOST)" ] || (echo "ERROR: HOST required (e.g., HOST=nixos-test)" && exit 1)
+	@[ -f "$(SSH_KEY)" ] || (echo "ERROR: Deploy key not found at $(SSH_KEY)" && exit 1)
+	$(DC) run --rm --entrypoint bash \
+		-v $(abspath $(SSH_KEY)):/root/.ssh/deploy:ro \
+		-e DEPLOY_TARGET=$(or $(TARGET),$(HOST)) \
+		$(NIX_SVC) /workspace/nix/deploy.sh $(HOST)
 
 output/$(VMA_FILE):
 	@echo "No VMA image found. Run 'make template' first."

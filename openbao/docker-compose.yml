@@ -1,0 +1,11 @@
+services:
+  bao:
+    image: openbao/openbao:2.4.4
+    entrypoint: /bin/sh
+    working_dir: /workspace
+    environment:
+      - BAO_ADDR=${BAO_ADDR}
+      - BAO_TOKEN=${BAO_TOKEN}
+      - BAO_SKIP_VERIFY=${BAO_SKIP_VERIFY:-true}
+    volumes:
+      - ./scripts:/workspace/scripts:ro
