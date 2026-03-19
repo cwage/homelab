@@ -26,7 +26,6 @@ Two separate key directories:
 make ping                     # test connectivity
 make firewall                 # configure fw1 (pf, DHCP, Unbound, WireGuard)
 make firewall-check           # dry-run firewall
-make dns                      # configure dns1 (NSD)
 make containers               # configure containers host (Docker, GPU, certs, stacks)
 make proxmox                  # configure pve1 (users, NFS mounts)
 make felix                    # configure VPS
@@ -61,7 +60,6 @@ Hosts and groups defined in `inventories/hosts.yml`. Group variables in `invento
 | `users` | System users, SSH keys, sudo, home directories |
 | `openbsd_firewall` | pf, dhcpd, unbound, resolv.conf (OpenBSD, raw module) |
 | `wireguard_server` | WireGuard VPN on OpenBSD |
-| `nsd` | NSD authoritative DNS server |
 | `docker_host` | Docker + Compose installation |
 | `gpu_passthrough` | VFIO/IOMMU on Proxmox for PCI passthrough |
 | `nvidia_container` | NVIDIA driver + container toolkit |

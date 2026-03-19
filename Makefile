@@ -7,7 +7,7 @@ BACKUP_DIR := backup
 NIX_DIR := nix
 OPENBAO_DIR := openbao
 
-ANSIBLE_TARGETS := help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check turn turn-check backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog
+ANSIBLE_TARGETS := help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check containers containers-check openbao openbao-check openbao-test felix felix-check gaming gaming-check gaming-configs gaming-archive turn turn-check backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 TOFU_TARGETS := help build shell init plan apply destroy fmt validate trufflehog clean
 LEGO_TARGETS := help run renew renew-staging renew-force list show fetch-creds store retrieve
 BACKUP_TARGETS := help build shell clean local local-dry b2 b2-dry
@@ -23,7 +23,8 @@ help:
 	@echo "homelab monorepo"
 	@echo ""
 	@echo "Use namespaced targets to drive component Makefiles:"
-	@echo "  make ansible-<target>   (targets: $(ANSIBLE_TARGETS))"
+	@echo "  make ansible-<target>   (common: $(ANSIBLE_TARGETS))"
+	@echo "                          Run 'make ansible-help' for the full list."
 	@echo "  make tofu-<target>      (targets: $(TOFU_TARGETS))"
 	@echo "  make lego-<target>      (targets: $(LEGO_TARGETS))"
 	@echo "  make backup-<target>    (targets: $(BACKUP_TARGETS))"
