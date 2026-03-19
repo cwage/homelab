@@ -112,6 +112,7 @@
   # --- OpenBao agent for secrets ---
   homelab.openbao-agent = {
     enable = true;
+    tlsSkipVerify = false;
     roleId = "bffb2f64-c53f-8ee8-7b60-72a94a5a7315";
     secrets = {
       cwage-password-hash = {
