@@ -48,8 +48,8 @@ NAS data is backed up to Backblaze B2 via a Dockerized rclone container with enc
 ├── nix/              Dockerized Nix builder for Proxmox VMA images
 ├── openbao/          Dockerized OpenBao CLI tooling (AppRole management)
 ├── ansible/          Host configuration (roles, playbooks, inventories)
-│   ├── playbooks/    Per-host-group playbooks (firewall.yml, dns.yml, etc.)
-│   ├── roles/        Reusable roles (openbsd_firewall, docker_host, nsd, etc.)
+│   ├── playbooks/    Per-host-group playbooks (firewall.yml, containers.yml, etc.)
+│   ├── roles/        Reusable roles (openbsd_firewall, docker_host, etc.)
 │   └── inventories/  Host definitions and group variables
 ├── tofu/             OpenTofu VM definitions for Proxmox
 ├── backup/           Dockerized NAS → Backblaze B2 backup tooling
@@ -112,7 +112,6 @@ Use `make ansible-help` and `make tofu-help` to list all available targets.
 make ansible-ping             # test connectivity to all hosts
 make ansible-firewall         # apply firewall config (pf, DHCP, Unbound, WireGuard)
 make ansible-firewall-check   # dry-run firewall
-make ansible-dns              # apply NSD authoritative DNS config
 make ansible-containers       # configure Docker host (packages, GPU, certs, stacks)
 make ansible-proxmox          # configure Proxmox host (users, NFS mounts)
 make ansible-felix            # configure Linode VPS

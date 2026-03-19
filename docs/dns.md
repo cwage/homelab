@@ -15,18 +15,19 @@ LAN clients → fw1 (Unbound, recursive) → dns1 (NSD, authoritative)
 
 ### Zone records
 
-Managed in `ansible/roles/nsd/templates/lan.quietlife.net.zone.j2`. Current records include:
+Managed inline in `hosts/dns1/configuration.nix` (NixOS NSD config). Current records include:
 
 - A records for infrastructure: fw1, dns1, pve1, containers, portanas, bao, etc.
 - CNAMEs for services: jellyfin, radarr, sonarr, sabnzbd, paperless, owncast, traefik — all pointing to `containers`
 - Convenience aliases: `firewall` → fw1, `nas` → portanas, `proxmox` → pve1
 
-### Deployment
+### Adding or changing DNS records
 
-```bash
-make ansible-dns              # deploy NSD zone and config to dns1
-make ansible-firewall         # deploy Unbound/DHCP config to fw1
-```
+1. Edit zone data in `hosts/dns1/configuration.nix` (forward and/or reverse zone)
+2. Bump the serial number in each zone you modified (format: `YYYYMMDDNN`) — forward and reverse zones have separate serials
+3. Deploy: `make nix-deploy-host HOST=dns1 TARGET=10.10.15.15`
+
+Unbound/DHCP config on fw1 is still Ansible-managed: `make ansible-firewall`
 
 ## External: `quietlife.net`
 

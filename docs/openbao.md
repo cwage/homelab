@@ -20,8 +20,8 @@ make tofu-apply
 # 2. Wait for VM to boot (~1-2 min), then verify connectivity
 make ansible-ping LIMIT=openbao
 
-# 3. Deploy DNS record (optional, if not already done)
-make ansible-dns
+# 3. Add DNS record if needed (edit hosts/dns1/configuration.nix, then deploy)
+make nix-deploy-host HOST=dns1 TARGET=10.10.15.15
 
 # 4. Install and configure OpenBao
 make ansible-openbao

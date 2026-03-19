@@ -75,74 +75,39 @@ make tofu-apply   # Create the VM
 
 The VM will boot, run cloud-init, and be reachable via SSH as the `deploy` user.
 
-## Step 3: Add VM to Ansible inventory
+## Step 3: Configure the VM
 
-Edit `ansible/inventories/hosts.yml` to add the new host:
+There are two paths depending on whether the VM runs NixOS or Debian:
 
-```yaml
-dns_servers:
-  hosts:
-    dns1:
-      ansible_host: 10.10.15.15
-```
+### NixOS path (preferred for new VMs)
 
-If the VM needs host-specific variables, create `ansible/inventories/host_vars/dns1.yml`.
+1. Create `hosts/<hostname>/configuration.nix` with the host config
+2. Add a `nixosConfigurations.<hostname>` entry in `flake.nix`
+3. `git add` the new files (Nix flakes require tracked files)
+4. Deploy: `make nix-deploy-host HOST=<hostname> TARGET=<ip>`
 
-If the group is new, create `ansible/inventories/group_vars/dns_servers.yml` for shared config.
+For secrets delivery, create an AppRole: `make openbao-approle-create-role NAME=<hostname> IP=<ip>`, then set `roleId` in the host config and enable `homelab.openbao-agent`.
+
+### Ansible path (for non-NixOS hosts)
+
+1. Add host to `ansible/inventories/hosts.yml`
+2. Create roles and a playbook under `ansible/playbooks/`
+3. Add Makefile targets in `ansible/Makefile`
+4. Run: `make ansible-<target>`
 
 ## Step 4: Verify connectivity
 
 ```bash
-make ansible-ping LIMIT=dns1
+# NixOS hosts
+ssh deploy@<ip> hostname
+
+# Ansible-managed hosts
+make ansible-ping LIMIT=<hostname>
 ```
 
 If this fails, wait for cloud-init to complete (can take 30-60 seconds after first boot).
 
-## Step 5: Create or assign roles
-
-For a new VM type, you may need to create a new role under `ansible/roles/`. For common configurations, existing roles can be reused:
-
-- `users` - Deploy user, SSH keys, sudo config
-- `packages` - System packages
-- `system` - Hostname, /etc/hosts, SSH settings
-- `nfs_mounts` - Mount NFS shares from NAS
-
-## Step 6: Create a playbook (if needed)
-
-For a new host group, add a playbook in `ansible/playbooks/`:
-
-```yaml
-# ansible/playbooks/dns.yml
----
-- name: Configure DNS servers
-  hosts: dns_servers
-  become: true
-  roles:
-    - users
-    - packages
-    - nsd  # purpose-specific role
-```
-
-## Step 7: Add Makefile target (if needed)
-
-Add targets to `ansible/Makefile` for the new playbook:
-
-```makefile
-dns: ## Apply DNS server configuration
-	$(COMPOSE) run --rm ansible ansible-playbook playbooks/dns.yml
-
-dns-check: ## Dry-run DNS server configuration
-	$(COMPOSE) run --rm ansible ansible-playbook playbooks/dns.yml --check --diff
-```
-
-## Step 8: Run the playbook
-
-```bash
-make ansible-dns-check  # Dry-run first
-make ansible-dns        # Apply configuration
-```
-
-## Step 9: Update dependent systems (if needed)
+## Step 5: Update dependent systems (if needed)
 
 Some VMs require updates to other hosts. For example, a DNS server would need:
 
@@ -154,37 +119,35 @@ make ansible-firewall-check
 make ansible-firewall
 ```
 
-## Complete example: deploying dns1
+## Complete example: deploying dns1 (NixOS)
 
 ```bash
-# 1. Ensure base infrastructure exists
-make tofu-apply           # Cloud image downloaded
-make ansible-templates    # VM template built
+# 1. Ensure NixOS template exists on Proxmox
+make nix-template         # Build VMA image
+make nix-deploy           # Upload to Proxmox as template 9001
 
-# 2. Add dns1 resource to tofu/dns.tf (manual edit)
+# 2. Add dns1 resource to tofu/dns1.tf (manual edit, clone from NixOS template)
 
 # 3. Provision the VM
 make tofu-plan
 make tofu-apply
 
-# 4. Add dns1 to ansible inventory (manual edit)
-#    - inventories/hosts.yml
-#    - inventories/group_vars/dns_servers.yml
-#    - inventories/host_vars/dns1.yml (if needed)
+# 4. Create NixOS host config
+#    - hosts/dns1/configuration.nix (NSD zones, services, etc.)
+#    - Add nixosConfigurations.dns1 to flake.nix
+#    - git add the new files
 
-# 5. Create the nsd role and dns playbook (manual, one-time)
-#    - roles/nsd/
-#    - playbooks/dns.yml
+# 5. Deploy NixOS config
+make nix-deploy-host HOST=dns1 TARGET=10.10.15.15
 
-# 6. Add Makefile targets (manual, one-time)
-#    - dns, dns-check
+# 6. Set up secrets delivery (optional)
+make openbao-approle-create-role NAME=dns1 IP=10.10.15.15
+#    Update roleId in configuration.nix, redeploy
 
-# 7. Verify and configure
-make ansible-ping LIMIT=dns1
-make ansible-dns-check
-make ansible-dns
+# 7. Add DNS record for the new host (edit hosts/dns1/configuration.nix zone data)
+make nix-deploy-host HOST=dns1 TARGET=10.10.15.15
 
-# 8. Update firewall to use new DNS
+# 8. Update firewall if needed (e.g., Unbound stub-zones, DHCP)
 make ansible-firewall-check
 make ansible-firewall
 ```
