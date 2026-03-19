@@ -1,0 +1,29 @@
+services:
+  nix:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: homelab-nix:latest
+    working_dir: /workspace
+    volumes:
+      # Repo root (flake.nix lives here)
+      - ..:/workspace
+      # Persist Nix store between builds
+      - nix-store:/nix
+      # Build output
+      - ./output:/output
+    environment:
+      - OUTPUT_UID=${UID:-1000}
+      - OUTPUT_GID=${GID:-1000}
+
+  # Same as nix, but with KVM acceleration for VMA image builds
+  nix-kvm:
+    extends:
+      service: nix
+    devices:
+      - /dev/kvm:/dev/kvm
+    group_add:
+      - ${KVM_GID:-109}
+
+volumes:
+  nix-store:
