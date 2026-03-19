@@ -24,7 +24,7 @@ Managed inline in `hosts/dns1/configuration.nix` (NixOS NSD config). Current rec
 ### Adding or changing DNS records
 
 1. Edit zone data in `hosts/dns1/configuration.nix` (forward and/or reverse zone)
-2. Bump the serial number (format: `YYYYMMDDNN`)
+2. Bump the serial number in each zone you modified (format: `YYYYMMDDNN`) — forward and reverse zones have separate serials
 3. Deploy: `make nix-deploy-host HOST=dns1 TARGET=10.10.15.15`
 
 Unbound/DHCP config on fw1 is still Ansible-managed: `make ansible-firewall`

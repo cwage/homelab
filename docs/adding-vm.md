@@ -107,7 +107,7 @@ make ansible-ping LIMIT=<hostname>
 
 If this fails, wait for cloud-init to complete (can take 30-60 seconds after first boot).
 
-## Step 9: Update dependent systems (if needed)
+## Step 5: Update dependent systems (if needed)
 
 Some VMs require updates to other hosts. For example, a DNS server would need:
 
