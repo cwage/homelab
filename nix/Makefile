@@ -50,5 +50,7 @@ clean:
 	docker rmi homelab-nix:latest 2>/dev/null || true
 	rm -rf output/
 
-clean-all: clean
-	docker volume rm nix_nix-store 2>/dev/null || true
+clean-all:
+	$(DC) down -v
+	docker rmi homelab-nix:latest 2>/dev/null || true
+	rm -rf output/
