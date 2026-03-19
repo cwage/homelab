@@ -10,6 +10,18 @@
     ];
   };
 
+  # cwage user — password hash delivered by openbao-agent to /etc/secrets/
+  users.users.cwage = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    hashedPasswordFile = "/etc/secrets/cwage-password-hash";
+    openssh.authorizedKeys.keyFiles = [
+      ../ansible/inventories/keys/cwage-portaplotz.pub
+      ../ansible/inventories/keys/cwage-portaptty.pub
+      ../ansible/inventories/keys/cwage-shot.pub
+    ];
+  };
+
   # Passwordless sudo for deploy user (matches Ansible sudoers config)
   security.sudo.extraRules = [
     {
@@ -50,6 +62,9 @@
 
   # Enable nix flakes on the resulting host
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Allow deploy user to push store paths without signatures (for remote deploys)
+  nix.settings.trusted-users = [ "root" "deploy" ];
 
   # Firewall disabled — pf on fw1 handles LAN firewalling
   networking.firewall.enable = lib.mkDefault false;
