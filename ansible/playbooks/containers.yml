@@ -249,6 +249,29 @@
             mattermost_db:
               password: ""
 
+    - name: Retrieve nash-services GitHub token from OpenBao
+      block:
+        - name: Fetch nash-services GitHub token from OpenBao
+          ansible.builtin.set_fact:
+            nash_services_github: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                              'infra/nash-services/github',
+                              engine_mount_point='kv',
+                              url=openbao_addr,
+                              token=openbao_token,
+                              validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+      rescue:
+        - name: Warn if nash-services GitHub token not found (non-fatal)
+          ansible.builtin.debug:
+            msg: >
+              nash-services GitHub token not found in OpenBao at kv/infra/nash-services/github.
+              Bug report feature will not work without a GitHub PAT.
+              Store with: bao kv put kv/infra/nash-services/github token=<YOUR_PAT>
+        - name: Set empty GitHub token
+          ansible.builtin.set_fact:
+            nash_services_github:
+              token: ""
+
     - name: Deploy stacks environment file
       ansible.builtin.copy:
         content: |
@@ -259,6 +282,7 @@
           STATICOMMENT_ALLOWED_ORIGINS=https://quietlife.net
           MM_DB_PASSWORD={{ mattermost_db.password | default('') }}
           COTURN_AUTH_SECRET={{ coturn_auth.secret | default('') }}
+          NASH_SERVICES_GITHUB_TOKEN={{ nash_services_github.token | default('') }}
         dest: /opt/stacks/.env
         owner: deploy
         group: deploy

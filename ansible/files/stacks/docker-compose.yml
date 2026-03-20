@@ -240,13 +240,14 @@ services:
       - proxy
 
   nash-services:
-    image: ghcr.io/cwage/nash-services:0.9.0
+    image: ghcr.io/cwage/nash-services:0.10.1
     container_name: nash-services
     restart: unless-stopped
     user: "${UID:-1000}:${GID:-1000}"
     environment:
       - PYTHONUNBUFFERED=1
       - DISPATCH_CACHE_DB=/data/service_cache.db
+      - GITHUB_TOKEN=${NASH_SERVICES_GITHUB_TOKEN:-}
     volumes:
       - nash_services_cache:/data
     labels:
