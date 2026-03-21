@@ -35,3 +35,4 @@ managed_users:
     ssh_pubkey_files:
       - "inventories/keys/cwage-portaplotz.pub"
       - "inventories/keys/cwage-portaptty.pub"
+      - "inventories/keys/cwage-thinkpad.pub"
