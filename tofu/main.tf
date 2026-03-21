@@ -10,7 +10,26 @@ terraform {
       source  = "bpg/proxmox"
       version = "~> 0.69"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 4.0"
+    }
+    vault = {
+      source  = "hashicorp/vault"
+      version = "~> 4.0"
+    }
   }
+}
+
+# OpenBao (Vault-compatible) for secret retrieval
+provider "vault" {
+  # Reads VAULT_ADDR and VAULT_TOKEN from environment
+  # (mapped from BAO_ADDR/BAO_TOKEN in docker-compose.yml)
+  skip_child_token = true
+}
+
+provider "cloudflare" {
+  api_token = data.vault_kv_secret_v2.cloudflare_tofu.data["api_token"]
 }
 
 provider "proxmox" {

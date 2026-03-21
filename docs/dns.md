@@ -29,15 +29,51 @@ Managed inline in `hosts/dns1/configuration.nix` (NixOS NSD config). Current rec
 
 Unbound/DHCP config on fw1 is still Ansible-managed: `make ansible-firewall`
 
-## External: `quietlife.net`
+## External: Cloudflare
 
-The public `quietlife.net` zone is hosted on **Cloudflare**. This serves two purposes:
+Public DNS zones (including `quietlife.net`) are hosted on **Cloudflare**. External access to internal services (Jellyfin, Owncast) is provided via a **Cloudflare Tunnel** rather than exposing ports — see [docs/services.md](services.md).
 
-1. **Public DNS** for any external-facing records
-2. **DNS-01 ACME challenges** for Let's Encrypt wildcard certificate (`*.lan.quietlife.net`). The `lego/` tooling uses the Cloudflare API to create TXT records for validation. See [docs/tls-certificates.md](tls-certificates.md).
+### OpenTofu-managed DNS records
 
-External access to internal services (Jellyfin, Owncast) is provided via a **Cloudflare Tunnel** rather than exposing ports — see [docs/services.md](services.md).
+Individual Cloudflare DNS records can be managed via OpenTofu (`tofu/cloudflare.tf`). The Cloudflare provider authenticates using an API token fetched from OpenBao at plan/apply time — no credentials in `.env` beyond the existing `BAO_ADDR`/`BAO_TOKEN`.
+
+**How it works**: Each `cloudflare_record` resource in Tofu manages a single DNS record. Records not defined in Tofu are left untouched — you can continue editing those in the Cloudflare dashboard. However, once a record is managed by Tofu, dashboard edits to that record will show as drift on the next `tofu plan`.
+
+**Adding a DNS record**:
+
+1. Ensure the zone has a `data "cloudflare_zone"` lookup in `tofu/cloudflare.tf`
+2. Add a `cloudflare_record` resource:
+   ```hcl
+   resource "cloudflare_record" "example" {
+     zone_id = data.cloudflare_zone.quietlife.id
+     name    = "example"
+     value   = "1.2.3.4"
+     type    = "A"
+     proxied = false
+   }
+   ```
+3. Run `make tofu-plan` to preview, `make tofu-apply` to create
+
+**Importing existing records**: If you want Tofu to manage a record that already exists in Cloudflare, use `cf-terraforming` to generate the HCL and import commands, or manually `tofu import` the record. Only import records you intend to manage going forward.
+
+### Cloudflare Tunnel
+
+The `cloudflared` container runs on the containers host and provides external access to selected services without exposing ports. The tunnel token is stored in OpenBao at `kv/infra/cloudflare/tunnel`. See [docs/services.md](services.md) for details.
+
+Tunnel ingress routes (which hostnames map to which internal services) can be managed via OpenTofu using `cloudflare_tunnel_config` resources; the Cloudflare provider and credentials are in place, but no tunnel resources are defined in Tofu yet. Currently, all routes are configured in the Cloudflare Zero Trust dashboard.
+
+### DNS-01 ACME challenges
+
+The `lego/` tooling uses a separate Cloudflare API token (stored at `kv/infra/cloudflare`) to create TXT records for Let's Encrypt wildcard certificate validation (`*.lan.quietlife.net`). See [docs/tls-certificates.md](tls-certificates.md).
 
 ### Cloudflare API credentials
 
-Stored in OpenBao at `kv/infra/cloudflare`. The API token requires `Zone:DNS:Edit` and `Zone:Zone:Read` permissions. Used by the lego ACME client for cert renewal.
+Three tokens are stored in OpenBao for different purposes:
+
+| OpenBao path | Fields | Used by |
+|-------------|--------|---------|
+| `kv/infra/cloudflare` | `api_token`, `zone_id` | lego ACME client (cert renewal) |
+| `kv/infra/cloudflare/tunnel` | `token` | cloudflared container (tunnel runtime) |
+| `kv/infra/cloudflare/tofu` | `api_token`, `account_id` | OpenTofu Cloudflare provider (DNS + tunnel management) |
+
+The Tofu token has broader permissions (all zones, tunnel management) while the lego token is scoped to `quietlife.net` DNS only.
