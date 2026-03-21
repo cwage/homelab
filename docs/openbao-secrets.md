@@ -11,8 +11,12 @@ kv/
 ├── infra/                    # Infrastructure/provisioning secrets
 │   ├── proxmox/              # Proxmox API tokens
 │   │   └── api_token_id, api_token_secret
-│   ├── cloudflare/           # DNS/Let's Encrypt API tokens
-│   │   └── api_token, zone_id
+│   ├── cloudflare/           # Cloudflare API tokens
+│   │   ├── api_token, zone_id           # lego ACME client (cert renewal)
+│   │   ├── tunnel/
+│   │   │   └── token                    # cloudflared container (tunnel runtime)
+│   │   └── tofu/
+│   │       └── api_token, account_id    # OpenTofu Cloudflare provider (DNS + tunnel mgmt)
 │   ├── certs/                # TLS certificates (Let's Encrypt)
 │   │   └── lan.quietlife.net # Wildcard cert for *.lan.quietlife.net
 │   └── ssh/                  # SSH keys (if stored here)

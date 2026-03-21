@@ -26,6 +26,10 @@ services:
       - BAO_ADDR=${BAO_ADDR:-}
       - BAO_TOKEN=${BAO_TOKEN:-}
       - BAO_SKIP_VERIFY=${BAO_SKIP_VERIFY:-}
+      # Map OpenBao env vars for the Vault provider (API-compatible)
+      - VAULT_ADDR=${BAO_ADDR:-}
+      - VAULT_TOKEN=${BAO_TOKEN:-}
+      - VAULT_SKIP_VERIFY=${BAO_SKIP_VERIFY:-}
       # Disable OpenTofu telemetry
       - TF_CLI_ARGS=-no-color
     # Keep container running for interactive use
