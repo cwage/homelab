@@ -60,7 +60,7 @@ Individual Cloudflare DNS records can be managed via OpenTofu (`tofu/cloudflare.
 
 The `cloudflared` container runs on the containers host and provides external access to selected services without exposing ports. The tunnel token is stored in OpenBao at `kv/infra/cloudflare/tunnel`. See [docs/services.md](services.md) for details.
 
-Tunnel ingress routes (which hostnames map to which internal services) can be managed via OpenTofu using `cloudflare_tunnel_config` resources — this is wired up but not yet in use. Currently, routes are configured in the Cloudflare Zero Trust dashboard.
+Tunnel ingress routes (which hostnames map to which internal services) can be managed via OpenTofu using `cloudflare_tunnel_config` resources; the Cloudflare provider and credentials are in place, but no tunnel resources are defined in Tofu yet. Currently, all routes are configured in the Cloudflare Zero Trust dashboard.
 
 ### DNS-01 ACME challenges
 
