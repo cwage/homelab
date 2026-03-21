@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     image: homelab-tofu:latest
     container_name: homelab-tofu
-    user: "${UID}:${GID}"
+    user: "${UID:-1000}:${GID:-1000}"
     working_dir: /workspace/tofu
     volumes:
       # Mount the entire project directory
