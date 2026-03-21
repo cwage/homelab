@@ -292,7 +292,7 @@ or on the `token/` auth mount to match the intended period.
 
 Ansible uses a dedicated token to fetch secrets during playbook runs (e.g., gaming server passwords).
 
-### Initial Setup (One-Time)
+### Initial Policy Setup (One-Time)
 
 ```bash
 # Authenticate with root token
@@ -308,30 +308,17 @@ path "kv/data/services/*" {
 path "kv/data/infra/*" {
   capabilities = ["read"]
 }
+path "kv/data/backup/*" {
+  capabilities = ["read"]
+}
 EOF
-
-# Create token (30-day TTL)
-bao token create -policy=ansible-deploy -ttl=720h -display-name="ansible-deploy"
-# Save the token to ansible/.env as BAO_TOKEN
 ```
 
-### Token Renewal
+### Creating Workstation Tokens
 
-The ansible-deploy token expires after 30 days. To renew:
-
-```bash
-# Authenticate with root token
-export BAO_ADDR="https://bao.lan.quietlife.net:8200"
-bao login
-# Enter root token
-
-# Create new token
-bao token create -policy=ansible-deploy -ttl=720h -display-name="ansible-deploy"
-
-# Update ansible/.env with new BAO_TOKEN value
-```
-
-Old tokens expire naturally - no cleanup needed.
+Once the policy exists, see the
+[Workstation Bootstrap](openbao-secrets.md#workstation-bootstrap) section in
+`openbao-secrets.md` to generate a token for a new machine or replace an expired one.
 
 ## Related
 
