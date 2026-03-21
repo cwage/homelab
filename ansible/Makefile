@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+SHELL := $(shell command -v bash)
 
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
@@ -10,8 +10,14 @@ help: ## Show this help
 
 init: ## Create root .env and set UID/GID for compose
 	@test -f ../.env || cp ../.env.example ../.env
-	sed -i "s/^UID=.*/UID=$$(id -u)/" ../.env
-	sed -i "s/^GID=.*/GID=$$(id -g)/" ../.env
+	@if docker info 2>/dev/null | grep -q 'rootless'; then \
+		echo "Rootless Docker detected — setting UID=0/GID=0 (maps to host user)"; \
+		sed -i "s/^UID=.*/UID=0/" ../.env; \
+		sed -i "s/^GID=.*/GID=0/" ../.env; \
+	else \
+		sed -i "s/^UID=.*/UID=$$(id -u)/" ../.env; \
+		sed -i "s/^GID=.*/GID=$$(id -g)/" ../.env; \
+	fi
 
 build: ## Build the Ansible Docker image
 	$(DC) build --pull

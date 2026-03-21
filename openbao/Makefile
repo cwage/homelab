@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+SHELL := $(shell command -v bash)
 DC := docker compose --env-file ../.env
 
 .DEFAULT_GOAL := help

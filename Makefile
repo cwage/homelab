@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+SHELL := $(shell command -v bash)
 
 ANSIBLE_DIR := ansible
 TOFU_DIR := tofu

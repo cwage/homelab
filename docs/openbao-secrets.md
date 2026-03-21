@@ -63,47 +63,47 @@ path "kv/data/services/postgres/*" {
 }
 ```
 
-## Token Management
+## Workstation Bootstrap
 
-### Creating the ansible-deploy Token
+To set up a new workstation (or replace an expired token), you just need to generate a
+token against the existing `ansible-deploy` policy and drop it into your `.env`.
+
+1. SSH into the OpenBao server and authenticate with the root token:
 
 ```bash
 ssh bao.lan.quietlife.net
-
-export BAO_ADDR="https://127.0.0.1:8200"
-export BAO_SKIP_VERIFY=true
-export BAO_TOKEN="<root-token>"
-
-# Create the policy
-bao policy write ansible-deploy - <<'EOF'
-path "kv/data/infra/*" {
-  capabilities = ["read"]
-}
-path "kv/data/backup/*" {
-  capabilities = ["read"]
-}
-path "kv/data/services/*" {
-  capabilities = ["read"]
-}
-EOF
-
-# Create token (30-day TTL)
-bao token create -policy=ansible-deploy -ttl=720h -display-name="ansible-deploy"
+export BAO_ADDR="https://bao.lan.quietlife.net:8200"
+bao login
+# Enter root token from Bitwarden
 ```
 
-### Token Rotation
-
-Tokens are created with a 30-day TTL. To rotate:
-
-1. Create a new token with the same policy
-2. Update `BAO_TOKEN` in `/.env`
-3. Test with `make ansible-openbao-test`
-4. Revoke the old token (optional but recommended)
+2. Create a token:
 
 ```bash
-# Revoke old token
-bao token revoke <old-token>
+bao token create -policy=ansible-deploy -ttl=720h -display-name="ansible-deploy-<machine>"
 ```
+
+3. Copy the token into your repo's `.env`:
+
+```
+BAO_TOKEN=<token>
+```
+
+4. Test connectivity:
+
+```bash
+make ansible-openbao-test
+```
+
+Old tokens expire after 30 days — no cleanup needed, but you can revoke them
+explicitly with `bao token revoke <old-token>` if you prefer.
+
+### Initial Policy Setup (One-Time)
+
+The `ansible-deploy` policy only needs to be created once on the server. If it
+doesn't exist yet (fresh OpenBao deployment), see the
+[Ansible Deploy Token Setup](openbao.md#ansible-deploy-token-setup) section in
+`openbao.md`.
 
 ## Storing Secrets
 
