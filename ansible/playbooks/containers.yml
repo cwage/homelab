@@ -272,6 +272,30 @@
             nash_services_github:
               token: ""
 
+    - name: Retrieve linkding superuser credentials from OpenBao
+      block:
+        - name: Fetch linkding superuser credentials from OpenBao
+          ansible.builtin.set_fact:
+            linkding_superuser: "{{ lookup('community.hashi_vault.vault_kv2_get',
+                              'infra/linkding/superuser',
+                              engine_mount_point='kv',
+                              url=openbao_addr,
+                              token=openbao_token,
+                              validate_certs=openbao_validate_certs).secret }}"
+          no_log: true
+      rescue:
+        - name: Warn if linkding superuser credentials not found (non-fatal)
+          ansible.builtin.debug:
+            msg: >
+              linkding superuser credentials not found in OpenBao at kv/infra/linkding/superuser.
+              linkding will start without a pre-configured admin account.
+              Store with: bao kv put kv/infra/linkding/superuser name=<USERNAME> password=<PASSWORD>
+        - name: Set empty linkding superuser credentials
+          ansible.builtin.set_fact:
+            linkding_superuser:
+              name: ""
+              password: ""
+
     - name: Deploy stacks environment file
       ansible.builtin.copy:
         content: |
@@ -283,6 +307,8 @@
           MM_DB_PASSWORD={{ mattermost_db.password | default('') }}
           COTURN_AUTH_SECRET={{ coturn_auth.secret | default('') }}
           NASH_SERVICES_GITHUB_TOKEN={{ nash_services_github.token | default('') }}
+          LINKDING_SUPERUSER_NAME={{ linkding_superuser.name | default('') }}
+          LINKDING_SUPERUSER_PASSWORD={{ linkding_superuser.password | default('') }}
         dest: /opt/stacks/.env
         owner: deploy
         group: deploy

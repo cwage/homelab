@@ -19,6 +19,9 @@ kv/
 │   │       └── api_token, account_id    # OpenTofu Cloudflare provider (DNS + tunnel mgmt)
 │   ├── certs/                # TLS certificates (Let's Encrypt)
 │   │   └── lan.quietlife.net # Wildcard cert for *.lan.quietlife.net
+│   ├── linkding/             # Linkding bookmark manager
+│   │   └── superuser/
+│   │       └── name, password             # Admin account credentials
 │   └── ssh/                  # SSH keys (if stored here)
 │
 ├── services/                 # Application/service secrets
