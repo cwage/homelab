@@ -14,6 +14,7 @@ All self-hosted services run as Docker containers on the **containers** host (`1
 | **Paperless-ngx** | `paperless-ngx/paperless-ngx` | `https://paperless.lan.quietlife.net` | Document management |
 | **Owncast** | `owncast/owncast` | `https://owncast.lan.quietlife.net` | Live streaming (RTMP ingest on port 1935) |
 | **Cloudflared** | `cloudflare/cloudflared` | — | Cloudflare Tunnel for external access |
+| **Linkding** | `sissbruecker/linkding` | `https://links.lan.quietlife.net` | Bookmark manager |
 | **Paperless Redis** | `redis` | — | Backend for Paperless-ngx |
 
 ## External access

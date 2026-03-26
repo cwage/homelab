@@ -259,6 +259,25 @@ services:
     networks:
       - proxy
 
+  linkding:
+    image: sissbruecker/linkding:latest
+    container_name: linkding
+    restart: unless-stopped
+    volumes:
+      - linkding_data:/etc/linkding/data
+    environment:
+      - LD_SUPERUSER_NAME=${LINKDING_SUPERUSER_NAME}
+      - LD_SUPERUSER_PASSWORD=${LINKDING_SUPERUSER_PASSWORD}
+      - LD_CSRF_TRUSTED_ORIGINS=https://links.lan.quietlife.net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.linkding.rule=Host(`links.lan.quietlife.net`)"
+      - "traefik.http.routers.linkding.entrypoints=websecure"
+      - "traefik.http.routers.linkding.tls=true"
+      - "traefik.http.services.linkding.loadbalancer.server.port=9090"
+    networks:
+      - proxy
+
   cloudflared:
     image: cloudflare/cloudflared:2026.1.2
     container_name: cloudflared
@@ -290,6 +309,7 @@ volumes:
   mattermost_client_plugins:
   mattermost_bleve:
   nash_services_cache:
+  linkding_data:
 
 networks:
   proxy:
