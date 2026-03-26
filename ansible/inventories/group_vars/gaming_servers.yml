@@ -35,7 +35,7 @@ managed_users:
 gaming_profiles:
   - name: vs-buttopia
     game: vintagestory
-    active: true
+    active: false
     version: "1.21.6"
     ports:
       game: 42420
@@ -85,3 +85,14 @@ gaming_profiles:
       - name: Seasonality
         author: RustyMods
         version: "3.7.6"
+  # Valheim server profile - Woopfriends
+  # Password fetched from OpenBao at kv/services/gaming/vh-woopfriends
+  - name: vh-woopfriends
+    game: valheim
+    active: true
+    ports:
+      game: 2456
+    server_name: "Woopfriends"
+    world_name: "woopfriends"
+    public: 0
+    mods: []
