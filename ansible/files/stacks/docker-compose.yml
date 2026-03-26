@@ -260,7 +260,7 @@ services:
       - proxy
 
   linkding:
-    image: sissbruecker/linkding:latest
+    image: sissbruecker/linkding:1.45.0
     container_name: linkding
     restart: unless-stopped
     volumes:
