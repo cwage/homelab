@@ -15,3 +15,12 @@ data "cloudflare_zone" "quietlife" {
 data "cloudflare_zone" "chriswage" {
   name = "chriswage.com"
 }
+
+# photos.chriswage.com -> GitHub Pages
+resource "cloudflare_record" "photos_chriswage" {
+  zone_id = data.cloudflare_zone.chriswage.zone_id
+  name    = "photos"
+  type    = "CNAME"
+  content = "cwage.github.io"
+  proxied = true
+}
