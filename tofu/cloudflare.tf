@@ -11,3 +11,7 @@ data "vault_kv_secret_v2" "cloudflare_tofu" {
 data "cloudflare_zone" "quietlife" {
   name = "quietlife.net"
 }
+
+data "cloudflare_zone" "chriswage" {
+  name = "chriswage.com"
+}
