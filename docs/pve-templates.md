@@ -45,9 +45,9 @@ See `tofu/dns1.tf` for a working example.
 flake.nix              # nixosConfigurations.proxmox-template entry
 nix/template.nix       # Proxmox VMA image settings (cores, memory, network)
 modules/base.nix       # Shared base config baked into the template
-nix/Makefile           # Build and deploy targets
+nix/Makefile           # Build target + template deploy target (upload, restore, convert-to-template)
 nix/build.sh           # Build script (runs inside Docker)
-nix/deploy.sh          # Upload + restore + convert-to-template script
+nix/deploy.sh          # Host configuration deploy script (used by `make nix-deploy-host`)
 ```
 
 ## Debian template (VMID 9000) — legacy

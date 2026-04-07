@@ -73,5 +73,5 @@ openbao/
 
 ## Known issues
 
-- **NixOS template uses virtio0, not scsi0**: Tofu VM definitions for NixOS hosts must NOT include a `disk` block (inherits the template's virtio0). Use `boot_order = ["virtio0"]`.
+- **NixOS template uses virtio0, not scsi0**: Tofu VM definitions for NixOS hosts must use `interface = "virtio0"` in the `disk` block (not `scsi0`) and set `boot_order = ["virtio0"]`. See `tofu/dns1.tf` for a working example.
 - **Proxmox lock files after interrupted Tofu**: If `tofu apply` is interrupted (ctrl+c), a stale lock file at `/var/lock/qemu-server/lock-<vmid>.conf` may persist. Fix: `ssh deploy@pve1 "sudo rm /var/lock/qemu-server/lock-<vmid>.conf"`.

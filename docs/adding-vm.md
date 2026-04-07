@@ -38,7 +38,7 @@ resource "proxmox_virtual_environment_vm" "myhost" {
   }
 
   initialization {
-    hostname = "dns1"
+    hostname = "myhost"
 
     ip_config {
       ipv4 {
