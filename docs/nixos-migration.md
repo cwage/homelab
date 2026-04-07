@@ -6,7 +6,7 @@ Tracked by [#132](https://github.com/cwage/homelab/issues/132). Proxmox VMs are 
 
 ### Build and deploy pipeline
 
-1. **Template**: `make nix-template` builds a base NixOS Proxmox VMA image (Dockerized, no host Nix install). `make nix-deploy` uploads it as VMID 9001.
+1. **Template**: `make nix-template` builds a base NixOS Proxmox VMA image (Dockerized, no host Nix install). `make nix-deploy` uploads it as VMID 9001. See [docs/pve-templates.md](pve-templates.md) for details on both the NixOS and Debian templates.
 2. **Provision**: OpenTofu clones from template 9001 to create a VM (cloud-init sets IP, hostname, SSH key).
 3. **Deploy**: `make nix-deploy-host HOST=<name> TARGET=<ip>` builds the host-specific NixOS config in Docker, copies store paths to the target via `nix copy`, and activates remotely over SSH.
 

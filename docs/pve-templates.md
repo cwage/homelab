@@ -1,40 +1,100 @@
-# Proxmox template workflow
+# Proxmox VM templates
 
-How to add and build new VM templates using the OpenTofu-managed base images and the Ansible role in this repo.
+This repo maintains two VM templates on Proxmox. New VMs clone from one of these templates and get their identity (IP, hostname, SSH key) via cloud-init at first boot.
 
-## 1) Add/verify the base image in OpenTofu
+| Template | VMID | OS | Built by | Build command |
+|----------|------|----|----------|---------------|
+| `debian12-cloud` | 9000 | Debian 12 | Ansible (`pve_template` role) | `make ansible-templates` |
+| `nixos-template` | 9001 | NixOS | Nix (Dockerized flake build) | `make nix-template` + `make nix-deploy` |
 
-- Define the upstream image in `tofu/images.tf` (see the existing Debian 12 example). Set:
-  - `file_name`: the on-disk name Proxmox expects (e.g., `debian-12-genericcloud-amd64.img`).
-  - `url`: upstream image URL (often qcow2 for cloud images).
-  - `content_type`/`datastore_id` in the `proxmox_virtual_environment_download_file` resource.
-- Run `make tofu-plan` and `make tofu-apply` to download the image onto the Proxmox datastore (defaults are in `tofu/variables.tf`). The downloaded path should match `pve_template_image_dir` (defaults to `/var/lib/vz/template/iso`).
+**Direction:** New VMs should use the NixOS template (9001) unless there's a specific reason to use Debian. Existing Debian VMs will migrate to NixOS over time — see [docs/nixos-migration.md](nixos-migration.md) for the migration playbook.
 
-## 2) Describe the template for Ansible
+## NixOS template (VMID 9001) — preferred
 
-- In `ansible/inventories/group_vars/proxmox.yml`, add an entry to `pve_templates`:
-  - `name`: template/VM name (hostname-safe).
-  - `vmid`: >= `pve_template_min_vmid` (default 9000); unique per template.
-  - `image_file`: must match the `file_name` from OpenTofu.
-  - `datastore`, `bridge`, memory/cores, and `ciuser` (default is `deploy`).
-  - Optional: `fqdn`, `description`, `packages`, `snippet_storage`.
-- Ensure the deploy pubkey file referenced by `pve_template_deploy_pubkey_path` exists (default `ansible/keys/deploy.pub`).
+The NixOS template is built from `flake.nix` → `nix/template.nix` using a Dockerized Nix builder (no host Nix install required). It produces a Proxmox VMA image that gets uploaded and converted to a template.
 
-## 3) Build the template
+### What's baked in
 
-- From repo root: `make ansible-templates` (runs `ansible/playbooks/pve-templates.yml`).
-- The role will:
-  - Validate VMID floor and ensure the image exists.
-  - Render cloud-init user-data with the deploy user + pubkey and qemu-guest-agent enabled.
-  - Create/replace the VM (only destroys an existing VMID if it is already a template, unless `pve_template_force_recreate=true`).
-  - Boot, wait for cloud-init + qemu-guest-agent, then shut down and convert to a template.
+- Cloud-init support (IP, hostname, SSH key set at clone time)
+- `deploy` user with SSH key and passwordless sudo
+- `qemu-guest-agent` enabled
+- `nix.settings.trusted-users` includes `deploy` (required for remote `nix copy` deploys)
+- virtio disk on `virtio0` (not scsi0 — this matters for Tofu definitions)
 
-## 4) Using the template
+### Building and deploying
 
-- Downstream VM definitions (OpenTofu or manual) can now clone from the template ID/VMID.
-- Cloud-init will include the deploy user/key; additional users/keys should come from your per-VM IaC (e.g., OpenTofu cloud-init config or Ansible roles).
+```bash
+make nix-template   # Build VMA image to nix/output/
+make nix-deploy     # Upload to Proxmox, restore as VMID 9001, convert to template
+```
 
-## Notes
+Rebuild the template whenever `nix/template.nix`, `modules/base.nix`, or `flake.nix` changes.
 
-- The Proxmox API does not expose all template import steps, so disk import + template creation currently happens via Ansible `qm` commands on the node.
-- If you need to replace a non-template VM that reuses a VMID, set `pve_template_force_recreate=true` in inventory to allow the role to purge it.
+### Tofu considerations for NixOS VMs
+
+NixOS VMs inherit a `virtio0` disk from the template. In the Tofu resource definition:
+
+- Use `interface = "virtio0"` in the `disk` block (not `scsi0`)
+- Set `boot_order = ["virtio0"]`
+
+See `tofu/dns1.tf` for a working example.
+
+### Configuration files
+
+```
+flake.nix              # nixosConfigurations.proxmox-template entry
+nix/template.nix       # Proxmox VMA image settings (cores, memory, network)
+modules/base.nix       # Shared base config baked into the template
+nix/Makefile           # Build and deploy targets
+nix/build.sh           # Build script (runs inside Docker)
+nix/deploy.sh          # Upload + restore + convert-to-template script
+```
+
+## Debian template (VMID 9000) — legacy
+
+The Debian template is built by the Ansible `pve_template` role. It downloads a cloud image via OpenTofu, then uses Ansible to create a VM from that image, run cloud-init, and convert it to a template.
+
+### What's baked in
+
+- Cloud-init support (IP, hostname, SSH key set at clone time)
+- `deploy` user with SSH key
+- `qemu-guest-agent` installed and enabled
+- scsi disk on `scsi0`
+
+### Building and deploying
+
+```bash
+# 1. Ensure the base image is downloaded
+make tofu-plan    # Should show the Debian cloud image in tofu/images.tf
+make tofu-apply
+
+# 2. Build the template
+make ansible-templates
+```
+
+### Configuration files
+
+```
+tofu/images.tf                                    # Upstream cloud image download
+ansible/inventories/group_vars/proxmox.yml        # Template definition (name, VMID, image, specs)
+ansible/roles/pve_template/                       # Role that builds the template
+ansible/playbooks/pve-templates.yml               # Playbook entry point
+```
+
+### Adding a new Debian template
+
+1. Add the base image to `tofu/images.tf` and apply.
+2. Add an entry to `pve_templates` in `ansible/inventories/group_vars/proxmox.yml`:
+   - `name`, `vmid` (>= 9000, unique), `image_file` (must match the tofu download filename)
+   - `datastore`, `bridge`, `memory`, `cores`, `ciuser` (default `deploy`)
+3. Run `make ansible-templates`.
+
+## Which template to use
+
+| Scenario | Template |
+|----------|----------|
+| New infrastructure VM | NixOS (9001) |
+| Migrating an existing Debian VM | NixOS (9001) — see [nixos-migration.md](nixos-migration.md) |
+| VM that requires Debian-specific packages or workflows | Debian (9000) |
+
+After cloning from either template, see [docs/adding-vm.md](adding-vm.md) for the full VM provisioning walkthrough.
