@@ -4,24 +4,25 @@ This document outlines the steps to provision and configure a new VM using OpenT
 
 ## Prerequisites
 
-- Cloud image downloaded to Proxmox (`make tofu-apply` if not already done)
-- VM template built (`make ansible-templates` if not already done)
+- A VM template on Proxmox — see [docs/pve-templates.md](pve-templates.md) for both options:
+  - **NixOS (VMID 9001, preferred)**: `make nix-template` + `make nix-deploy`
+  - **Debian (VMID 9000)**: `make tofu-apply` (downloads cloud image) + `make ansible-templates`
 - Decide on: hostname, static IP, purpose/roles
 
 ## Step 1: Define the VM in OpenTofu
 
 Add a `proxmox_virtual_environment_vm` resource to `tofu/` (e.g., `tofu/vms.tf` or a purpose-specific file like `tofu/dns.tf`).
 
-Example resource:
+Example resource (Debian — for NixOS, see the [dns1 example](#complete-example-deploying-dns1-nixos) below or `tofu/dns1.tf`):
 
 ```hcl
-resource "proxmox_virtual_environment_vm" "dns1" {
-  name      = "dns1"
+resource "proxmox_virtual_environment_vm" "myhost" {
+  name      = "myhost"
   node_name = "pve1"
   vm_id     = 101  # Choose an unused VMID
 
   clone {
-    vm_id = 9000  # debian12-cloud template
+    vm_id = var.pm_template_id  # 9000 (Debian) or var.pm_nixos_template_id (9001, NixOS)
   }
 
   cpu {
@@ -37,7 +38,7 @@ resource "proxmox_virtual_environment_vm" "dns1" {
   }
 
   initialization {
-    hostname = "dns1"
+    hostname = "myhost"
 
     ip_config {
       ipv4 {

@@ -178,7 +178,7 @@ make install-precommit-hook  # install trufflehog pre-commit hook
 | [docs/openbao.md](docs/openbao.md) | OpenBao operations: deploy, unseal, certs, backups |
 | [docs/openbao-secrets.md](docs/openbao-secrets.md) | KV secrets structure, policies, token management |
 | [docs/gpu-passthrough.md](docs/gpu-passthrough.md) | GPU passthrough setup on Proxmox |
-| [docs/pve-templates.md](docs/pve-templates.md) | Building Proxmox VM templates |
+| [docs/pve-templates.md](docs/pve-templates.md) | Proxmox VM templates: NixOS (9001) and Debian (9000) — what's baked in, how to build, which to use |
 | [docs/gaming-servers.md](docs/gaming-servers.md) | Game server provisioning and operations |
 | [backup/README.md](backup/README.md) | NAS → Backblaze B2 backup system |
 | [ansible/README.md](ansible/README.md) | Ansible-specific setup and workflow |
