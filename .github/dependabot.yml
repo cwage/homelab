@@ -23,3 +23,9 @@ updates:
     directory: "/ansible"
     schedule:
       interval: "monthly"
+
+  # Nix flake input updates
+  - package-ecosystem: "nix"
+    directory: "/"
+    schedule:
+      interval: "weekly"
