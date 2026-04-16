@@ -1,5 +1,8 @@
 # Host-specific configuration for felix (Linode VPS)
 
+# Minimal Linode Ubuntu image ships only python3, no /usr/bin/python
+ansible_python_interpreter: /usr/bin/python3
+
 # Static MOTD text
 motd_message: "Welcome to felix.quietlife.net! E-mail cwage@quietlife.net if you need help."
 
