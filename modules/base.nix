@@ -23,6 +23,7 @@
       ../ansible/inventories/keys/cwage-portaplotz.pub
       ../ansible/inventories/keys/cwage-portaptty.pub
       ../ansible/inventories/keys/cwage-shot.pub
+      ../ansible/inventories/keys/cwage-thinkpad.pub
     ];
   };
 

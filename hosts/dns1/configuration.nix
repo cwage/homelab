@@ -31,7 +31,7 @@
           $TTL 300
 
           @       IN  SOA dns1.lan.quietlife.net. hostmaster.lan.quietlife.net. (
-                      2026032601  ; serial (YYYYMMDDNN)
+                      2026042802  ; serial (YYYYMMDDNN)
                       3600        ; refresh
                       600         ; retry
                       604800      ; expire
@@ -49,7 +49,8 @@
           portaptty       IN  A       10.10.15.5
           portapttyeth    IN  A       10.10.15.6
           dns1            IN  A       10.10.15.15
-          bao             IN  A       10.10.15.11
+          bao             IN  A       10.10.15.16
+          bao2            IN  A       10.10.15.16
           containers      IN  A       10.10.15.12
           nintendoswitch  IN  A       10.10.15.13
           pve1            IN  A       10.10.15.18
@@ -81,7 +82,7 @@
           $TTL 300
 
           @       IN  SOA dns1.lan.quietlife.net. hostmaster.lan.quietlife.net. (
-                      2026031901  ; serial
+                      2026042801  ; serial
                       3600        ; refresh
                       600         ; retry
                       604800      ; expire
@@ -101,6 +102,7 @@
           12      IN  PTR     containers.lan.quietlife.net.
           13      IN  PTR     nintendoswitch.lan.quietlife.net.
           15      IN  PTR     dns1.lan.quietlife.net.
+          16      IN  PTR     bao2.lan.quietlife.net.
           18      IN  PTR     pve1.lan.quietlife.net.
           20      IN  PTR     lattepanda.lan.quietlife.net.
           115     IN  PTR     remarkable.lan.quietlife.net.

@@ -1,16 +1,17 @@
-# OpenBao secrets management VM
-# See issue #62 for architecture details
-# Hostname is managed by Ansible (hostname role), not cloud-init
+# bao2: NixOS-based replacement for the openbao VM (#218 / #132).
+# Stood up alongside the existing Debian openbao VM (10.10.15.11). Once data
+# is migrated and clients are repointed, the old VM and tofu/openbao.tf are
+# decommissioned, and DNS for bao.lan.quietlife.net flips to this host.
 
-resource "proxmox_virtual_environment_vm" "openbao" {
-  name      = "openbao"
+resource "proxmox_virtual_environment_vm" "bao2" {
+  name      = "bao2"
   node_name = var.pm_node_name
-  vm_id     = 103
+  vm_id     = 151
 
-  description = "OpenBao secrets management server"
+  description = "OpenBao secrets management server (NixOS)"
 
   clone {
-    vm_id = var.pm_template_id
+    vm_id = var.pm_nixos_template_id
   }
 
   cpu {
@@ -24,7 +25,7 @@ resource "proxmox_virtual_environment_vm" "openbao" {
 
   disk {
     datastore_id = var.pm_vm_datastore_id
-    interface    = "scsi0"
+    interface    = "virtio0"
     size         = 20
   }
 
@@ -37,7 +38,7 @@ resource "proxmox_virtual_environment_vm" "openbao" {
 
     ip_config {
       ipv4 {
-        address = "10.10.15.11/24"
+        address = "10.10.15.16/24"
         gateway = "10.10.15.1"
       }
     }
@@ -57,9 +58,8 @@ resource "proxmox_virtual_environment_vm" "openbao" {
     enabled = true
   }
 
-  boot_order = ["scsi0"]
+  boot_order = ["virtio0"]
 
-  # Prevent Tofu from recreating the VM when cloud-init config drifts
   lifecycle {
     ignore_changes = [initialization]
   }
