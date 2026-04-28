@@ -14,19 +14,26 @@ let
     in pkgs.writeShellScript "ntfy-notify-${status}" ''
       set -u
       unit="''${1:-unknown}"
-      topic="${cfg.topic}"
+      topic=${lib.escapeShellArg cfg.topic}
       host="$(${pkgs.nettools}/bin/hostname)"
 
-      body=$(${pkgs.systemd}/bin/journalctl -u "$unit" -n 20 --no-pager 2>&1 \
-        | ${pkgs.coreutils}/bin/tr -d '[:cntrl:]' \
-        | ${pkgs.coreutils}/bin/head -c 4000 \
-        || ${pkgs.coreutils}/bin/echo "(no journal output)")
+      # Capture journal first so we can detect journalctl failures explicitly,
+      # then strip control chars (preserving \n and \t for readability) and
+      # cap to 4KB.
+      body="$(${pkgs.systemd}/bin/journalctl -u "$unit" -n 20 --no-pager 2>&1)" \
+        || body="(no journal output)"
+      body="$(${pkgs.coreutils}/bin/printf '%s' "$body" \
+        | ${pkgs.coreutils}/bin/tr -d '\000-\010\013-\037\177' \
+        | ${pkgs.coreutils}/bin/head -c 4000)"
 
+      # --data-raw avoids curl's @filename special-case for payloads that
+      # might start with @ (defense in depth — journal output is unlikely
+      # to start that way, but cheap to prevent).
       ${pkgs.curl}/bin/curl -sf -o /dev/null \
         -H "Priority: ${a.priority}" \
         -H "Title: Job ${a.verb} on $host: $unit" \
         -H "Tags: ${a.tag},$host" \
-        -d "$body" \
+        --data-raw "$body" \
         "$topic" || true
     '';
 
@@ -51,8 +58,9 @@ in
       example = "https://ntfy.sh/cwage-homelab-backup";
       description = ''
         Full URL to the ntfy.sh topic that notifications post to.
-        Treated as low-sensitivity: leak risk is unsolicited messages on the
-        topic, not data exposure. Rotate by changing this value.
+        Notifications include the last journal lines from the triggering
+        unit, so anyone who knows or guesses this URL can read those logs.
+        Pick a hard-to-guess topic name and rotate this value if it leaks.
       '';
     };
   };
