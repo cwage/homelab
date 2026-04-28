@@ -109,12 +109,21 @@
     options = [ "noatime" "_netdev" "nofail" ];
   };
 
+  homelab.ntfy = {
+    enable = true;
+    topic = "https://ntfy.sh/cwage-homelab-backup";
+  };
+
   systemd.services.openbao-backup = {
     description = "OpenBao Raft snapshot backup";
     path = with pkgs; [ openbao coreutils gnugrep findutils ];
     # Refuse to run if the NFS share isn't mounted — otherwise snapshots
     # would silently land on the root filesystem.
-    unitConfig.RequiresMountsFor = "/mnt/backups";
+    unitConfig = {
+      RequiresMountsFor = "/mnt/backups";
+      OnFailure = [ "notify-failure@%n.service" ];
+      OnSuccess = [ "notify-success@%n.service" ];
+    };
     serviceConfig = {
       Type = "oneshot";
       User = "root";
