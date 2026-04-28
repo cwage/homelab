@@ -3,7 +3,7 @@ SHELL := $(shell command -v bash)
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover containers containers-check openbao openbao-check openbao-test gaming gaming-check gaming-configs gaming-archive turn turn-check backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover containers containers-check openbao-test gaming gaming-check gaming-configs gaming-archive turn turn-check backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -70,12 +70,6 @@ containers: ## Configure container hosts (Docker)
 containers-check: ## Dry-run container hosts configuration with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/containers.yml -vv --check --diff $(OPTS)
 
-openbao: ## Configure OpenBao secrets server
-	$(DC) run --rm ansible ansible-playbook playbooks/openbao.yml -vv $(OPTS)
-
-openbao-check: ## Dry-run OpenBao configuration with --check/--diff
-	$(DC) run --rm ansible ansible-playbook playbooks/openbao.yml -vv --check --diff $(OPTS)
-
 openbao-test: ## Test OpenBao connectivity and secret retrieval (requires BAO_TOKEN)
 	$(DC) run --rm ansible ansible-playbook playbooks/openbao-test.yml -vv $(OPTS)
 
@@ -139,7 +133,7 @@ refresh-known-hosts: ## Refresh SSH known_hosts from all inventory hosts
 		"45.56.113.70:5344" \
 		"10.10.15.15:22" \
 		"10.10.15.12:22" \
-		"10.10.15.11:22" \
+		"10.10.15.16:22" \
 		"45.56.118.89:22" \
 		"10.10.15.4:5344" \
 		"173.230.140.10:22"; \
