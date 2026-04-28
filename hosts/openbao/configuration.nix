@@ -47,8 +47,8 @@
       node_id = "bao2"
     }
 
-    api_addr     = "https://bao2.lan.quietlife.net:8200"
-    cluster_addr = "https://bao2.lan.quietlife.net:8201"
+    api_addr     = "https://bao.lan.quietlife.net:8200"
+    cluster_addr = "https://bao.lan.quietlife.net:8201"
   '';
 
   # --- OpenBao agent for secrets (cwage password hash) ---
@@ -73,8 +73,12 @@
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
 
-    # Don't start until TLS materials are staged out-of-band on first boot
-    unitConfig.ConditionPathExists = "/var/lib/openbao/tls/tls.crt";
+    # Don't start until TLS materials are staged out-of-band on first boot.
+    # Both files required: missing key would crash-loop the server.
+    unitConfig.ConditionPathExists = [
+      "/var/lib/openbao/tls/tls.crt"
+      "/var/lib/openbao/tls/tls.key"
+    ];
 
     serviceConfig = {
       User = "openbao";
@@ -108,6 +112,9 @@
   systemd.services.openbao-backup = {
     description = "OpenBao Raft snapshot backup";
     path = with pkgs; [ openbao coreutils gnugrep findutils ];
+    # Refuse to run if the NFS share isn't mounted — otherwise snapshots
+    # would silently land on the root filesystem.
+    unitConfig.RequiresMountsFor = "/mnt/backups";
     serviceConfig = {
       Type = "oneshot";
       User = "root";
