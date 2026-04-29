@@ -2,13 +2,13 @@
 
 ## Overview
 
-OpenTofu configuration for provisioning VMs on a Proxmox VE host (pve1, 10.10.15.18). VM configuration after provisioning is handled by Ansible (see `../ansible/`).
+OpenTofu configuration for provisioning VMs on a Proxmox VE host (pve1, 10.10.15.18). VM configuration after provisioning is handled by NixOS (see `../flake.nix` and `../hosts/`) for the current set of VMs, or Ansible (`../ansible/`) for any remaining Debian-based hosts.
 
 ## Key Principles
 
 - All OpenTofu operations run via Docker (`make` targets) — never run `tofu` directly on the host
 - Flat file structure — no modules directory; each VM gets its own `.tf` file
-- Let Ansible handle post-provisioning configuration (separation of concerns)
+- Tofu provisions the VM; post-provisioning configuration lives elsewhere (NixOS modules under `../hosts/`, or Ansible roles for non-NixOS hosts)
 - State tracked in git (single-developer workflow)
 
 ## Structure
@@ -16,7 +16,7 @@ OpenTofu configuration for provisioning VMs on a Proxmox VE host (pve1, 10.10.15
 - `main.tf` — Provider config (bpg/proxmoxve)
 - `variables.tf` — All input variables with descriptions and defaults
 - `images.tf` — Debian cloud image download for Proxmox
-- Individual VM files: `dns1.tf`, `containers.tf`, `bao2.tf`
+- Individual VM files: `dns1.tf`, `bao2.tf`, `containers2.tf`
 - `outputs.tf` — Output values
 
 ## Credentials

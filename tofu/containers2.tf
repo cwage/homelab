@@ -1,8 +1,6 @@
-# containers2: NixOS-based replacement for the containers VM (#171 / #132).
-# Stood up alongside the live Debian containers VM (10.10.15.12). Once Docker,
-# GPU, NFS, TLS, and the stack are migrated, the old VM and tofu/containers.tf
-# are decommissioned, GPU + USB passthrough swap to this host, and DNS for
-# containers.lan.quietlife.net (plus all service CNAMEs) flips here.
+# containers2: NixOS Docker host with GTX 1050 Ti GPU and Seagate USB
+# passthrough. Successor to the old Debian containers VM (#132 phase 4).
+# Eventual rename to `containers` is tracked separately.
 
 resource "proxmox_virtual_environment_vm" "containers2" {
   name      = "containers2"
