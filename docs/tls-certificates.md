@@ -33,12 +33,12 @@ Cloudflare API credentials (API token, zone ID) are fetched from OpenBao at depl
 
 ### Deployment
 
-Ansible retrieves the cert from OpenBao and deploys it to services:
+The cert is retrieved from OpenBao and deployed to services:
 
-- **Traefik** (containers host): `make ansible-containers` deploys cert to `/opt/stacks/certs/` and configures `traefik-tls.yml` file provider
+- **Traefik** (containers2): the cert and key currently live as mutable files in `/opt/stacks/certs/` (placed imperatively after the NixOS migration; slated to move to a NixOS-driven lego workflow). Traefik picks them up via the `traefik-tls.yml` file provider.
 - **Proxmox** (pve1): `make ansible-proxmox` deploys cert via the `proxmox_certs` role for the Proxmox web UI
 
-**Note:** Traefik does not automatically reload bind-mounted cert files. The playbook will restart Traefik automatically when it detects new certificates.
+**Note:** Traefik does not automatically reload bind-mounted cert files. After replacing them, restart the container: `ssh containers2 'docker restart traefik'`.
 
 ### Renewal when the cert is already expired
 
@@ -51,13 +51,18 @@ make lego-renew
 # 2. Store in OpenBao with TLS verification disabled
 BAO_SKIP_VERIFY=true make lego-store
 
-# 2. Deploy with TLS verification disabled (Traefik restarts automatically)
-make ansible-containers OPTS="-e openbao_skip_verify=true"
+# 3. Copy the renewed cert/key onto containers2 and restart Traefik
+#    (containers2 will pick this up automatically once cert delivery is
+#    moved into openbao-agent / a NixOS lego module — until then it's manual)
+scp lego/certs/_.lan.quietlife.net.crt containers2:/opt/stacks/certs/lan.quietlife.net.crt
+scp lego/certs/_.lan.quietlife.net.key containers2:/opt/stacks/certs/lan.quietlife.net.key
+ssh containers2 'docker restart traefik'
 
-# 3. Update OpenBao's own TLS cert (it listens on :8200 with its own cert)
-make ansible-openbao OPTS="-e openbao_skip_verify=true"
+# 4. Update OpenBao's own TLS cert (it listens on :8200 with its own cert)
+#    The bao2 NixOS host has the cert staged manually under /var/lib/openbao/tls/
+#    until the cert auto-renewal module lands (issue #220).
 
-# 4. Subsequent runs (proxmox, etc.) should work normally now
+# 5. Subsequent runs (proxmox, etc.) should work normally now
 make ansible-proxmox
 ```
 

@@ -151,7 +151,6 @@
   users.users.cwage.extraGroups = [ "docker" ];
 
   # /opt/stacks holds the docker-compose.yml + supporting files.
-  # /opt/backup holds the rclone backup container (parity with live VM).
   # deploy user's primary group is "users" (NixOS default for isNormalUser).
   # Static stack config (compose, traefik dyn config) is symlinked from the
   # nix store. Secrets (.env, basicauth, ssh deploy key) and TLS certs remain
@@ -160,8 +159,6 @@
     "d /opt/stacks       0755 deploy users -"
     "d /opt/stacks/certs 0700 deploy users -"
     "z /opt/stacks/certs 0700 deploy users -"
-    "d /opt/backup       0750 deploy users -"
-    "d /opt/backup/logs  0750 deploy users -"
     "L+ /opt/stacks/docker-compose.yml - - - - ${./stacks/docker-compose.yml}"
     "L+ /opt/stacks/traefik-tls.yml    - - - - ${./stacks/traefik-tls.yml}"
   ];

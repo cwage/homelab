@@ -7,7 +7,7 @@ BACKUP_DIR := backup
 NIX_DIR := nix
 OPENBAO_DIR := openbao
 
-ANSIBLE_TARGETS := help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check containers containers-check openbao-test felix felix-check gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check backup-configs backup-configs-dry all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
+ANSIBLE_TARGETS := help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check openbao-test felix felix-check gaming gaming-check gaming-configs gaming-archive all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 TOFU_TARGETS := help build shell init plan apply destroy fmt validate trufflehog clean
 LEGO_TARGETS := help run renew renew-staging renew-force list show fetch-creds store retrieve
 BACKUP_TARGETS := help build shell clean local local-dry b2 b2-dry

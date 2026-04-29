@@ -17,16 +17,18 @@ set -uo pipefail
 # Usage:
 #   backup-configs.sh [--dry-run]
 #
-# Run via Ansible: make ansible-backup-configs
+# In production this is run by the systemd service `backup-configs` declared
+# in modules/backups.nix on containers2. This script remains in the repo as a
+# workstation-side helper.
 
 COMPOSE_DIR="${COMPOSE_DIR:-/opt/stacks}"
 DEST_ROOT="${DEST_ROOT:-/mnt/nas/containers-configs}"
 LOG_DIR="${LOG_DIR:-/opt/backup/logs}"
 ENV_FILE="${ENV_FILE:-/opt/backup/.env}"
 LOCK_FILE="${LOCK_FILE:-/tmp/backup-configs.lock}"
-# Locally-built helper image with rsync baked in. Built by backup-deploy.yml
-# from backup/Dockerfile.rsync. Pre-built so we never run apk add during the
-# stop window (no network dep at backup time, minimal downtime).
+# Locally-built helper image with rsync baked in (`docker build -f Dockerfile.rsync`,
+# tag `homelab-rsync:1`). Pre-built so we never run apk add during the stop
+# window (no network dep at backup time, minimal downtime).
 RSYNC_IMAGE="${RSYNC_IMAGE:-homelab-rsync:1}"
 
 DRY_RUN=false
@@ -145,7 +147,7 @@ fi
 
 if ! docker image inspect "$RSYNC_IMAGE" &>/dev/null; then
     log "ERROR: rsync helper image '$RSYNC_IMAGE' not found"
-    log "Run 'make ansible-backup-deploy' to build it"
+    log "Build it from backup/Dockerfile.rsync: docker build -t $RSYNC_IMAGE -f Dockerfile.rsync ."
     ntfy_send urgent "Config backup FAILED" "rsync image missing: $RSYNC_IMAGE" "x"
     exit 1
 fi
