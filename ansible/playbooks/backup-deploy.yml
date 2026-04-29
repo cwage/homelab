@@ -44,6 +44,15 @@
         mode: '0644'
       register: dockerfile_result
 
+    - name: Copy rsync helper Dockerfile
+      ansible.builtin.copy:
+        src: /work-backup/Dockerfile.rsync
+        dest: /opt/backup/Dockerfile.rsync
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      register: rsync_dockerfile_result
+
     - name: Copy entrypoint script
       ansible.builtin.copy:
         src: /work-backup/scripts/
@@ -128,6 +137,25 @@
         - not ansible_check_mode
         - dockerfile_result.changed or scripts_result.changed
       register: build_result
+
+    - name: Check if rsync helper image exists
+      ansible.builtin.command:
+        cmd: docker image inspect homelab-rsync:1
+      become_user: deploy
+      register: rsync_image_check
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Build rsync helper image (used by backup-configs.sh)
+      ansible.builtin.command:
+        cmd: docker build -t homelab-rsync:1 -f Dockerfile.rsync .
+        chdir: /opt/backup
+      become_user: deploy
+      when:
+        - not ansible_check_mode
+        - rsync_dockerfile_result.changed or rsync_image_check.rc != 0
+      register: rsync_build_result
 
     - name: Stop legacy persistent backup container (if present)
       ansible.builtin.command:

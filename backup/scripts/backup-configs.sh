@@ -21,10 +21,13 @@ set -uo pipefail
 
 COMPOSE_DIR="${COMPOSE_DIR:-/opt/stacks}"
 DEST_ROOT="${DEST_ROOT:-/mnt/nas/containers-configs}"
-LOG_DIR="${LOG_DIR:-/var/log/backup}"
+LOG_DIR="${LOG_DIR:-/opt/backup/logs}"
 ENV_FILE="${ENV_FILE:-/opt/backup/.env}"
 LOCK_FILE="${LOCK_FILE:-/tmp/backup-configs.lock}"
-RSYNC_IMAGE="${RSYNC_IMAGE:-alpine:3.20}"
+# Locally-built helper image with rsync baked in. Built by backup-deploy.yml
+# from backup/Dockerfile.rsync. Pre-built so we never run apk add during the
+# stop window (no network dep at backup time, minimal downtime).
+RSYNC_IMAGE="${RSYNC_IMAGE:-homelab-rsync:1}"
 
 DRY_RUN=false
 START_TIME=$(date +%s)
@@ -140,6 +143,13 @@ if ! mountpoint -q "$DEST_ROOT" 2>/dev/null; then
     exit 1
 fi
 
+if ! docker image inspect "$RSYNC_IMAGE" &>/dev/null; then
+    log "ERROR: rsync helper image '$RSYNC_IMAGE' not found"
+    log "Run 'make ansible-backup-deploy' to build it"
+    ntfy_send urgent "Config backup FAILED" "rsync image missing: $RSYNC_IMAGE" "x"
+    exit 1
+fi
+
 if ! touch "$DEST_ROOT/.backup-configs-write-test" 2>/dev/null; then
     log "ERROR: $DEST_ROOT is not writable"
     ntfy_send urgent "Config backup FAILED" "Dest not writable: $DEST_ROOT" "x"
@@ -202,7 +212,7 @@ for entry in "${SERVICES[@]}"; do
         -v "${vol}:/src:ro" \
         -v "${dest}:/dst" \
         "$RSYNC_IMAGE" \
-        sh -c 'apk add --no-cache -q rsync >/dev/null && rsync -aHAX --delete /src/ /dst/'; then
+        rsync -aHAX --delete /src/ /dst/; then
         log "  OK: $svc"
         SUCCEEDED+=("$svc")
     else

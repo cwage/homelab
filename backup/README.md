@@ -143,7 +143,7 @@ For each service, the script:
 2. `docker run --rm -v <vol>:/src:ro -v /mnt/nas/containers-configs/<svc>:/dst alpine rsync -aHAX --delete /src/ /dst/`
 3. `docker compose start <svc>`
 
-Stops are sequential and brief (~10–30s each). The rsync runs inside an ephemeral `alpine` container with `apk add rsync`, which is needed because volume contents are root-owned 0700 — the `deploy` user can't read them directly.
+Stops are sequential and brief (~10–30s each). The rsync runs inside an ephemeral `homelab-rsync:1` container (a tiny `alpine + rsync` image built locally by `make ansible-backup-deploy` from `backup/Dockerfile.rsync`), which is needed because volume contents are root-owned 0700 — the `deploy` user can't read them directly. Building the image at deploy time means no `apk add` runs while services are stopped, keeping downtime to just the actual sync.
 
 ### Run a snapshot
 
@@ -178,7 +178,7 @@ docker volume create <vol>
 docker run --rm \
   -v <vol>:/dst \
   -v /mnt/nas/containers-configs/<svc>:/src:ro \
-  alpine:3.20 sh -c 'apk add --no-cache -q rsync && rsync -aHAX --delete /src/ /dst/'
+  homelab-rsync:1 rsync -aHAX --delete /src/ /dst/
 
 docker compose start <svc>
 ```
@@ -331,7 +331,8 @@ Local backups use plain filesystem paths (`/backup/local/`) — no rclone remote
 
 ```
 backup/
-├── Dockerfile              # Container image definition
+├── Dockerfile              # rclone backup container image
+├── Dockerfile.rsync        # Tiny alpine+rsync image for backup-configs.sh
 ├── docker-compose.yml      # Local dev service configuration
 ├── Makefile                # Build and run targets
 ├── .env.example            # Template for credentials
