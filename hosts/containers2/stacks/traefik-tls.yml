@@ -1,0 +1,13 @@
+# Traefik TLS configuration
+# Defines certificates and TLS options for HTTPS
+
+tls:
+  certificates:
+    - certFile: /etc/traefik/certs/lan.quietlife.net.crt
+      keyFile: /etc/traefik/certs/lan.quietlife.net.key
+
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/traefik/certs/lan.quietlife.net.crt
+        keyFile: /etc/traefik/certs/lan.quietlife.net.key

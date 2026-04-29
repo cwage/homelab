@@ -50,6 +50,16 @@
         ];
       };
 
+      nixosConfigurations.containers2 = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          "${nixpkgs}/nixos/modules/virtualisation/proxmox-image.nix"
+          ./modules/base.nix
+          ./modules/openbao-agent.nix
+          ./hosts/containers2/configuration.nix
+        ];
+      };
+
       packages.${system} = {
         proxmox-template =
           self.nixosConfigurations.proxmox-template.config.system.build.VMA;
