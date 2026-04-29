@@ -129,8 +129,7 @@ refresh-known-hosts: ## Refresh SSH known_hosts from all inventory hosts
 		"10.10.15.12:22" \
 		"10.10.15.16:22" \
 		"45.56.118.89:22" \
-		"10.10.15.4:5344" \
-		"173.230.140.10:22"; \
+		"10.10.15.4:5344"; \
 	do \
 		host=$${entry%%:*}; port=$${entry##*:}; \
 		echo "  Scanning $$host:$$port..."; \
