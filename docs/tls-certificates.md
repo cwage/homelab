@@ -5,12 +5,16 @@ Wildcard TLS certificate management for `*.lan.quietlife.net` using Let's Encryp
 ## How it works
 
 ```
-lego/ (ACME client)           OpenBao                    Ansible
-───────────────────           ───────                    ───────
-Let's Encrypt cert    →  Stored at                 →  Retrieved at deploy time
-via DNS-01 challenge     kv/infra/certs/               and deployed to:
-(Cloudflare API)         lan.quietlife.net              - Traefik (/opt/stacks/certs/)
-                                                        - Proxmox (pveproxy)
+lego/ (ACME client)        OpenBao                  Deploy
+───────────────────        ───────                  ──────
+Let's Encrypt cert    →  Stored at            →  Traefik (containers2):
+via DNS-01 challenge     kv/infra/certs/          manual scp → /opt/stacks/certs/
+(Cloudflare API)         lan.quietlife.net         + docker restart traefik
+                                                   (TODO: NixOS-driven delivery — #220)
+
+                                                  Proxmox web UI (pve1):
+                                                   make ansible-proxmox
+                                                   (proxmox_certs role)
 ```
 
 ## Certificate lifecycle
