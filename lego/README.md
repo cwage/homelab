@@ -28,9 +28,11 @@ make fetch-creds      # test OpenBao credential retrieval (masked output)
 ```bash
 make renew            # get new cert from Let's Encrypt
 make store            # push to OpenBao
-# Then deploy via Ansible:
-#   make ansible-containers   (Traefik)
-#   make ansible-proxmox      (Proxmox web UI)
+# Then deploy:
+#   Traefik (containers2): the cert/key live at /opt/stacks/certs/ but the
+#     dir is 0700 deploy:users — see docs/tls-certificates.md for the
+#     stage-in-/tmp + sudo install procedure, plus `docker restart traefik`.
+#   Proxmox web UI:        make ansible-proxmox
 ```
 
 ## How it works
@@ -39,6 +41,6 @@ make store            # push to OpenBao
 2. Runs lego in a Docker container with DNS-01 challenge via Cloudflare
 3. Certs are written locally to `certs/certificates/` (gitignored)
 4. `make store` pushes them to OpenBao at `kv/infra/certs/lan.quietlife.net`
-5. Ansible retrieves them from OpenBao at deploy time
+5. Consumers retrieve them from OpenBao at deploy time
 
 Uses `--dns.resolvers=1.1.1.1:53` to work around split-horizon DNS (lego can't find the parent zone via the local resolver).

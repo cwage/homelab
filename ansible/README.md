@@ -46,7 +46,6 @@ Hosts and groups defined in `inventories/hosts.yml`. Group variables in `invento
 |-------|-------|----------|
 | `proxmox` | pve1 | `playbooks/proxmox.yml` |
 | `openbsd_firewalls` | fw1 | `playbooks/firewall.yml` |
-| `container_hosts` | containers | `playbooks/containers.yml` |
 | `linode_vps` | felix | `playbooks/vps.yml` |
 | `gaming_servers` | gaming1 | `playbooks/gaming.yml` |
 
@@ -59,9 +58,7 @@ Hosts and groups defined in `inventories/hosts.yml`. Group variables in `invento
 | `users` | System users, SSH keys, sudo, home directories |
 | `openbsd_firewall` | pf, dhcpd, unbound, resolv.conf (OpenBSD, raw module) |
 | `wireguard_server` | WireGuard VPN on OpenBSD |
-| `docker_host` | Docker + Compose installation |
 | `gpu_passthrough` | VFIO/IOMMU on Proxmox for PCI passthrough |
-| `nvidia_container` | NVIDIA driver + container toolkit |
 | `dns_client` | /etc/resolv.conf configuration |
 | `packages` | System packages from variable list |
 | `custom_packages` | Custom .deb packages (tinyfugue) |
@@ -72,7 +69,6 @@ Hosts and groups defined in `inventories/hosts.yml`. Group variables in `invento
 | `hostname` | Set hostname and /etc/hosts |
 | `system` | Hostname, /etc/hosts, SSH socket config |
 | `gaming_server` | LinuxGSM game server management |
-| `openbao` | Install/configure OpenBao |
 | `pve_template` | Build Proxmox VM templates |
 
 ## Docker workflow

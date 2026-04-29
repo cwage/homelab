@@ -47,12 +47,12 @@ NAS data is backed up to Backblaze B2 via a Dockerized rclone container with enc
 ├── modules/          Shared NixOS modules (base config, openbao-agent, etc.)
 ├── nix/              Dockerized Nix builder for Proxmox VMA images
 ├── openbao/          Dockerized OpenBao CLI tooling (AppRole management)
-├── ansible/          Host configuration (roles, playbooks, inventories)
-│   ├── playbooks/    Per-host-group playbooks (firewall.yml, containers.yml, etc.)
-│   ├── roles/        Reusable roles (openbsd_firewall, docker_host, etc.)
+├── ansible/          Host configuration for non-NixOS hosts (firewall, Proxmox, VPS, NAS, gaming)
+│   ├── playbooks/    Per-host-group playbooks (firewall.yml, proxmox.yml, vps.yml, etc.)
+│   ├── roles/        Reusable roles (openbsd_firewall, wireguard_server, etc.)
 │   └── inventories/  Host definitions and group variables
 ├── tofu/             OpenTofu VM definitions for Proxmox
-├── backup/           Dockerized NAS → Backblaze B2 backup tooling
+├── backup/           Workstation-level rclone shell (production scheduler is in modules/backups.nix)
 ├── lego/             Let's Encrypt certificate management (lego CLI)
 ├── docs/             Design notes, runbooks, and operational guides
 └── scripts/          Repo-level utility scripts
@@ -112,7 +112,6 @@ Use `make ansible-help` and `make tofu-help` to list all available targets.
 make ansible-ping             # test connectivity to all hosts
 make ansible-firewall         # apply firewall config (pf, DHCP, Unbound, WireGuard)
 make ansible-firewall-check   # dry-run firewall
-make ansible-containers       # configure Docker host (packages, GPU, certs, stacks)
 make ansible-proxmox          # configure Proxmox host (users, NFS mounts)
 make ansible-felix            # configure Linode VPS
 make ansible-felix-check      # dry-run VPS config

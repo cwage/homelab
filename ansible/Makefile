@@ -3,7 +3,7 @@ SHELL := $(shell command -v bash)
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover containers containers-check openbao-test gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check backup-configs backup-configs-dry all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover openbao-test gaming gaming-check gaming-configs gaming-archive all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -64,12 +64,6 @@ nas-check: ## Dry-run NAS configuration with --check/--diff
 nas-discover: ## Run discovery mode to gather current NAS configuration
 	$(DC) run --rm ansible ansible-playbook playbooks/nas.yml -vv --ask-become-pass -e discovery_mode=true --tags discovery $(OPTS)
 
-containers: ## Configure container hosts (Docker)
-	$(DC) run --rm ansible ansible-playbook playbooks/containers.yml -vv $(OPTS)
-
-containers-check: ## Dry-run container hosts configuration with --check/--diff
-	$(DC) run --rm ansible ansible-playbook playbooks/containers.yml -vv --check --diff $(OPTS)
-
 openbao-test: ## Test OpenBao connectivity and secret retrieval (requires BAO_TOKEN)
 	$(DC) run --rm ansible ansible-playbook playbooks/openbao-test.yml $(OPTS)
 
@@ -87,18 +81,6 @@ gaming-archive: ## Archive and purge a profile (requires PROFILE=name, CONFIRM=y
 	@archive_profile_value="$$(printf '%s' "$(PROFILE)")"; \
 	archive_confirm_value="$$(printf '%s' "$(CONFIRM)")"; \
 	$(DC) run --rm ansible ansible-playbook playbooks/gaming-archive.yml -vv -e archive_profile="$$archive_profile_value" $(if $(CONFIRM),-e archive_confirm="$$archive_confirm_value",) $(OPTS)
-
-backup-deploy: ## Deploy backup tooling to containers host (builds image, writes creds)
-	$(DC) run --rm ansible ansible-playbook playbooks/backup-deploy.yml -vv $(OPTS)
-
-backup-deploy-check: ## Dry-run backup deployment with --check/--diff
-	$(DC) run --rm ansible ansible-playbook playbooks/backup-deploy.yml -vv --check --diff $(OPTS)
-
-backup-configs: ## Snapshot named docker volumes to NAS (stops each service briefly)
-	$(DC) run --rm ansible ansible-playbook playbooks/backup-configs.yml -vv $(OPTS)
-
-backup-configs-dry: ## Dry-run config snapshot (services NOT stopped)
-	$(DC) run --rm ansible ansible-playbook playbooks/backup-configs.yml -vv -e backup_configs_dry_run=true $(OPTS)
 
 all: ## Run standard playbooks (proxmox, firewall, felix)
 	$(MAKE) proxmox
