@@ -1,0 +1,38 @@
+---
+# Snapshot named docker volumes for the containers stack to NAS.
+#
+# Stops each service briefly (~10-30s per service) while rsyncing its volume
+# to /mnt/nas/containers-configs/<service>/. ntfy notification on completion.
+#
+# Prerequisite: containers-configs NFS mount must be present on the host
+# (deployed via `make ansible-containers`).
+#
+# Usage: make ansible-backup-configs
+#
+# To dry-run without stopping services:
+#   make ansible-backup-configs OPTS='-e backup_configs_dry_run=true'
+
+- name: Snapshot container volumes to NAS
+  hosts: container_hosts
+  gather_facts: false
+
+  vars:
+    backup_configs_dry_run: false
+
+  tasks:
+    - name: Verify containers-configs NFS mount
+      ansible.builtin.command: mountpoint -q /mnt/nas/containers-configs
+      changed_when: false
+
+    - name: Run backup-configs.sh
+      ansible.builtin.command: >-
+        /opt/backup/scripts/backup-configs.sh
+        {{ '--dry-run' if backup_configs_dry_run | bool else '' }}
+      become: true
+      become_user: deploy
+      register: backup_result
+      changed_when: not (backup_configs_dry_run | bool)
+
+    - name: Show output
+      ansible.builtin.debug:
+        var: backup_result.stdout_lines

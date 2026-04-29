@@ -3,7 +3,7 @@ SHELL := $(shell command -v bash)
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover containers containers-check openbao-test gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover containers containers-check openbao-test gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check backup-configs backup-configs-dry all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -93,6 +93,12 @@ backup-deploy: ## Deploy backup tooling to containers host (builds image, writes
 
 backup-deploy-check: ## Dry-run backup deployment with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/backup-deploy.yml -vv --check --diff $(OPTS)
+
+backup-configs: ## Snapshot named docker volumes to NAS (stops each service briefly)
+	$(DC) run --rm ansible ansible-playbook playbooks/backup-configs.yml -vv $(OPTS)
+
+backup-configs-dry: ## Dry-run config snapshot (services NOT stopped)
+	$(DC) run --rm ansible ansible-playbook playbooks/backup-configs.yml -vv -e backup_configs_dry_run=true $(OPTS)
 
 all: ## Run standard playbooks (proxmox, firewall, felix)
 	$(MAKE) proxmox

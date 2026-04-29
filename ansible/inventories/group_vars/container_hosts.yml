@@ -33,6 +33,10 @@ nfs_mounts:
     src: 10.10.15.4:/volume1/paperless
     path: /mnt/nas/paperless
     opts: "rw,_netdev,hard,vers=3,noatime"
+  - name: containers-configs
+    src: 10.10.15.4:/volume1/containers-configs
+    path: /mnt/nas/containers-configs
+    opts: "rw,_netdev,hard,nofail,vers=3,noatime"
   - name: backup
     src: 10.10.15.4:/volume1/backup
     path: /mnt/nas/backup
