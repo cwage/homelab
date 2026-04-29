@@ -10,11 +10,6 @@ output "dns1_ip" {
   value       = "10.10.15.15"
 }
 
-output "containers_ip" {
-  description = "IP address of containers VM"
-  value       = "10.10.15.12"
-}
-
 output "bao2_ip" {
   description = "IP address of bao2 VM (NixOS replacement for openbao)"
   value       = "10.10.15.16"
