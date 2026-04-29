@@ -83,7 +83,6 @@ If the `.env` file is compromised, the attacker gets a token that can only read 
 ```
 backup/
 ├── Dockerfile           # rclone backup image
-├── Dockerfile.rsync     # alpine+rsync helper image (tag: homelab-rsync:1)
 ├── docker-compose.yml   # workstation service definition
 ├── Makefile             # build/shell/sync targets
 ├── .env.example         # credentials template
@@ -92,8 +91,7 @@ backup/
 │   └── local.txt        # NAS paths included in local sweeps
 └── scripts/
     ├── entrypoint.sh    # fetches secrets, configures rclone
-    ├── backup.sh        # unified b2/local sweep
-    └── backup-configs.sh  # workstation-side helper for the configs snapshot flow
+    └── backup.sh        # unified b2/local sweep
 ```
 
-> The `targets/*.txt` and `scripts/backup.sh` paths here are mirrored — but not enforced to match — `homelab.backups.{b2,local,configs}` in `hosts/containers2/configuration.nix`. If you change the production list, update these too (or accept that the workstation tool will diverge).
+> The `targets/*.txt` and `scripts/backup.sh` paths here are mirrored — but not enforced to match — `homelab.backups.{b2,local}` in `hosts/containers2/configuration.nix`. If you change the production list, update these too (or accept that the workstation tool will diverge). The container-volume snapshot flow (`backup-configs`) is exclusively a NixOS systemd unit now — see `modules/backups.nix`.

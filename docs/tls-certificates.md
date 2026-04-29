@@ -54,13 +54,16 @@ BAO_SKIP_VERIFY=true make lego-store
 # 3. Copy the renewed cert/key onto containers2 and restart Traefik
 #    (containers2 will pick this up automatically once cert delivery is
 #    moved into openbao-agent / a NixOS lego module — until then it's manual)
-scp lego/certs/_.lan.quietlife.net.crt containers2:/opt/stacks/certs/lan.quietlife.net.crt
-scp lego/certs/_.lan.quietlife.net.key containers2:/opt/stacks/certs/lan.quietlife.net.key
+scp lego/certs/certificates/_.lan.quietlife.net.crt containers2:/opt/stacks/certs/lan.quietlife.net.crt
+scp lego/certs/certificates/_.lan.quietlife.net.key containers2:/opt/stacks/certs/lan.quietlife.net.key
 ssh containers2 'docker restart traefik'
 
-# 4. Update OpenBao's own TLS cert (it listens on :8200 with its own cert)
-#    The bao2 NixOS host has the cert staged manually under /var/lib/openbao/tls/
+# 4. Update OpenBao's own TLS cert on bao2 and restart the service.
+#    The bao2 NixOS host expects these files under /var/lib/openbao/tls/
 #    until the cert auto-renewal module lands (issue #220).
+scp lego/certs/certificates/_.lan.quietlife.net.crt bao2:/var/lib/openbao/tls/tls.crt
+scp lego/certs/certificates/_.lan.quietlife.net.key bao2:/var/lib/openbao/tls/tls.key
+ssh bao2 'sudo systemctl restart openbao'
 
 # 5. Subsequent runs (proxmox, etc.) should work normally now
 make ansible-proxmox

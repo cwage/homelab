@@ -25,7 +25,7 @@ Jellyfin is exposed externally via a Cloudflare Tunnel (`cloudflared` container)
 ```
 Internet → Cloudflare Tunnel → cloudflared container ─┐
                                                        ↓
-LAN clients → fw1 (DNS) → containers:443 → Traefik → service containers
+LAN clients → fw1 (DNS) → containers2:443 → Traefik → service containers
                                               ↑
                                      wildcard TLS cert
                                    (see docs/tls-certificates.md)
