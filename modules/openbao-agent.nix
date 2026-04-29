@@ -128,6 +128,12 @@ in
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
 
+      # Restart the daemon when its config or bound role_id changes — without
+      # this, edits to the secrets list update /etc/openbao/agent.hcl on disk
+      # but the running process keeps using its in-memory template list.
+      restartTriggers = [ agentConfig ]
+        ++ lib.optional (cfg.roleId != null) cfg.roleId;
+
       # Don't start until role_id exists (written by NixOS activation if
       # roleId is set, or delivered out-of-band by Tofu/cloud-init)
       unitConfig.ConditionPathExists = "/etc/openbao/role_id";

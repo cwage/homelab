@@ -12,10 +12,10 @@
   # Resolve via fw1 (Unbound recursive, which stubs LAN zone to dns1)
   networking.nameservers = [ "10.10.15.1" ];
 
-  # --- NFS mounts (mirror the Ansible-managed mounts on the live containers VM) ---
-  # Subset for now: just what's needed to consume the pre-migration snapshots
-  # and operate the existing services. Read-only shares (Books, Documents, etc.)
-  # follow once we're closer to cutover.
+  # --- NFS mounts ---
+  # RW shares are written by services on this host (paperless ingests, the
+  # arr stack writes to Media, config snapshots land in containers-configs).
+  # RO shares are read-only sources for the B2 + local backup sweeps.
   fileSystems."/mnt/nas/containers-configs" = {
     device = "10.10.15.4:/volume1/containers-configs";
     fsType = "nfs";
@@ -32,6 +32,73 @@
     device = "10.10.15.4:/volume1/paperless";
     fsType = "nfs";
     options = [ "rw" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  # Read-only NAS shares — backup sources only, never written from here.
+  fileSystems."/mnt/nas/Pictures" = {
+    device = "10.10.15.4:/volume1/Pictures";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/Documents" = {
+    device = "10.10.15.4:/volume1/Documents";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/Books" = {
+    device = "10.10.15.4:/volume1/Books";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/bp" = {
+    device = "10.10.15.4:/volume1/bp";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/caitstuff" = {
+    device = "10.10.15.4:/volume1/caitstuff";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/syncthing-data" = {
+    device = "10.10.15.4:/volume1/syncthing-data";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/backup" = {
+    device = "10.10.15.4:/volume1/backup";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/Misc" = {
+    device = "10.10.15.4:/volume1/Misc";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/tb" = {
+    device = "10.10.15.4:/volume1/tb";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/homelab-backups" = {
+    device = "10.10.15.4:/volume1/homelab-backups";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
+  fileSystems."/mnt/nas/tofu-state" = {
+    device = "10.10.15.4:/volume1/tofu-state";
+    fsType = "nfs";
+    options = [ "ro" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
   };
 
   # Seagate 12TB USB backup drive (passed through from Proxmox).
@@ -105,10 +172,10 @@
   ];
 
   # --- OpenBao agent for secrets ---
-  # Currently delivers the cwage password hash. Stack secrets (.env,
-  # traefik basicauth, staticomment ssh deploy key) and lego-managed TLS
-  # certs are still mutable in /opt/stacks/ and are slated to move into
-  # the agent in a follow-up.
+  # Currently delivers the cwage password hash and the B2 backup credentials.
+  # Stack secrets (.env, traefik basicauth, staticomment ssh deploy key) and
+  # lego-managed TLS certs are still mutable in /opt/stacks/ and are slated
+  # to move into the agent in a follow-up.
   # roleId is per-host and CIDR-bound to 10.10.15.11.
   homelab.openbao-agent = {
     enable = true;
@@ -120,6 +187,94 @@
         field = "password_hash";
         destination = "/etc/secrets/cwage-password-hash";
       };
+
+      backup-b2-account = {
+        path = "kv/data/backup/backblaze";
+        field = "account_id";
+        destination = "/etc/secrets/backup/b2-account";
+      };
+      backup-b2-key = {
+        path = "kv/data/backup/backblaze";
+        field = "application_key";
+        destination = "/etc/secrets/backup/b2-key";
+      };
+      backup-b2crypt-pw = {
+        path = "kv/data/backup/rclone-crypt";
+        field = "password";
+        destination = "/etc/secrets/backup/b2crypt-pw";
+      };
+      # password2 (salt) intentionally omitted — this rclone crypt remote uses
+      # the default salt, not a custom one. Templating a non-existent field
+      # would write the literal string "<no value>" to disk and break rclone.
+    };
+  };
+
+  # --- ntfy.sh notifications ---
+  # OnFailure/OnSuccess hooks on the backup units pull last 20 journal lines
+  # and post them to this topic.
+  homelab.ntfy = {
+    enable = true;
+    topic = "https://ntfy.sh/cwage-homelab-backup";
+  };
+
+  # --- Backups ---
+  # Three jobs:
+  #   - configs (03:00): briefly stop/start each compose service while
+  #     rsyncing its named volume to /mnt/nas/containers-configs/
+  #   - b2 (03:40):       encrypted Backblaze sync (configs land here too,
+  #                       picked up via the containers-configs path)
+  #   - local (02:00):    full unencrypted copy to the USB drive at /mnt/nasbak
+  # Schedules are deliberately staggered: local first, then configs, then b2
+  # consumes the fresh containers-configs snapshot.
+  homelab.backups = {
+    local = {
+      enable = true;
+      paths = [
+        "Pictures"
+        "Documents"
+        "paperless"
+        "Books"
+        "bp"
+        "caitstuff"
+        "syncthing-data"
+        "backup"
+        "Misc"
+        "Media"
+        "tb"
+        "homelab-backups"
+        "containers-configs"
+        "tofu-state"
+      ];
+    };
+
+    configs = {
+      enable = true;
+      services = [
+        { name = "jellyfin";        mount = "/config"; }
+        { name = "sabnzbd";         mount = "/config"; }
+        { name = "radarr";          mount = "/config"; }
+        { name = "sonarr";          mount = "/config"; }
+        { name = "paperless-redis"; mount = "/data"; }
+      ];
+    };
+
+    b2 = {
+      enable = true;
+      paths = [
+        "Pictures"
+        "Documents"
+        "paperless"
+        "Books"
+        "bp"
+        "caitstuff"
+        "syncthing-data"
+        "backup"
+        "Misc"
+        "Media"
+        "homelab-backups"
+        "containers-configs"
+        "tofu-state"
+      ];
     };
   };
 }

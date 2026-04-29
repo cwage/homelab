@@ -56,6 +56,8 @@
           "${nixpkgs}/nixos/modules/virtualisation/proxmox-image.nix"
           ./modules/base.nix
           ./modules/openbao-agent.nix
+          ./modules/ntfy-notify.nix
+          ./modules/backups.nix
           ./hosts/containers2/configuration.nix
         ];
       };
