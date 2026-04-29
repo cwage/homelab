@@ -3,7 +3,7 @@ SHELL := $(shell command -v bash)
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover containers containers-check openbao-test gaming gaming-check gaming-configs gaming-archive turn turn-check backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
+.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover containers containers-check openbao-test gaming gaming-check gaming-configs gaming-archive backup-deploy backup-deploy-check all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -88,12 +88,6 @@ gaming-archive: ## Archive and purge a profile (requires PROFILE=name, CONFIRM=y
 	archive_confirm_value="$$(printf '%s' "$(CONFIRM)")"; \
 	$(DC) run --rm ansible ansible-playbook playbooks/gaming-archive.yml -vv -e archive_profile="$$archive_profile_value" $(if $(CONFIRM),-e archive_confirm="$$archive_confirm_value",) $(OPTS)
 
-turn: ## Configure TURN relay server (coturn)
-	$(DC) run --rm ansible ansible-playbook playbooks/turn.yml -vv $(OPTS)
-
-turn-check: ## Dry-run TURN server configuration with --check/--diff
-	$(DC) run --rm ansible ansible-playbook playbooks/turn.yml -vv --check --diff $(OPTS)
-
 backup-deploy: ## Deploy backup tooling to containers host (builds image, writes creds)
 	$(DC) run --rm ansible ansible-playbook playbooks/backup-deploy.yml -vv $(OPTS)
 
@@ -135,8 +129,7 @@ refresh-known-hosts: ## Refresh SSH known_hosts from all inventory hosts
 		"10.10.15.12:22" \
 		"10.10.15.16:22" \
 		"45.56.118.89:22" \
-		"10.10.15.4:5344" \
-		"173.230.140.10:22"; \
+		"10.10.15.4:5344"; \
 	do \
 		host=$${entry%%:*}; port=$${entry##*:}; \
 		echo "  Scanning $$host:$$port..."; \

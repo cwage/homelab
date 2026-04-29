@@ -31,7 +31,7 @@
           $TTL 300
 
           @       IN  SOA dns1.lan.quietlife.net. hostmaster.lan.quietlife.net. (
-                      2026042802  ; serial (YYYYMMDDNN)
+                      2026042803  ; serial (YYYYMMDDNN)
                       3600        ; refresh
                       600         ; retry
                       604800      ; expire
@@ -68,11 +68,7 @@
           radarr          IN  CNAME   containers.lan.quietlife.net.
           sonarr          IN  CNAME   containers.lan.quietlife.net.
           paperless       IN  CNAME   containers.lan.quietlife.net.
-          owncast         IN  CNAME   containers.lan.quietlife.net.
           staticomment    IN  CNAME   containers.lan.quietlife.net.
-          mm              IN  CNAME   containers.lan.quietlife.net.
-          nash-services   IN  CNAME   containers.lan.quietlife.net.
-          links           IN  CNAME   containers.lan.quietlife.net.
         '';
       };
 

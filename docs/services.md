@@ -12,14 +12,13 @@ All self-hosted services run as Docker containers on the **containers** host (`1
 | **Sonarr** | `linuxserver/sonarr` | `https://sonarr.lan.quietlife.net` | TV automation |
 | **SABnzbd** | `linuxserver/sabnzbd` | `https://sabnzbd.lan.quietlife.net` | Usenet download client |
 | **Paperless-ngx** | `paperless-ngx/paperless-ngx` | `https://paperless.lan.quietlife.net` | Document management |
-| **Owncast** | `owncast/owncast` | `https://owncast.lan.quietlife.net` | Live streaming (RTMP ingest on port 1935) |
-| **Cloudflared** | `cloudflare/cloudflared` | — | Cloudflare Tunnel for external access |
-| **Linkding** | `sissbruecker/linkding` | `https://links.lan.quietlife.net` | Bookmark manager |
 | **Paperless Redis** | `redis` | — | Backend for Paperless-ngx |
+| **staticomment** | `ghcr.io/cwage/staticomment` | `https://staticomment.lan.quietlife.net` | Comment endpoint for `quietlife.net` |
+| **Cloudflared** | `cloudflare/cloudflared` | — | Cloudflare Tunnel for external access (Jellyfin) |
 
 ## External access
 
-Jellyfin and Owncast are exposed externally via a Cloudflare Tunnel (`cloudflared` container). The tunnel token is stored in OpenBao at `kv/infra/cloudflare/tunnel`. External URLs are configured in the Cloudflare Zero Trust dashboard.
+Jellyfin is exposed externally via a Cloudflare Tunnel (`cloudflared` container). The tunnel token is stored in OpenBao at `kv/infra/cloudflare/tunnel`. Tunnel ingress routes are configured in the Cloudflare Zero Trust dashboard.
 
 ## How it fits together
 

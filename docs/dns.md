@@ -18,7 +18,7 @@ LAN clients → fw1 (Unbound, recursive) → dns1 (NSD, authoritative)
 Managed inline in `hosts/dns1/configuration.nix` (NixOS NSD config). Current records include:
 
 - A records for infrastructure: fw1, dns1, pve1, containers, portanas, bao, etc.
-- CNAMEs for services: jellyfin, radarr, sonarr, sabnzbd, paperless, owncast, traefik — all pointing to `containers`
+- CNAMEs for services: jellyfin, radarr, sonarr, sabnzbd, paperless, traefik, staticomment — all pointing to `containers`
 - Convenience aliases: `firewall` → fw1, `nas` → portanas, `proxmox` → pve1
 
 ### Adding or changing DNS records
@@ -31,7 +31,7 @@ Unbound/DHCP config on fw1 is still Ansible-managed: `make ansible-firewall`
 
 ## External: Cloudflare
 
-Public DNS zones (including `quietlife.net`) are hosted on **Cloudflare**. External access to internal services (Jellyfin, Owncast) is provided via a **Cloudflare Tunnel** rather than exposing ports — see [docs/services.md](services.md).
+Public DNS zones (including `quietlife.net`) are hosted on **Cloudflare**. External access to internal services (Jellyfin) is provided via a **Cloudflare Tunnel** rather than exposing ports — see [docs/services.md](services.md).
 
 ### OpenTofu-managed DNS records
 

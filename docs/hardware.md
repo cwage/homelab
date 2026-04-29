@@ -20,7 +20,7 @@ graph TD
         subgraph pve1["pve1 (.18) — Proxmox VE · Ryzen 7 1800X · 64 GB"]
             dns1["dns1 (.10)<br/><small>NSD authoritative DNS</small>"]
             openbao["openbao (.11)<br/><small>Secrets management</small>"]
-            containers["containers (.12)<br/><small>Docker host · GPU passthrough</small><br/><small>Traefik · Jellyfin · arr stack · Paperless · Owncast</small>"]
+            containers["containers (.12)<br/><small>Docker host · GPU passthrough</small><br/><small>Traefik · Jellyfin · arr stack · Paperless</small>"]
         end
     end
 
@@ -88,7 +88,7 @@ All VMs run on pve1 and are provisioned via OpenTofu (see `tofu/`). Base image i
 | VM | ID | vCPU | RAM | Disk | Purpose |
 |----|-----|------|-----|------|---------|
 | **dns1** | 101 | 1 | 512 MB | 8 GB | NSD authoritative DNS |
-| **containers** | 102 | 4 | 8 GB | 64 GB | Docker host (Traefik, Jellyfin, arr stack, Paperless, Owncast) |
+| **containers** | 102 | 4 | 8 GB | 64 GB | Docker host (Traefik, Jellyfin, arr stack, Paperless) |
 | **openbao** | 103 | 1 | 2 GB | 20 GB | Secrets management |
 
 The containers VM also has the GTX 1050 Ti passed through for Jellyfin hardware transcoding (NVENC).

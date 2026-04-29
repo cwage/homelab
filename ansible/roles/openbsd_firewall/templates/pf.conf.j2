@@ -48,6 +48,3 @@ pass out quick inet
 pass in on { $wired } inet
 # Port forward: Plex (32400) from WAN to NAS
 pass in on egress proto tcp from any to any port 32400 rdr-to 10.10.15.4
-# Port forward: Mattermost Calls RTC (UDP+TCP 8443) from WAN to containers
-pass in on egress proto udp from any to any port 8443 rdr-to 10.10.15.12
-pass in on egress proto tcp from any to any port 8443 rdr-to 10.10.15.12

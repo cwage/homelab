@@ -14,7 +14,7 @@ The LAN is `10.10.15.0/24` under the domain `lan.quietlife.net`. A couple of ext
 | **fw1** | 10.10.15.1 | OpenBSD firewall/router — pf, DHCP, Unbound (recursive DNS), WireGuard VPN |
 | **dns1** | 10.10.15.15 | NSD authoritative DNS for `lan.quietlife.net` (NixOS) |
 | **bao2** | 10.10.15.16 | Secrets management (OpenBao, a HashiCorp Vault fork; NixOS) |
-| **containers** | 10.10.15.12 | Docker host — [Traefik, Jellyfin, arr stack, Paperless, Owncast](docs/services.md), GPU passthrough |
+| **containers** | 10.10.15.12 | Docker host — [Traefik, Jellyfin, arr stack, Paperless](docs/services.md), GPU passthrough |
 | **portanas** | 10.10.15.4 | Synology NAS — NFS storage backing media, documents, and [backups](backup/README.md) |
 | **felix** | 45.56.113.70 | Linode VPS |
 | **gaming1** | 45.56.118.89 | Linode VPS — LinuxGSM game servers |
