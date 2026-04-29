@@ -19,22 +19,22 @@ Local backups use plain filesystem paths under `/backup/local/`.
 
 ## OpenBao secret layout
 
-The container's entrypoint fetches credentials from OpenBao at run time. The same paths back the production NixOS units, so anything you change here propagates.
+The container's entrypoint fetches B2 + rclone-crypt credentials from OpenBao at run time using the periodic token below. **Production reads the same KV data via AppRole** (see `homelab.openbao-agent.secrets` in `hosts/containers2/configuration.nix`, which templates fields into `/etc/secrets/backup/`), so the data layer is shared but the auth path is not — rotating the workstation periodic token doesn't affect production and vice versa.
 
-| KV path | Fields |
-|---------|--------|
-| `kv/backup/backblaze` | `account_id`, `application_key` |
-| `kv/backup/rclone-crypt` | `password` (this remote uses the default rclone salt — no `password2`) |
-| `kv/backup/remote-token` | `token` — the periodic token scoped to the `backup-remote` policy |
+| KV path | Fields | Used by |
+|---------|--------|---------|
+| `kv/backup/backblaze` | `account_id`, `application_key` | workstation + production |
+| `kv/backup/rclone-crypt` | `password` (no `password2` — production omits it deliberately so the crypt remote uses rclone's default salt; setting `password2` here will break compatibility with production-encrypted data) | workstation + production |
+| `kv/backup/remote-token` | `token` — periodic token scoped to the `backup-remote` policy | workstation only |
 
-The `backup-remote` policy:
+The `backup-remote` policy (used by the workstation periodic token):
 
 ```hcl
 path "kv/data/backup/backblaze"     { capabilities = ["read"] }
 path "kv/data/backup/rclone-crypt"  { capabilities = ["read"] }
 ```
 
-### Token rotation
+### Token rotation (workstation)
 
 ```bash
 export BAO_ADDR="https://bao.lan.quietlife.net:8200"
@@ -46,7 +46,7 @@ bao token revoke <old-token>
 bao kv put kv/backup/remote-token token=-   # then paste the new token at stdin
 ```
 
-containers2's openbao-agent re-reads `kv/backup/*` automatically; no redeploy needed for token rotation, only for changes that alter the agent template (see `hosts/containers2/configuration.nix`).
+This only affects the workstation tool. Production runs through openbao-agent's AppRole and reads the cred fields directly — no redeploy needed unless you change the agent template in `hosts/containers2/configuration.nix`.
 
 ## Workstation usage
 

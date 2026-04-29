@@ -51,19 +51,20 @@ make lego-renew
 # 2. Store in OpenBao with TLS verification disabled
 BAO_SKIP_VERIFY=true make lego-store
 
-# 3. Copy the renewed cert/key onto containers2 and restart Traefik
+# 3. Copy the renewed cert/key onto containers2 and restart Traefik. The
+#    target dir is 0700 deploy:users, so we stage in /tmp and sudo install.
 #    (containers2 will pick this up automatically once cert delivery is
 #    moved into openbao-agent / a NixOS lego module — until then it's manual)
-scp lego/certs/certificates/_.lan.quietlife.net.crt containers2:/opt/stacks/certs/lan.quietlife.net.crt
-scp lego/certs/certificates/_.lan.quietlife.net.key containers2:/opt/stacks/certs/lan.quietlife.net.key
-ssh containers2 'docker restart traefik'
+scp lego/certs/certificates/_.lan.quietlife.net.crt containers2:/tmp/lan.quietlife.net.crt
+scp lego/certs/certificates/_.lan.quietlife.net.key containers2:/tmp/lan.quietlife.net.key
+ssh containers2 'sudo install -o deploy -g users -m 0644 /tmp/lan.quietlife.net.crt /opt/stacks/certs/lan.quietlife.net.crt && sudo install -o deploy -g users -m 0600 /tmp/lan.quietlife.net.key /opt/stacks/certs/lan.quietlife.net.key && rm -f /tmp/lan.quietlife.net.crt /tmp/lan.quietlife.net.key && docker restart traefik'
 
-# 4. Update OpenBao's own TLS cert on bao2 and restart the service.
-#    The bao2 NixOS host expects these files under /var/lib/openbao/tls/
-#    until the cert auto-renewal module lands (issue #220).
-scp lego/certs/certificates/_.lan.quietlife.net.crt bao2:/var/lib/openbao/tls/tls.crt
-scp lego/certs/certificates/_.lan.quietlife.net.key bao2:/var/lib/openbao/tls/tls.key
-ssh bao2 'sudo systemctl restart openbao'
+# 4. Update OpenBao's own TLS cert on bao2 and restart the service. The
+#    target dir is 0750 openbao:openbao, so the same /tmp staging trick.
+#    (Manual until the cert auto-renewal module lands — issue #220.)
+scp lego/certs/certificates/_.lan.quietlife.net.crt bao2:/tmp/tls.crt
+scp lego/certs/certificates/_.lan.quietlife.net.key bao2:/tmp/tls.key
+ssh bao2 'sudo install -o openbao -g openbao -m 0644 /tmp/tls.crt /var/lib/openbao/tls/tls.crt && sudo install -o openbao -g openbao -m 0600 /tmp/tls.key /var/lib/openbao/tls/tls.key && rm -f /tmp/tls.crt /tmp/tls.key && sudo systemctl restart openbao'
 
 # 5. Subsequent runs (proxmox, etc.) should work normally now
 make ansible-proxmox

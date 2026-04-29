@@ -29,8 +29,9 @@ make fetch-creds      # test OpenBao credential retrieval (masked output)
 make renew            # get new cert from Let's Encrypt
 make store            # push to OpenBao
 # Then deploy:
-#   Traefik (containers2): scp the cert/key to /opt/stacks/certs/ and
-#     `docker restart traefik` — see docs/tls-certificates.md
+#   Traefik (containers2): the cert/key live at /opt/stacks/certs/ but the
+#     dir is 0700 deploy:users — see docs/tls-certificates.md for the
+#     stage-in-/tmp + sudo install procedure, plus `docker restart traefik`.
 #   Proxmox web UI:        make ansible-proxmox
 ```
 
