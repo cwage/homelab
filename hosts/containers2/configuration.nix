@@ -224,7 +224,9 @@
         group = "users";
         permissions = "0600";
         manageDestinationDir = false;
-        # Command on the key only (see openbao-agent module's race note).
+        # Command on the key, which sorts after traefik-tls-cert and is
+        # therefore rendered second (see modules/openbao-agent.nix). The
+        # command fires only after both files are on disk.
         # Traefik doesn't watch bind-mounted cert files, so a restart is
         # required — `docker restart` is idempotent and ~2s, fine for a
         # quarterly rotation.

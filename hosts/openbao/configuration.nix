@@ -89,8 +89,10 @@
         group = "openbao";
         permissions = "0600";
         manageDestinationDir = false;
-        # Command set on the key (rendered second alphabetically, but order
-        # isn't guaranteed — see the openbao-agent module for the race note).
+        # Command on the key, which sorts after tls-cert and is therefore
+        # rendered second by openbao-agent (templates are emitted in
+        # alphabetical order of the secret name and consul-template
+        # processes them sequentially — see modules/openbao-agent.nix).
         # `reload` (NOT reload-or-restart) — SIGHUP re-reads TLS in place
         # without re-sealing. A restart would leave openbao sealed and
         # require manual unseal, so we accept that a hard reload failure

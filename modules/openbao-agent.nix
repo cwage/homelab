@@ -123,18 +123,20 @@ in
             type = lib.types.nullOr lib.types.str;
             default = null;
             description = ''
-              Command to run after the file is rendered (i.e. on rotation).
-              Typical use: 'systemctl reload-or-restart <svc>' or
-              'docker restart <container>'. The agent runs as root so this
-              command runs as root.
+              Command to run after the destination file is rendered (i.e.
+              on rotation). The agent runs as root, so this command runs
+              as root. Typical: 'systemctl reload <svc>' or
+              'docker restart <container>'.
 
-              Caveat: when a single KV secret is fanned out to multiple
-              destinations (e.g. cert + key), the agent renders templates
-              concurrently and the command fires per-template. Set the
-              command on only ONE of the destinations (typically the last one
-              written) and accept the rare race where the post-rotation
-              service restarts mid-fanout — Restart=on-failure picks up the
-              consistent state on the next attempt.
+              Multi-file fanout (e.g. cert + key from the same KV path):
+              set the command on only ONE secret, the one rendered LAST.
+              openbao-agent (consul-template under the hood) renders
+              templates sequentially in their HCL declaration order, which
+              this module emits in alphabetical order of the cfg.secrets
+              attribute name. Naming pair members so that the one carrying
+              the command sorts last (e.g. `tls-key` after `tls-cert`)
+              guarantees the command fires only after both files are on
+              disk, so the consumer never reloads mid-fanout.
             '';
           };
           manageDestinationDir = lib.mkOption {
