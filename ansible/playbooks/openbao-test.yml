@@ -51,6 +51,7 @@
                                 url=openbao_addr,
                                 token=openbao_token,
                                 validate_certs=openbao_validate_certs) }}"
+      no_log: true
 
     - name: Display retrieved backup token (masked)
       ansible.builtin.debug:

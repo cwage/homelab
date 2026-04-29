@@ -71,7 +71,7 @@ containers-check: ## Dry-run container hosts configuration with --check/--diff
 	$(DC) run --rm ansible ansible-playbook playbooks/containers.yml -vv --check --diff $(OPTS)
 
 openbao-test: ## Test OpenBao connectivity and secret retrieval (requires BAO_TOKEN)
-	$(DC) run --rm ansible ansible-playbook playbooks/openbao-test.yml -vv $(OPTS)
+	$(DC) run --rm ansible ansible-playbook playbooks/openbao-test.yml $(OPTS)
 
 gaming: ## Full gaming server provisioning (all active profiles) [PROFILE=name]
 	$(DC) run --rm ansible ansible-playbook playbooks/gaming.yml -vv $(if $(PROFILE),-e 'gaming_profile_filter=$(PROFILE)',) $(OPTS)
