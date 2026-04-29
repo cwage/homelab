@@ -158,24 +158,6 @@ services:
     networks:
       - proxy
 
-  owncast:
-    image: owncast/owncast:0.2.1
-    container_name: owncast
-    restart: unless-stopped
-    user: "${UID:-1000}:${GID:-1000}"
-    ports:
-      - "10.10.15.12:1935:1935"
-    volumes:
-      - owncast_data:/app/data
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.owncast.rule=Host(`owncast.lan.quietlife.net`)"
-      - "traefik.http.routers.owncast.entrypoints=websecure"
-      - "traefik.http.routers.owncast.tls=true"
-      - "traefik.http.services.owncast.loadbalancer.server.port=8080"
-    networks:
-      - proxy
-
   staticomment:
     image: ghcr.io/cwage/staticomment:0.2.0
     container_name: staticomment
@@ -196,88 +178,6 @@ services:
     networks:
       - proxy
 
-  mattermost-db:
-    image: postgres:16-alpine
-    container_name: mattermost-db
-    restart: unless-stopped
-    environment:
-      - POSTGRES_USER=mmuser
-      - POSTGRES_PASSWORD=${MM_DB_PASSWORD}
-      - POSTGRES_DB=mattermost
-    volumes:
-      - mattermost_db:/var/lib/postgresql/data
-    networks:
-      - proxy
-
-  mattermost:
-    image: mattermost/mattermost-team-edition:10.6
-    container_name: mattermost
-    restart: unless-stopped
-    depends_on:
-      - mattermost-db
-    environment:
-      - TZ=America/Chicago
-      - MM_SQLSETTINGS_DRIVERNAME=postgres
-      - MM_SQLSETTINGS_DATASOURCE=postgres://mmuser:${MM_DB_PASSWORD}@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10
-      - MM_SERVICESETTINGS_SITEURL=https://mm.quietlife.net
-    ports:
-      - "10.10.15.12:8443:8443/udp"
-      - "10.10.15.12:8443:8443/tcp"
-    volumes:
-      - mattermost_config:/mattermost/config
-      - mattermost_data:/mattermost/data
-      - mattermost_logs:/mattermost/logs
-      - mattermost_plugins:/mattermost/plugins
-      - mattermost_client_plugins:/mattermost/client/plugins
-      - mattermost_bleve:/mattermost/bleve-indexes
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mattermost.rule=Host(`mm.lan.quietlife.net`)"
-      - "traefik.http.routers.mattermost.entrypoints=websecure"
-      - "traefik.http.routers.mattermost.tls=true"
-      - "traefik.http.services.mattermost.loadbalancer.server.port=8065"
-    networks:
-      - proxy
-
-  nash-services:
-    image: ghcr.io/cwage/nash-services:0.10.1
-    container_name: nash-services
-    restart: unless-stopped
-    user: "${UID:-1000}:${GID:-1000}"
-    environment:
-      - PYTHONUNBUFFERED=1
-      - DISPATCH_CACHE_DB=/data/service_cache.db
-      - GITHUB_TOKEN=${NASH_SERVICES_GITHUB_TOKEN:-}
-    volumes:
-      - nash_services_cache:/data
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.nash-services.rule=Host(`nash-services.lan.quietlife.net`)"
-      - "traefik.http.routers.nash-services.entrypoints=websecure"
-      - "traefik.http.routers.nash-services.tls=true"
-      - "traefik.http.services.nash-services.loadbalancer.server.port=5000"
-    networks:
-      - proxy
-
-  linkding:
-    image: sissbruecker/linkding:1.45.0
-    container_name: linkding
-    restart: unless-stopped
-    volumes:
-      - linkding_data:/etc/linkding/data
-    environment:
-      - LD_SUPERUSER_NAME=${LINKDING_SUPERUSER_NAME}
-      - LD_SUPERUSER_PASSWORD=${LINKDING_SUPERUSER_PASSWORD}
-      - LD_CSRF_TRUSTED_ORIGINS=https://links.lan.quietlife.net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.linkding.rule=Host(`links.lan.quietlife.net`)"
-      - "traefik.http.routers.linkding.entrypoints=websecure"
-      - "traefik.http.routers.linkding.tls=true"
-      - "traefik.http.services.linkding.loadbalancer.server.port=9090"
-    networks:
-      - proxy
-
   cloudflared:
     image: cloudflare/cloudflared:2026.1.2
     container_name: cloudflared
@@ -289,7 +189,6 @@ services:
       - proxy
     depends_on:
       - jellyfin
-      - owncast
     profiles:
       - tunnel
 
@@ -300,16 +199,6 @@ volumes:
   radarr_config:
   sonarr_config:
   paperless_redis:
-  owncast_data:
-  mattermost_db:
-  mattermost_config:
-  mattermost_data:
-  mattermost_logs:
-  mattermost_plugins:
-  mattermost_client_plugins:
-  mattermost_bleve:
-  nash_services_cache:
-  linkding_data:
 
 networks:
   proxy:
