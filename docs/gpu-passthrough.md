@@ -79,7 +79,7 @@ The VM must use:
 - **Machine type**: q35 (for PCIe passthrough)
 - **hostpci**: Reference the PCI mapping created above
 
-This is managed by OpenTofu in `tofu/containers.tf`.
+This is managed by OpenTofu in `tofu/containers2.tf`.
 
 ## Current Hardware
 
