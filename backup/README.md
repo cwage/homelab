@@ -119,6 +119,70 @@ View the cron entry:
 crontab -u deploy -l
 ```
 
+## Container config snapshots (`backup-configs`)
+
+Separate from the rclone-based NAS-share backups, `backup-configs.sh` snapshots the **named Docker volumes** for the containers stack to an NFS share on the NAS. This captures the per-service state (databases, settings, queues) that lives in `/var/lib/docker/volumes/` and would otherwise be lost on a VM rebuild.
+
+| Service | Mount | What's in it |
+|---------|-------|--------------|
+| `jellyfin` | `/config` | Library metadata, users, watch history, plugin settings |
+| `sabnzbd` | `/config` | Settings, queue, history, server creds |
+| `radarr` | `/config` | Database, settings, indexer/dl-client config |
+| `sonarr` | `/config` | Database, settings, indexer/dl-client config |
+| `paperless-redis` | `/data` | Paperless task queue (RDB snapshot) |
+
+The actual docker volume names are resolved at runtime by inspecting each container's mounts (e.g., `stacks_jellyfin_config` under the default compose project name).
+
+Bind mounts under `/mnt/nas/` (Paperless data/media/export, Jellyfin media, Traefik certs) are NOT included — they already live on the NAS. `jellyfin_cache` is skipped (regenerable). Staticomment's `staticomment-ssh` bind mount holds the deploy key, which is also in OpenBao.
+
+### How it works
+
+For each service, the script:
+
+1. `docker compose stop <svc>` — flush state to disk
+2. `docker run --rm -v <vol>:/src:ro -v /mnt/nas/containers-configs/<svc>:/dst alpine rsync -aHAX --delete /src/ /dst/`
+3. `docker compose start <svc>`
+
+Stops are sequential and brief (~10–30s each). The rsync runs inside an ephemeral `homelab-rsync:1` container (a tiny `alpine + rsync` image built locally by `make ansible-backup-deploy` from `backup/Dockerfile.rsync`), which is needed because volume contents are root-owned 0700 — the `deploy` user can't read them directly. Building the image at deploy time means no `apk add` runs while services are stopped, keeping downtime to just the actual sync.
+
+### Run a snapshot
+
+The `containers-configs` NFS share must be mounted RW on the containers VM. Deploy the mount once via `make ansible-containers`, then:
+
+```bash
+make ansible-backup-configs        # snapshot all services (stops them briefly)
+make ansible-backup-configs-dry    # dry-run, services NOT stopped
+```
+
+Logs go to `/opt/backup/logs/backup-configs-YYYYMMDD-HHMMSS.log` on the containers host. ntfy notification fires on completion.
+
+There is currently **no cron schedule** for this — it is run manually on demand (e.g., before VM rebuilds or risky stack changes).
+
+### Restore from a snapshot
+
+```bash
+ssh containers.lan.quietlife.net
+cd /opt/stacks
+
+# Find the real volume name for the service (e.g., stacks_jellyfin_config)
+docker compose ps -q <svc> | xargs docker inspect --format \
+  '{{range .Mounts}}{{if eq .Type "volume"}}{{.Destination}} -> {{.Name}}{{println}}{{end}}{{end}}'
+
+# Stop the service
+docker compose stop <svc>
+
+# Recreate the empty volume if needed (compose up will recreate it on start)
+docker volume create <vol>
+
+# Copy snapshot back into the volume
+docker run --rm \
+  -v <vol>:/dst \
+  -v /mnt/nas/containers-configs/<svc>:/src:ro \
+  homelab-rsync:1 rsync -aHAX --delete /src/ /dst/
+
+docker compose start <svc>
+```
+
 ## USB Drive Setup (Local Backups)
 
 The Seagate 12TB USB drive is passed through to the containers VM via Proxmox USB passthrough (device `0bc2:2038`).
@@ -267,7 +331,8 @@ Local backups use plain filesystem paths (`/backup/local/`) — no rclone remote
 
 ```
 backup/
-├── Dockerfile              # Container image definition
+├── Dockerfile              # rclone backup container image
+├── Dockerfile.rsync        # Tiny alpine+rsync image for backup-configs.sh
 ├── docker-compose.yml      # Local dev service configuration
 ├── Makefile                # Build and run targets
 ├── .env.example            # Template for credentials
@@ -278,5 +343,6 @@ backup/
 │   └── local.txt           # Paths for USB backup
 └── scripts/
     ├── entrypoint.sh       # Fetches secrets and configures rclone
-    └── backup.sh           # Unified backup script (--target b2|local)
+    ├── backup.sh           # Unified backup script (--target b2|local)
+    └── backup-configs.sh   # Snapshot container named volumes to NAS
 ```
