@@ -4,10 +4,17 @@ let
   cfg = config.homelab.openbao-agent;
 
   # Generate agent config HCL from module options
-  # Collect unique parent directories of all secret destinations
-  secretDirs = lib.unique (lib.mapAttrsToList
+  # All unique parent directories of secret destinations (used for the agent
+  # service's ReadWritePaths, regardless of who creates the dir).
+  allSecretDirs = lib.unique (lib.mapAttrsToList
     (_: secret: builtins.dirOf secret.destination)
     cfg.secrets);
+
+  # Subset whose parent dir we should auto-create via tmpfiles. Excludes any
+  # dir that's already declared in a host config (manageDestinationDir = false).
+  managedSecretDirs = lib.unique (lib.mapAttrsToList
+    (_: secret: builtins.dirOf secret.destination)
+    (lib.filterAttrs (_: secret: secret.manageDestinationDir) cfg.secrets));
 
   agentConfig = ''
     vault {
@@ -36,6 +43,9 @@ let
       contents = "{{ with secret \"${secret.path}\" }}{{ index .Data.data \"${secret.field}\" }}{{ end }}"
       destination = "${secret.destination}"
       perms = "${secret.permissions}"
+      ${lib.optionalString (secret.owner != null) ''user = "${secret.owner}"''}
+      ${lib.optionalString (secret.group != null) ''group = "${secret.group}"''}
+      ${lib.optionalString (secret.command != null) ''command = "${secret.command}"''}
     }
     '') cfg.secrets)}
   '';
@@ -92,6 +102,54 @@ in
             default = "0400";
             description = "File permissions for the rendered secret.";
           };
+          owner = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = ''
+              Owning user for the rendered file. Null leaves it as the agent
+              process user (root). Required when the consuming service runs as
+              a non-root user that cannot otherwise read the file.
+            '';
+          };
+          group = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = ''
+              Owning group for the rendered file. Null leaves it as the agent
+              process group (root).
+            '';
+          };
+          command = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = ''
+              Command to run after the file is rendered (i.e. on rotation).
+              Typical use: 'systemctl reload-or-restart <svc>' or
+              'docker restart <container>'. The agent runs as root so this
+              command runs as root.
+
+              Caveat: when a single KV secret is fanned out to multiple
+              destinations (e.g. cert + key), the agent renders templates
+              concurrently and the command fires per-template. Set the
+              command on only ONE of the destinations (typically the last one
+              written) and accept the rare race where the post-rotation
+              service restarts mid-fanout — Restart=on-failure picks up the
+              consistent state on the next attempt.
+            '';
+          };
+          manageDestinationDir = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Whether the module should auto-create the destination's parent
+              directory (0750 root:root) via systemd.tmpfiles. Set to false
+              when the directory is already declared elsewhere in the host
+              config with the ownership/perms the consumer needs (e.g.
+              /var/lib/openbao/tls owned by openbao:openbao on bao2). The
+              agent's ReadWritePaths still includes the parent dir either
+              way, so the agent can write into it.
+            '';
+          };
         };
       });
       default = {};
@@ -107,7 +165,7 @@ in
     systemd.tmpfiles.rules = [
       "d /etc/openbao 0750 root root -"
       "d /run/openbao-agent 0750 root root -"
-    ] ++ map (dir: "d ${dir} 0750 root root -") secretDirs;
+    ] ++ map (dir: "d ${dir} 0750 root root -") managedSecretDirs;
 
     # Write role_id if provided in config (not secret with CIDR binding)
     environment.etc."openbao/role_id" = lib.mkIf (cfg.roleId != null) {
@@ -146,7 +204,7 @@ in
         RestartSec = "5s";
         # Hardening
         ProtectSystem = "strict";
-        ReadWritePaths = [ "/run/openbao-agent" ] ++ secretDirs;
+        ReadWritePaths = [ "/run/openbao-agent" ] ++ allSecretDirs;
         ProtectHome = true;
         NoNewPrivileges = true;
       };

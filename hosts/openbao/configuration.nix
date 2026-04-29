@@ -51,18 +51,51 @@
     cluster_addr = "https://bao.lan.quietlife.net:8201"
   '';
 
-  # --- OpenBao agent for secrets (cwage password hash) ---
-  # Fetches from bao.lan.quietlife.net which resolves to this host. The agent
-  # waits and retries if the local server is sealed.
+  # --- OpenBao agent for secrets ---
+  # Connects via loopback with TLS verification disabled to break the
+  # chicken-and-egg: bao2's TCP listener uses the very TLS cert this agent is
+  # responsible for refreshing. Loopback-only means there's no MITM concern,
+  # and skipping verification means an expired cert can still be replaced.
+  # The agent waits and retries if the local server is sealed.
   homelab.openbao-agent = {
     enable = true;
-    tlsSkipVerify = false;
+    address = "https://localhost:8200";
+    tlsSkipVerify = true;
     roleId = "9f69c83d-c515-58d5-20aa-260e2f63a507";
     secrets = {
       cwage-password-hash = {
         path = "kv/data/infra/users/cwage";
         field = "password_hash";
         destination = "/etc/secrets/cwage-password-hash";
+      };
+
+      # LE wildcard cert delivery for bao2's own TCP listener. The cert dir
+      # is created and owned by the openbao server module above, so we tell
+      # the agent module not to redeclare it.
+      tls-cert = {
+        path = "kv/data/infra/certs/lan.quietlife.net";
+        field = "certificate";
+        destination = "/var/lib/openbao/tls/tls.crt";
+        owner = "openbao";
+        group = "openbao";
+        permissions = "0644";
+        manageDestinationDir = false;
+      };
+      tls-key = {
+        path = "kv/data/infra/certs/lan.quietlife.net";
+        field = "private_key";
+        destination = "/var/lib/openbao/tls/tls.key";
+        owner = "openbao";
+        group = "openbao";
+        permissions = "0600";
+        manageDestinationDir = false;
+        # Command set on the key (rendered second alphabetically, but order
+        # isn't guaranteed — see the openbao-agent module for the race note).
+        # `reload` (NOT reload-or-restart) — SIGHUP re-reads TLS in place
+        # without re-sealing. A restart would leave openbao sealed and
+        # require manual unseal, so we accept that a hard reload failure
+        # silently leaves the old cert active until the next render cycle.
+        command = "systemctl reload openbao";
       };
     };
   };
@@ -72,6 +105,14 @@
     wantedBy = [ "multi-user.target" ];
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
+
+    # Reload (SIGHUP) on unit changes instead of NixOS's default restart.
+    # A restart leaves openbao sealed and requires manual unseal — too high
+    # a cost for routine config tweaks. SIGHUP re-reads listener TLS in
+    # place; binary upgrades that genuinely need a restart are rare and can
+    # be handled manually with `systemctl restart openbao && bao operator
+    # unseal …`.
+    reloadIfChanged = true;
 
     # Don't start until TLS materials are staged out-of-band on first boot.
     # Both files required: missing key would crash-loop the server.
@@ -84,6 +125,10 @@
       User = "openbao";
       Group = "openbao";
       ExecStart = "${pkgs.openbao}/bin/bao server -config=/etc/openbao-server/openbao.hcl";
+      # SIGHUP makes openbao re-read TLS files on disk WITHOUT re-sealing —
+      # what we want when openbao-agent rotates the cert under us. A restart
+      # would leave openbao sealed and require manual unseal.
+      ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
       Restart = "on-failure";
       RestartSec = "5s";
       ProtectSystem = "strict";

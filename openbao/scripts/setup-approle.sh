@@ -11,13 +11,23 @@
 
 set -eu
 
-# NixOS hosts need read access to user password hashes (and future secrets)
+# NixOS hosts need read access to user password hashes and the LE wildcard
+# cert (delivered to bao2's TCP listener and to Traefik on containers2 via
+# openbao-agent). Containers2's backup secrets at kv/data/backup/* are
+# granted by additional policy attachments on that role, not by this base
+# policy.
 NIXOS_POLICY_NAME="nixos-host"
 NIXOS_POLICY='
 path "kv/data/infra/users/*" {
   capabilities = ["read"]
 }
 path "kv/metadata/infra/users/*" {
+  capabilities = ["read"]
+}
+path "kv/data/infra/certs/*" {
+  capabilities = ["read"]
+}
+path "kv/metadata/infra/certs/*" {
   capabilities = ["read"]
 }
 '
@@ -48,13 +58,24 @@ cmd_enable() {
 cmd_create_role() {
     name="${1:?Usage: create-role <name> <ip>}"
     ip="${2:?Usage: create-role <name> <ip>}"
+    # Optional: comma-separated extra CIDRs to add to the binding. Useful
+    # when the agent connects to OpenBao via loopback (bao2 itself), so the
+    # token must also be usable from 127.0.0.1/32 in addition to the host's
+    # LAN IP. Passed through env so the existing IP positional stays simple.
+    extra_cidrs="${EXTRA_CIDRS:-}"
 
-    echo "Creating AppRole '$name' bound to $ip/32..."
+    if [ -n "$extra_cidrs" ]; then
+        cidrs="${ip}/32,${extra_cidrs}"
+    else
+        cidrs="${ip}/32"
+    fi
+
+    echo "Creating/updating AppRole '$name' bound to $cidrs..."
 
     bao write "auth/approle/role/$name" \
         bind_secret_id=false \
         secret_id_bound_cidrs="" \
-        token_bound_cidrs="${ip}/32" \
+        token_bound_cidrs="$cidrs" \
         token_policies="$NIXOS_POLICY_NAME" \
         token_ttl=1h \
         token_max_ttl=4h \
@@ -63,12 +84,12 @@ cmd_create_role() {
     role_id=$(bao read -field=role_id "auth/approle/role/$name/role-id")
 
     echo ""
-    echo "Role '$name' created."
+    echo "Role '$name' written. (Upsert — role_id preserved across re-runs.)"
     echo "  role_id: $role_id"
-    echo "  bound_cidr: ${ip}/32"
+    echo "  bound_cidrs: $cidrs"
     echo "  policy: $NIXOS_POLICY_NAME"
     echo ""
-    echo "Write this role_id to the host:"
+    echo "If this is a NEW host, write the role_id to the host:"
     echo "  ssh deploy@${name} 'sudo mkdir -p /etc/openbao && echo \"$role_id\" | sudo tee /etc/openbao/role_id'"
 }
 
