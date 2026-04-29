@@ -43,9 +43,9 @@ let
       contents = "{{ with secret \"${secret.path}\" }}{{ index .Data.data \"${secret.field}\" }}{{ end }}"
       destination = "${secret.destination}"
       perms = "${secret.permissions}"
-      ${lib.optionalString (secret.owner != null) ''user = "${secret.owner}"''}
-      ${lib.optionalString (secret.group != null) ''group = "${secret.group}"''}
-      ${lib.optionalString (secret.command != null) ''command = "${secret.command}"''}
+      ${lib.optionalString (secret.owner != null) ''user = ${builtins.toJSON secret.owner}''}
+      ${lib.optionalString (secret.group != null) ''group = ${builtins.toJSON secret.group}''}
+      ${lib.optionalString (secret.command != null) ''command = ${builtins.toJSON secret.command}''}
     }
     '') cfg.secrets)}
   '';
