@@ -54,9 +54,12 @@ let
         then ''dest_path="b2crypt:$path"''
         else ''dest_path="$DEST/$path"''}
 
-      if [[ ! -d "$src" ]]; then
-        echo "WARNING: missing source: $src"
-        FAILED+=("$path (not found)")
+      # Source MUST be an active mountpoint, not just an extant directory.
+      # rclone sync --delete against an empty stale mountpoint dir would
+      # wipe the destination — fail this path closed instead.
+      if ! mountpoint -q "$src"; then
+        echo "ERROR: $src is not a mountpoint — refusing to sync (would delete destination)"
+        FAILED+=("$path (source not mounted)")
         continue
       fi
 
@@ -85,6 +88,14 @@ let
     OnFailure = [ "notify-failure@%n.service" ];
     OnSuccess = [ "notify-success@%n.service" ];
   };
+
+  # Build a space-separated RequiresMountsFor= value: each entry is resolved
+  # by systemd to its containing mount unit, so the service won't start until
+  # those NFS shares are actually mounted (not just their parent directory
+  # existing). Pairs with the in-script `mountpoint -q` check for cases where
+  # systemd thinks a mount is up but it has gone stale mid-run.
+  mkMountReqs = paths: lib.concatStringsSep " "
+    (map (p: "${cfg.nasRoot}/${p}") paths);
 in
 {
   options.homelab.backups = {
@@ -194,11 +205,11 @@ in
     (lib.mkIf cfg.b2.enable {
       systemd.services.backup-b2 = {
         description = "Daily encrypted Backblaze B2 sync";
-        path = with pkgs; [ rclone coreutils ];
+        path = with pkgs; [ rclone coreutils util-linux ];
         wants = [ "openbao-agent.service" ];
         after = [ "openbao-agent.service" ];
         unitConfig = notifyHooks // {
-          RequiresMountsFor = cfg.nasRoot;
+          RequiresMountsFor = mkMountReqs cfg.b2.paths;
         };
         serviceConfig = {
           Type = "oneshot";
@@ -246,7 +257,7 @@ in
         description = "Daily local backup sync to USB drive";
         path = with pkgs; [ rclone coreutils util-linux ];
         unitConfig = notifyHooks // {
-          RequiresMountsFor = "${cfg.nasRoot} ${cfg.local.destination}";
+          RequiresMountsFor = "${cfg.local.destination} ${mkMountReqs cfg.local.paths}";
         };
         serviceConfig = {
           Type = "oneshot";
