@@ -1,19 +1,12 @@
-# Seagate 12TB USB backup drive — cluster-level hardware mapping
-# Allows non-root API tokens to attach the device to VMs
-resource "proxmox_virtual_environment_hardware_mapping_usb" "seagate_backup" {
-  name    = "usb-seagate-backup"
-  comment = "Seagate 12TB USB backup drive"
-
-  map = [
-    {
-      id   = "0bc2:2038"
-      node = var.pm_node_name
-    },
-  ]
-}
-
-# Container host VM - Docker host for running containerized apps
-# With GTX 1050 Ti GPU passthrough for hardware transcoding
+# Legacy Debian-based Docker host. As of #132 phase 2 it's powered off and
+# kept only as a rollback target — GPU and USB passthrough moved to
+# containers2 (10.10.15.11), and DNS for service CNAMEs (jellyfin/sonarr/etc.)
+# now points at containers2. Removed in a follow-up once containers2 is
+# trusted enough that we don't need the parachute.
+#
+# The Seagate USB hardware mapping that was previously defined here was moved
+# to tofu/hardware-mappings.tf so it survives the eventual deletion of this
+# resource.
 
 resource "proxmox_virtual_environment_vm" "containers" {
   name      = "containers"
@@ -43,21 +36,8 @@ resource "proxmox_virtual_environment_vm" "containers" {
     size         = 64
   }
 
-  # Seagate 12TB USB backup drive passthrough
-  # Uses USB mapping (like GPU PCI mapping) so non-root API tokens can manage it
-  usb {
-    mapping = proxmox_virtual_environment_hardware_mapping_usb.seagate_backup.name
-    usb3   = true
-  }
-
-  # GTX 1050 Ti GPU passthrough (IOMMU Group 14)
-  # Uses PCI mapping defined in /etc/pve/mapping/pci.cfg
-  hostpci {
-    device  = "hostpci0"
-    mapping = "gpu-gtx1050ti"
-    pcie    = true
-    rombar  = true
-  }
+  # GPU and USB passthrough moved to containers2 at cutover (#132 phase 2).
+  # See the file-level comment above for the broader retirement plan.
 
   network_device {
     bridge = "vmbr0"
@@ -89,6 +69,10 @@ resource "proxmox_virtual_environment_vm" "containers" {
   }
 
   boot_order = ["scsi0"]
+
+  # Powered off post-cutover; kept defined as a rollback target only.
+  # Removed in a follow-up PR once containers2 is fully trusted.
+  started = false
 
   # Prevent Tofu from recreating the VM when cloud-init config drifts
   # after initial provisioning. Ansible manages config from here on.
