@@ -91,7 +91,8 @@
   # mutable in /opt/stacks until they migrate to openbao-agent / lego.
   systemd.tmpfiles.rules = [
     "d /opt/stacks       0755 deploy users -"
-    "d /opt/stacks/certs 0755 deploy users -"
+    "d /opt/stacks/certs 0700 deploy users -"
+    "z /opt/stacks/certs 0700 deploy users -"
     "d /opt/backup       0750 deploy users -"
     "d /opt/backup/logs  0750 deploy users -"
     "L+ /opt/stacks/docker-compose.yml - - - - ${./stacks/docker-compose.yml}"
@@ -103,11 +104,12 @@
     rsync
   ];
 
-  # --- OpenBao agent for secrets (cwage password hash for now) ---
-  # Real services (Docker, GPU, NFS, TLS, stack) land in follow-up PRs.
-  # The roleId below is per-host and CIDR-bound to 10.10.15.11; fill it in
-  # after running:
-  #   make openbao-approle-create-role NAME=containers2 IP=10.10.15.11
+  # --- OpenBao agent for secrets ---
+  # Currently delivers the cwage password hash. Stack secrets (.env,
+  # traefik basicauth, staticomment ssh deploy key) and lego-managed TLS
+  # certs are still mutable in /opt/stacks/ and are slated to move into
+  # the agent in a follow-up.
+  # roleId is per-host and CIDR-bound to 10.10.15.11.
   homelab.openbao-agent = {
     enable = true;
     tlsSkipVerify = false;
