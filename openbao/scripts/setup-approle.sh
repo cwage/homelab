@@ -58,11 +58,19 @@ cmd_enable() {
 cmd_create_role() {
     name="${1:?Usage: create-role <name> <ip>}"
     ip="${2:?Usage: create-role <name> <ip>}"
-    # Optional: comma-separated extra CIDRs to add to the binding. Useful
-    # when the agent connects to OpenBao via loopback (bao2 itself), so the
-    # token must also be usable from 127.0.0.1/32 in addition to the host's
-    # LAN IP. Passed through env so the existing IP positional stays simple.
+    # Optional env vars:
+    #   EXTRA_CIDRS:    comma-separated extra CIDRs to add to the binding.
+    #                   Used when the agent connects from an additional source
+    #                   IP (e.g. bao2 needs 127.0.0.1/32 because its agent
+    #                   talks to its own openbao via loopback).
+    #   EXTRA_POLICIES: comma-separated extra policies to add on top of the
+    #                   base nixos-host policy and any policies already
+    #                   attached out-of-band (e.g. containers2 has
+    #                   backup-remote attached). Existing policies are
+    #                   ALWAYS preserved on re-run — see the read-then-merge
+    #                   logic below.
     extra_cidrs="${EXTRA_CIDRS:-}"
+    extra_policies="${EXTRA_POLICIES:-}"
 
     if [ -n "$extra_cidrs" ]; then
         cidrs="${ip}/32,${extra_cidrs}"
@@ -70,13 +78,35 @@ cmd_create_role() {
         cidrs="${ip}/32"
     fi
 
-    echo "Creating/updating AppRole '$name' bound to $cidrs..."
+    # Read the role's current token_policies if the role exists, so re-running
+    # this command is non-destructive for policies attached out-of-band. Since
+    # `bao write` replaces token_policies wholesale, naively writing just
+    # NIXOS_POLICY_NAME would silently drop attachments like backup-remote.
+    existing=""
+    if existing_json=$(bao read -format=json "auth/approle/role/$name" 2>/dev/null); then
+        existing=$(echo "$existing_json" | jq -r '.data.token_policies | join(",")')
+    fi
+
+    # Merge: existing + base + extras, deduped. tr/sort/paste handles dedup
+    # without requiring jq for the merge step.
+    merged="$existing,$NIXOS_POLICY_NAME"
+    if [ -n "$extra_policies" ]; then
+        merged="$merged,$extra_policies"
+    fi
+    policies=$(echo "$merged" | tr ',' '\n' | sed '/^$/d' | sort -u | paste -sd ',')
+
+    echo "Creating/updating AppRole '$name'..."
+    echo "  bound_cidrs:    $cidrs"
+    echo "  token_policies: $policies"
+    if [ -n "$existing" ] && [ "$existing" != "$NIXOS_POLICY_NAME" ]; then
+        echo "    (preserved existing: $existing)"
+    fi
 
     bao write "auth/approle/role/$name" \
         bind_secret_id=false \
         secret_id_bound_cidrs="" \
         token_bound_cidrs="$cidrs" \
-        token_policies="$NIXOS_POLICY_NAME" \
+        token_policies="$policies" \
         token_ttl=1h \
         token_max_ttl=4h \
         token_period=1h
@@ -86,8 +116,6 @@ cmd_create_role() {
     echo ""
     echo "Role '$name' written. (Upsert — role_id preserved across re-runs.)"
     echo "  role_id: $role_id"
-    echo "  bound_cidrs: $cidrs"
-    echo "  policy: $NIXOS_POLICY_NAME"
     echo ""
     echo "If this is a NEW host, write the role_id to the host:"
     echo "  ssh deploy@${name} 'sudo mkdir -p /etc/openbao && echo \"$role_id\" | sudo tee /etc/openbao/role_id'"

@@ -7,12 +7,15 @@ DC := docker compose --env-file ../.env
 
 # Admin targets fetch the approle-admin token from KV (using the deploy
 # token in .env), then run the privileged command with it. The admin token
-# never touches .env or disk. EXTRA_CIDRS is passed through for create-role
-# (used when an agent needs to connect from an additional CIDR like 127.0.0.1).
+# never touches .env or disk. EXTRA_CIDRS / EXTRA_POLICIES are passed through
+# for create-role to support hosts that need extra source IPs (e.g. bao2's
+# 127.0.0.1/32) or extra policies on top of nixos-host (e.g. containers2's
+# backup-remote — though that one is auto-preserved on re-run, the env var is
+# there for the initial attachment).
 define run-admin
 	@token=$$($(DC) run --rm --entrypoint bao bao kv get -mount=kv -field=token infra/openbao/admin-token 2>/dev/null) && \
 	[ -n "$$token" ] || (echo "ERROR: could not fetch admin token from kv/infra/openbao/admin-token" && exit 1) && \
-	$(DC) run --rm -e BAO_TOKEN=$$token -e EXTRA_CIDRS=$(EXTRA_CIDRS) bao $(1)
+	$(DC) run --rm -e BAO_TOKEN=$$token -e EXTRA_CIDRS=$(EXTRA_CIDRS) -e EXTRA_POLICIES=$(EXTRA_POLICIES) bao $(1)
 endef
 
 help:
@@ -20,8 +23,8 @@ help:
 	@echo ""
 	@echo "Admin targets (auto-fetch admin token from KV):"
 	@echo "  make approle-enable                           Enable AppRole auth + create nixos-host policy (one-time)"
-	@echo "  make approle-create-role NAME=dns1 IP=10.10.15.15 [EXTRA_CIDRS=...]"
-	@echo "                                                Create/upsert a CIDR-bound role for a NixOS host"
+	@echo "  make approle-create-role NAME=dns1 IP=10.10.15.15 [EXTRA_CIDRS=...] [EXTRA_POLICIES=...]"
+	@echo "                                                Create/upsert a role. Existing token_policies are preserved on re-run."
 	@echo "  make approle-show-role NAME=dns1              Show role_id for a host"
 	@echo "  make approle-list                             List all AppRole roles"
 	@echo ""
