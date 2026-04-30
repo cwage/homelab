@@ -1,10 +1,7 @@
-# bao2: NixOS-based replacement for the openbao VM (#218 / #132).
-# Stood up alongside the existing Debian openbao VM (10.10.15.11). Once data
-# is migrated and clients are repointed, the old VM and tofu/openbao.tf are
-# decommissioned, and DNS for bao.lan.quietlife.net flips to this host.
+# bao: OpenBao secrets management server (NixOS).
 
-resource "proxmox_virtual_environment_vm" "bao2" {
-  name      = "bao2"
+resource "proxmox_virtual_environment_vm" "bao" {
+  name      = "bao"
   node_name = var.pm_node_name
   vm_id     = 151
 

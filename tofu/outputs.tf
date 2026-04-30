@@ -10,7 +10,7 @@ output "dns1_ip" {
   value       = "10.10.15.15"
 }
 
-output "bao2_ip" {
-  description = "IP address of bao2 VM (NixOS replacement for openbao)"
+output "bao_ip" {
+  description = "IP address of bao VM (NixOS)"
   value       = "10.10.15.16"
 }

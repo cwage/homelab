@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 {
-  networking.hostName = "bao2";
+  networking.hostName = "bao";
 
   # Prevent cloud-init from overriding the hostname after rebuild
   # (same workaround as dns1)
@@ -44,7 +44,7 @@
 
     storage "raft" {
       path    = "/var/lib/openbao/data"
-      node_id = "bao2"
+      node_id = "bao"
     }
 
     api_addr     = "https://bao.lan.quietlife.net:8200"
@@ -53,8 +53,8 @@
 
   # --- OpenBao agent for secrets ---
   # Connects via loopback with TLS verification disabled to break the
-  # chicken-and-egg: bao2's TCP listener uses the very TLS cert this agent is
-  # responsible for refreshing. Loopback-only means there's no MITM concern,
+  # chicken-and-egg: bao's own TCP listener uses the very TLS cert this agent
+  # is responsible for refreshing. Loopback-only means there's no MITM concern,
   # and skipping verification means an expired cert can still be replaced.
   # The agent waits and retries if the local server is sealed.
   homelab.openbao-agent = {
@@ -69,7 +69,7 @@
         destination = "/etc/secrets/cwage-password-hash";
       };
 
-      # LE wildcard cert delivery for bao2's own TCP listener. The cert dir
+      # LE wildcard cert delivery for bao's own TCP listener. The cert dir
       # is created and owned by the openbao server module above, so we tell
       # the agent module not to redeclare it.
       tls-cert = {
@@ -146,7 +146,7 @@
   # staged manually at /etc/openbao/backup-token (mode 0600 root:root).
   # Mint with:
   #   bao token create -policy=backup -no-default-policy -orphan \
-  #     -period=8760h -display-name="bao2-backup" -field=token \
+  #     -period=8760h -display-name="bao-backup" -field=token \
   #     | sudo tee /etc/openbao/backup-token >/dev/null
   #   sudo chmod 0600 /etc/openbao/backup-token
 

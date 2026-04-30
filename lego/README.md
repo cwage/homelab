@@ -29,7 +29,7 @@ make fetch-creds      # test OpenBao credential retrieval (masked output)
 make renew            # get new cert from Let's Encrypt
 make store            # push to OpenBao
 # Then deploy:
-#   Traefik (containers2) and bao2: auto-deployed via openbao-agent within
+#   Traefik (containers2) and bao: auto-deployed via openbao-agent within
 #     ~2 minutes of `make store`. No further action needed.
 #   Proxmox web UI:        make ansible-proxmox
 ```
