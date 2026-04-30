@@ -1,6 +1,9 @@
 services:
   bao:
-    image: openbao/openbao:2.4.4
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: homelab-openbao:2.4.4
     entrypoint: /bin/sh
     working_dir: /workspace
     environment:

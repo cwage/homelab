@@ -7,15 +7,20 @@ Wildcard TLS certificate management for `*.lan.quietlife.net` using Let's Encryp
 ```
 lego/ (ACME client)        OpenBao                  Deploy
 ───────────────────        ───────                  ──────
-Let's Encrypt cert    →  Stored at            →  Traefik (containers2):
-via DNS-01 challenge     kv/infra/certs/          manual scp → /opt/stacks/certs/
-(Cloudflare API)         lan.quietlife.net         + docker restart traefik
-                                                   (TODO: NixOS-driven delivery — #220)
+Let's Encrypt cert    →  Stored at            →  bao2 (own listener):
+via DNS-01 challenge     kv/infra/certs/          openbao-agent → /var/lib/openbao/tls/
+(Cloudflare API)         lan.quietlife.net         + systemctl reload openbao (SIGHUP)
+
+                                                  Traefik (containers2):
+                                                   openbao-agent → /opt/stacks/certs/
+                                                   + docker restart traefik
 
                                                   Proxmox web UI (pve1):
                                                    make ansible-proxmox
                                                    (proxmox_certs role)
 ```
+
+bao2 and containers2 both run `homelab.openbao-agent` (see `modules/openbao-agent.nix`) with templates that deliver the cert/key from KV to disk and fire a post-rotation hook. Agent polls KV roughly every 1-2 minutes, so a `make lego-store` is automatically picked up without manual deploy. bao2 talks to its own openbao via loopback with TLS verification disabled — that breaks the chicken-and-egg where bao2's listener TLS depends on the very cert the agent is responsible for refreshing.
 
 ## Certificate lifecycle
 
@@ -37,40 +42,32 @@ Cloudflare API credentials (API token, zone ID) are fetched from OpenBao at depl
 
 ### Deployment
 
-The cert is retrieved from OpenBao and deployed to services:
+After `make lego-store` writes the new cert to `kv/infra/certs/lan.quietlife.net`, deployment to consumers happens automatically except for Proxmox:
 
-- **Traefik** (containers2): the cert and key currently live as mutable files in `/opt/stacks/certs/` (placed imperatively after the NixOS migration; slated to move to a NixOS-driven lego workflow). Traefik picks them up via the `traefik-tls.yml` file provider.
-- **Proxmox** (pve1): `make ansible-proxmox` deploys cert via the `proxmox_certs` role for the Proxmox web UI
-
-**Note:** Traefik does not automatically reload bind-mounted cert files. After replacing them, restart the container: `ssh containers2 'docker restart traefik'`.
+- **bao2** (its own TCP listener): `homelab.openbao-agent` template renders the cert/key from KV to `/var/lib/openbao/tls/{tls.crt,tls.key}` (owned `openbao:openbao`) and fires `systemctl reload openbao` — SIGHUP makes openbao re-read TLS in place without re-sealing. Picked up within ~2 minutes of `lego-store`.
+- **Traefik** (containers2): same agent pattern, renders to `/opt/stacks/certs/lan.quietlife.net.{crt,key}` (owned `deploy:users`) and fires `docker restart traefik` (~1-2s blip on rotation).
+- **Proxmox** (pve1): `make ansible-proxmox` — still Ansible-driven for the Proxmox web UI cert via the `proxmox_certs` role.
 
 ### Renewal when the cert is already expired
 
-If the cert has already expired, OpenBao (which serves its own TLS on port 8200) will also have the expired cert. Both `make lego-store` (curl to OpenBao) and Ansible's OpenBao lookups will fail with `SSL: CERTIFICATE_VERIFY_FAILED`. To break the chicken-and-egg cycle:
+If the cert has already expired, OpenBao (which serves its own TLS on port 8200) will also have the expired cert and the workstation can't trust it for `make lego-store`. The recovery is short:
 
 ```bash
-# 1. Renew cert from Let's Encrypt (this doesn't talk to OpenBao)
+# 1. Renew cert from Let's Encrypt (doesn't talk to OpenBao).
 make lego-renew
 
-# 2. Store in OpenBao with TLS verification disabled
+# 2. Push the new cert to OpenBao with TLS verification disabled. The
+#    workstation can't validate bao2's expired cert, so verify-skip is
+#    needed for this one push.
 BAO_SKIP_VERIFY=true make lego-store
 
-# 3. Copy the renewed cert/key onto containers2 and restart Traefik. The
-#    target dir is 0700 deploy:users, so we stage in /tmp and sudo install.
-#    (containers2 will pick this up automatically once cert delivery is
-#    moved into openbao-agent / a NixOS lego module — until then it's manual)
-scp lego/certs/certificates/_.lan.quietlife.net.crt containers2:/tmp/lan.quietlife.net.crt
-scp lego/certs/certificates/_.lan.quietlife.net.key containers2:/tmp/lan.quietlife.net.key
-ssh containers2 'sudo install -o deploy -g users -m 0644 /tmp/lan.quietlife.net.crt /opt/stacks/certs/lan.quietlife.net.crt && sudo install -o deploy -g users -m 0600 /tmp/lan.quietlife.net.key /opt/stacks/certs/lan.quietlife.net.key && rm -f /tmp/lan.quietlife.net.crt /tmp/lan.quietlife.net.key && docker restart traefik'
+# 3. bao2 and containers2 auto-rotate within ~2 minutes — no further
+#    action needed. bao2's openbao-agent connects via loopback with TLS
+#    verification disabled (intentional, see modules/openbao-agent.nix
+#    and hosts/openbao/configuration.nix), so an expired listener cert
+#    doesn't block the agent from refreshing it.
 
-# 4. Update OpenBao's own TLS cert on bao2 and restart the service. The
-#    target dir is 0750 openbao:openbao, so the same /tmp staging trick.
-#    (Manual until the cert auto-renewal module lands — issue #220.)
-scp lego/certs/certificates/_.lan.quietlife.net.crt bao2:/tmp/tls.crt
-scp lego/certs/certificates/_.lan.quietlife.net.key bao2:/tmp/tls.key
-ssh bao2 'sudo install -o openbao -g openbao -m 0644 /tmp/tls.crt /var/lib/openbao/tls/tls.crt && sudo install -o openbao -g openbao -m 0600 /tmp/tls.key /var/lib/openbao/tls/tls.key && rm -f /tmp/tls.crt /tmp/tls.key && sudo systemctl restart openbao'
-
-# 5. Subsequent runs (proxmox, etc.) should work normally now
+# 4. Push the new cert to the Proxmox web UI (still Ansible-managed).
 make ansible-proxmox
 ```
 

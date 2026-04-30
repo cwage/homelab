@@ -203,6 +203,35 @@
       # password2 (salt) intentionally omitted — this rclone crypt remote uses
       # the default salt, not a custom one. Templating a non-existent field
       # would write the literal string "<no value>" to disk and break rclone.
+
+      # LE wildcard cert delivery for Traefik. The dir at /opt/stacks/certs
+      # is 0700 deploy:users (declared above), so we set owner/group on the
+      # rendered files explicitly and tell the agent not to redeclare the dir.
+      traefik-tls-cert = {
+        path = "kv/data/infra/certs/lan.quietlife.net";
+        field = "certificate";
+        destination = "/opt/stacks/certs/lan.quietlife.net.crt";
+        owner = "deploy";
+        group = "users";
+        permissions = "0644";
+        manageDestinationDir = false;
+      };
+      traefik-tls-key = {
+        path = "kv/data/infra/certs/lan.quietlife.net";
+        field = "private_key";
+        destination = "/opt/stacks/certs/lan.quietlife.net.key";
+        owner = "deploy";
+        group = "users";
+        permissions = "0600";
+        manageDestinationDir = false;
+        # Command on the key, which sorts after traefik-tls-cert and is
+        # therefore rendered second (see modules/openbao-agent.nix). The
+        # command fires only after both files are on disk.
+        # Traefik doesn't watch bind-mounted cert files, so a restart is
+        # required — `docker restart` is idempotent and ~2s, fine for a
+        # quarterly rotation.
+        command = "${pkgs.docker}/bin/docker restart traefik";
+      };
     };
   };
 
