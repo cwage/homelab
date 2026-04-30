@@ -50,7 +50,7 @@
         ];
       };
 
-      nixosConfigurations.containers2 = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.containers = nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
           "${nixpkgs}/nixos/modules/virtualisation/proxmox-image.nix"
@@ -58,7 +58,7 @@
           ./modules/openbao-agent.nix
           ./modules/ntfy-notify.nix
           ./modules/backups.nix
-          ./hosts/containers2/configuration.nix
+          ./hosts/containers/configuration.nix
         ];
       };
 
