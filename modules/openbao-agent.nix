@@ -147,7 +147,7 @@ in
               directory (0750 root:root) via systemd.tmpfiles. Set to false
               when the directory is already declared elsewhere in the host
               config with the ownership/perms the consumer needs (e.g.
-              /var/lib/openbao/tls owned by openbao:openbao on bao2). The
+              /var/lib/openbao/tls owned by openbao:openbao on bao). The
               agent's ReadWritePaths still includes the parent dir either
               way, so the agent can write into it.
             '';

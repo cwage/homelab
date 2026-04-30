@@ -4,7 +4,7 @@
   networking.hostName = "containers2";
 
   # Prevent cloud-init from overriding the hostname after rebuild
-  # (same workaround as dns1/bao2)
+  # (same workaround as dns1/bao)
   environment.etc."cloud/cloud.cfg.d/99-preserve-hostname.cfg".text = ''
     preserve_hostname: true
   '';

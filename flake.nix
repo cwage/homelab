@@ -39,7 +39,7 @@
         ];
       };
 
-      nixosConfigurations.bao2 = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.bao = nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
           "${nixpkgs}/nixos/modules/virtualisation/proxmox-image.nix"

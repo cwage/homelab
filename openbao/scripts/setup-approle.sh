@@ -12,7 +12,7 @@
 set -eu
 
 # NixOS hosts need read access to user password hashes and the LE wildcard
-# cert (delivered to bao2's TCP listener and to Traefik on containers2 via
+# cert (delivered to bao's TCP listener and to Traefik on containers2 via
 # openbao-agent). Containers2's backup secrets at kv/data/backup/* are
 # granted by additional policy attachments on that role, not by this base
 # policy.
@@ -61,7 +61,7 @@ cmd_create_role() {
     # Optional env vars:
     #   EXTRA_CIDRS:    comma-separated extra CIDRs to add to the binding.
     #                   Used when the agent connects from an additional source
-    #                   IP (e.g. bao2 needs 127.0.0.1/32 because its agent
+    #                   IP (e.g. bao needs 127.0.0.1/32 because its agent
     #                   talks to its own openbao via loopback).
     #   EXTRA_POLICIES: comma-separated extra policies to add on top of the
     #                   base nixos-host policy and any policies already
