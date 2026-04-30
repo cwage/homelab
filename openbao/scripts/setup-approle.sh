@@ -12,7 +12,7 @@
 set -eu
 
 # NixOS hosts need read access to user password hashes and the LE wildcard
-# cert (delivered to bao's TCP listener and to Traefik on containers2 via
+# cert (delivered to bao's TCP listener and to Traefik on containers via
 # openbao-agent). Containers2's backup secrets at kv/data/backup/* are
 # granted by additional policy attachments on that role, not by this base
 # policy.
@@ -65,7 +65,7 @@ cmd_create_role() {
     #                   talks to its own openbao via loopback).
     #   EXTRA_POLICIES: comma-separated extra policies to add on top of the
     #                   base nixos-host policy and any policies already
-    #                   attached out-of-band (e.g. containers2 has
+    #                   attached out-of-band (e.g. containers has
     #                   backup-remote attached). Existing policies are
     #                   ALWAYS preserved on re-run — see the read-then-merge
     #                   logic below.

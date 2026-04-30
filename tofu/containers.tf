@@ -1,13 +1,12 @@
-# containers2: NixOS Docker host with GTX 1050 Ti GPU and Seagate USB
-# passthrough. Successor to the old Debian containers VM (#132 phase 4).
-# Eventual rename to `containers` is tracked separately.
+# containers: NixOS Docker host with GTX 1050 Ti GPU and Seagate USB
+# passthrough.
 
-resource "proxmox_virtual_environment_vm" "containers2" {
-  name      = "containers2"
+resource "proxmox_virtual_environment_vm" "containers" {
+  name      = "containers"
   node_name = var.pm_node_name
   vm_id     = 152
 
-  description = "Docker host (NixOS) — successor to containers (#132)"
+  description = "Docker host (NixOS)"
 
   clone {
     vm_id = var.pm_nixos_template_id

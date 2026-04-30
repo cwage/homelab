@@ -31,7 +31,7 @@
           $TTL 300
 
           @       IN  SOA dns1.lan.quietlife.net. hostmaster.lan.quietlife.net. (
-                      2026042903  ; serial (YYYYMMDDNN)
+                      2026042904  ; serial (YYYYMMDDNN)
                       3600        ; refresh
                       600         ; retry
                       604800      ; expire
@@ -50,8 +50,7 @@
           portapttyeth    IN  A       10.10.15.6
           dns1            IN  A       10.10.15.15
           bao             IN  A       10.10.15.16
-          containers      IN  A       10.10.15.12
-          containers2     IN  A       10.10.15.11
+          containers      IN  A       10.10.15.11
           nintendoswitch  IN  A       10.10.15.13
           pve1            IN  A       10.10.15.18
           lattepanda      IN  A       10.10.15.20
@@ -62,13 +61,13 @@
           firewall        IN  CNAME   fw1.lan.quietlife.net.
           nas             IN  CNAME   portanas.lan.quietlife.net.
           proxmox         IN  CNAME   pve1.lan.quietlife.net.
-          traefik         IN  CNAME   containers2.lan.quietlife.net.
-          jellyfin        IN  CNAME   containers2.lan.quietlife.net.
-          sabnzbd         IN  CNAME   containers2.lan.quietlife.net.
-          radarr          IN  CNAME   containers2.lan.quietlife.net.
-          sonarr          IN  CNAME   containers2.lan.quietlife.net.
-          paperless       IN  CNAME   containers2.lan.quietlife.net.
-          staticomment    IN  CNAME   containers2.lan.quietlife.net.
+          traefik         IN  CNAME   containers.lan.quietlife.net.
+          jellyfin        IN  CNAME   containers.lan.quietlife.net.
+          sabnzbd         IN  CNAME   containers.lan.quietlife.net.
+          radarr          IN  CNAME   containers.lan.quietlife.net.
+          sonarr          IN  CNAME   containers.lan.quietlife.net.
+          paperless       IN  CNAME   containers.lan.quietlife.net.
+          staticomment    IN  CNAME   containers.lan.quietlife.net.
         '';
       };
 
@@ -78,7 +77,7 @@
           $TTL 300
 
           @       IN  SOA dns1.lan.quietlife.net. hostmaster.lan.quietlife.net. (
-                      2026042903  ; serial
+                      2026042904  ; serial
                       3600        ; refresh
                       600         ; retry
                       604800      ; expire
@@ -90,13 +89,12 @@
 
           ; PTR records
           1       IN  PTR     fw1.lan.quietlife.net.
-          11      IN  PTR     containers2.lan.quietlife.net.
+          11      IN  PTR     containers.lan.quietlife.net.
           2       IN  PTR     wap.lan.quietlife.net.
           3       IN  PTR     portaplotz.lan.quietlife.net.
           4       IN  PTR     portanas.lan.quietlife.net.
           5       IN  PTR     portaptty.lan.quietlife.net.
           6       IN  PTR     portapttyeth.lan.quietlife.net.
-          12      IN  PTR     containers.lan.quietlife.net.
           13      IN  PTR     nintendoswitch.lan.quietlife.net.
           15      IN  PTR     dns1.lan.quietlife.net.
           16      IN  PTR     bao.lan.quietlife.net.

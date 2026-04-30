@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 {
-  networking.hostName = "containers2";
+  networking.hostName = "containers";
 
   # Prevent cloud-init from overriding the hostname after rebuild
   # (same workaround as dns1/bao)

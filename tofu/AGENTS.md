@@ -16,7 +16,7 @@ OpenTofu configuration for provisioning VMs on a Proxmox VE host (pve1, 10.10.15
 - `main.tf` — Provider config (bpg/proxmoxve)
 - `variables.tf` — All input variables with descriptions and defaults
 - `images.tf` — Debian cloud image download for Proxmox
-- Individual VM files: `dns1.tf`, `bao.tf`, `containers2.tf`
+- Individual VM files: `dns1.tf`, `bao.tf`, `containers.tf`
 - `outputs.tf` — Output values
 
 ## Credentials

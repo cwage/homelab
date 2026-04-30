@@ -11,7 +11,7 @@ Let's Encrypt cert    →  Stored at            →  bao (own listener):
 via DNS-01 challenge     kv/infra/certs/          openbao-agent → /var/lib/openbao/tls/
 (Cloudflare API)         lan.quietlife.net         + systemctl reload openbao (SIGHUP)
 
-                                                  Traefik (containers2):
+                                                  Traefik (containers):
                                                    openbao-agent → /opt/stacks/certs/
                                                    + docker restart traefik
 
@@ -20,7 +20,7 @@ via DNS-01 challenge     kv/infra/certs/          openbao-agent → /var/lib/ope
                                                    (proxmox_certs role)
 ```
 
-bao and containers2 both run `homelab.openbao-agent` (see `modules/openbao-agent.nix`) with templates that deliver the cert/key from KV to disk and fire a post-rotation hook. Agent polls KV roughly every 1-2 minutes, so a `make lego-store` is automatically picked up without manual deploy. bao talks to its own openbao via loopback with TLS verification disabled — that breaks the chicken-and-egg where bao's listener TLS depends on the very cert the agent is responsible for refreshing.
+bao and containers both run `homelab.openbao-agent` (see `modules/openbao-agent.nix`) with templates that deliver the cert/key from KV to disk and fire a post-rotation hook. Agent polls KV roughly every 1-2 minutes, so a `make lego-store` is automatically picked up without manual deploy. bao talks to its own openbao via loopback with TLS verification disabled — that breaks the chicken-and-egg where bao's listener TLS depends on the very cert the agent is responsible for refreshing.
 
 ## Certificate lifecycle
 
@@ -45,7 +45,7 @@ Cloudflare API credentials (API token, zone ID) are fetched from OpenBao at depl
 After `make lego-store` writes the new cert to `kv/infra/certs/lan.quietlife.net`, deployment to consumers happens automatically except for Proxmox:
 
 - **bao** (its own TCP listener): `homelab.openbao-agent` template renders the cert/key from KV to `/var/lib/openbao/tls/{tls.crt,tls.key}` (owned `openbao:openbao`) and fires `systemctl reload openbao` — SIGHUP makes openbao re-read TLS in place without re-sealing. Picked up within ~2 minutes of `lego-store`.
-- **Traefik** (containers2): same agent pattern, renders to `/opt/stacks/certs/lan.quietlife.net.{crt,key}` (owned `deploy:users`) and fires `docker restart traefik` (~1-2s blip on rotation).
+- **Traefik** (containers): same agent pattern, renders to `/opt/stacks/certs/lan.quietlife.net.{crt,key}` (owned `deploy:users`) and fires `docker restart traefik` (~1-2s blip on rotation).
 - **Proxmox** (pve1): `make ansible-proxmox` — still Ansible-driven for the Proxmox web UI cert via the `proxmox_certs` role.
 
 ### Renewal when the cert is already expired
@@ -61,7 +61,7 @@ make lego-renew
 #    needed for this one push.
 BAO_SKIP_VERIFY=true make lego-store
 
-# 3. bao and containers2 auto-rotate within ~2 minutes — no further
+# 3. bao and containers auto-rotate within ~2 minutes — no further
 #    action needed. bao's openbao-agent connects via loopback with TLS
 #    verification disabled (intentional, see modules/openbao-agent.nix
 #    and hosts/openbao/configuration.nix), so an expired listener cert

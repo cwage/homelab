@@ -9,7 +9,7 @@ DC := docker compose --env-file ../.env
 # token in .env), then run the privileged command with it. The admin token
 # never touches .env or disk. EXTRA_CIDRS / EXTRA_POLICIES are passed through
 # for create-role to support hosts that need extra source IPs (e.g. bao's
-# 127.0.0.1/32) or extra policies on top of nixos-host (e.g. containers2's
+# 127.0.0.1/32) or extra policies on top of nixos-host (e.g. containers'
 # backup-remote — though that one is auto-preserved on re-run, the env var is
 # there for the initial attachment).
 define run-admin

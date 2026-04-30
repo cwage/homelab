@@ -8,7 +8,7 @@ OpenTofu (Terraform fork) configuration for provisioning VMs on Proxmox VE. All 
 |----------|-------|-------------|
 | `dns1` | 150 | NSD authoritative DNS for `lan.quietlife.net` (NixOS) |
 | `bao` | 151 | Secrets management server (NixOS) |
-| `containers2` | 152 | Docker host with GTX 1050 Ti GPU passthrough (NixOS) |
+| `containers` | 152 | Docker host with GTX 1050 Ti GPU passthrough (NixOS) |
 
 VMs clone from either the Debian stable cloud image (`images.tf`) or the NixOS template (`pm_nixos_template_id`) and use cloud-init for bootstrap (SSH key, static IP, hostname).
 
@@ -54,7 +54,7 @@ State is stored on the NAS via NFS (mounted at `TOFU_STATE_PATH` from `.env`). T
 ├── images.tf         Debian cloud image download
 ├── dns1.tf           dns1 VM (NixOS)
 ├── bao.tf            bao VM (secrets management, NixOS)
-├── containers2.tf    containers2 VM (Docker host + GPU, NixOS)
+├── containers.tf     containers VM (Docker host + GPU, NixOS)
 ├── hardware-mappings.tf  Cluster-level hardware mappings (USB passthrough, etc.)
 ├── outputs.tf        Output values
 ├── Makefile          Docker-wrapped tofu commands
