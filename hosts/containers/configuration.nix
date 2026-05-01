@@ -153,12 +153,16 @@
   # /opt/stacks holds the docker-compose.yml + supporting files.
   # deploy user's primary group is "users" (NixOS default for isNormalUser).
   # Static stack config (compose, traefik dyn config) is symlinked from the
-  # nix store. Secrets (.env, basicauth, ssh deploy key) and TLS certs remain
-  # mutable in /opt/stacks until they migrate to openbao-agent / lego.
+  # nix store. Stack secrets (.env, traefik basicauth, staticomment ssh key)
+  # and the wildcard TLS cert are rendered by openbao-agent into the dirs
+  # below.
   systemd.tmpfiles.rules = [
-    "d /opt/stacks       0755 deploy users -"
-    "d /opt/stacks/certs 0700 deploy users -"
-    "z /opt/stacks/certs 0700 deploy users -"
+    "d /opt/stacks                  0755 deploy users -"
+    "z /opt/stacks                  0755 deploy users -"
+    "d /opt/stacks/certs            0700 deploy users -"
+    "z /opt/stacks/certs            0700 deploy users -"
+    "d /opt/stacks/staticomment-ssh 0700 deploy users -"
+    "z /opt/stacks/staticomment-ssh 0700 deploy users -"
     "L+ /opt/stacks/docker-compose.yml - - - - ${./stacks/docker-compose.yml}"
     "L+ /opt/stacks/traefik-tls.yml    - - - - ${./stacks/traefik-tls.yml}"
   ];
@@ -169,10 +173,9 @@
   ];
 
   # --- OpenBao agent for secrets ---
-  # Currently delivers the cwage password hash and the B2 backup credentials.
-  # Stack secrets (.env, traefik basicauth, staticomment ssh deploy key) and
-  # lego-managed TLS certs are still mutable in /opt/stacks/ and are slated
-  # to move into the agent in a follow-up.
+  # Delivers: cwage password hash, B2 backup credentials, wildcard TLS cert
+  # for Traefik, and the three stack secrets (compose .env, traefik
+  # basicauth, staticomment SSH deploy key).
   # roleId is per-host and CIDR-bound to 10.10.15.11.
   homelab.openbao-agent = {
     enable = true;
@@ -204,6 +207,54 @@
       # the default salt, not a custom one. Templating a non-existent field
       # would write the literal string "<no value>" to disk and break rclone.
 
+      # --- Stack secrets ---
+      # /opt/stacks is 0755 deploy:users (declared above); render each file
+      # with explicit owner/group + manageDestinationDir = false so the
+      # agent doesn't try to redeclare the dir. Each secret is stored in
+      # OpenBao as a single `content` field whose value is the entire
+      # file body (same approach as the cert delivery below).
+
+      # docker-compose .env (CLOUDFLARE_TUNNEL_TOKEN, STATICOMMENT_*).
+      # Compose only re-reads .env at compose-up time, so on rotation we
+      # `compose up -d` to recreate any container whose env changed.
+      stacks-env = {
+        path = "kv/data/stacks/containers/env";
+        field = "content";
+        destination = "/opt/stacks/.env";
+        owner = "deploy";
+        group = "users";
+        permissions = "0600";
+        manageDestinationDir = false;
+        command = "${pkgs.bash}/bin/bash -c 'cd /opt/stacks && ${pkgs.docker}/bin/docker compose up -d'";
+      };
+
+      # Traefik basicauth (htpasswd) for the dashboard middleware. Bind-
+      # mounted into the container; Traefik reads it at start, so a
+      # restart is required on rotation.
+      stacks-traefik-basicauth = {
+        path = "kv/data/stacks/containers/basicauth";
+        field = "content";
+        destination = "/opt/stacks/traefik-basicauth";
+        owner = "deploy";
+        group = "users";
+        permissions = "0600";
+        manageDestinationDir = false;
+        command = "${pkgs.docker}/bin/docker restart traefik";
+      };
+
+      # staticomment SSH deploy key. The dir at /opt/stacks/staticomment-ssh
+      # is 0700 deploy:users (declared above).
+      stacks-staticomment-ssh-key = {
+        path = "kv/data/stacks/containers/staticomment-ssh-key";
+        field = "content";
+        destination = "/opt/stacks/staticomment-ssh/id_ed25519";
+        owner = "deploy";
+        group = "users";
+        permissions = "0600";
+        manageDestinationDir = false;
+        command = "${pkgs.docker}/bin/docker restart staticomment";
+      };
+
       # LE wildcard cert delivery for Traefik. The dir at /opt/stacks/certs
       # is 0700 deploy:users (declared above), so we set owner/group on the
       # rendered files explicitly and tell the agent not to redeclare the dir.
@@ -234,6 +285,13 @@
       };
     };
   };
+
+  # The agent's stack-secret post-render hooks invoke docker (compose up,
+  # restart). Ordering after docker.service ensures those commands don't
+  # race the daemon on a cold boot — without this, a fresh boot can render
+  # secrets before docker is up, the command fails silently, and the
+  # consumer container never gets restarted until the next rotation.
+  systemd.services.openbao-agent.after = [ "docker.service" ];
 
   # --- ntfy.sh notifications ---
   # OnFailure/OnSuccess hooks on the backup units pull last 20 journal lines
