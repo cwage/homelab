@@ -158,6 +158,7 @@
   # below.
   systemd.tmpfiles.rules = [
     "d /opt/stacks                  0755 deploy users -"
+    "z /opt/stacks                  0755 deploy users -"
     "d /opt/stacks/certs            0700 deploy users -"
     "z /opt/stacks/certs            0700 deploy users -"
     "d /opt/stacks/staticomment-ssh 0700 deploy users -"
@@ -284,6 +285,13 @@
       };
     };
   };
+
+  # The agent's stack-secret post-render hooks invoke docker (compose up,
+  # restart). Ordering after docker.service ensures those commands don't
+  # race the daemon on a cold boot — without this, a fresh boot can render
+  # secrets before docker is up, the command fails silently, and the
+  # consumer container never gets restarted until the next rotation.
+  systemd.services.openbao-agent.after = [ "docker.service" ];
 
   # --- ntfy.sh notifications ---
   # OnFailure/OnSuccess hooks on the backup units pull last 20 journal lines
