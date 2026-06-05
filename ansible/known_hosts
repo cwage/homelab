@@ -1,12 +1,8 @@
-# Managed host key fingerprints — regenerate with:
-#   make ansible-refresh-known-hosts
-# or manually:
-#   ssh-keyscan -p <port> <host> 2>/dev/null | grep ssh-ed25519
+# Managed host key fingerprints — regenerate with: make ansible-refresh-known-hosts
 10.10.15.18 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKGgiAeliueRrKmhKVS6lkPdnOVJwJV5+Z4AkqV8RKnL
 10.10.15.1 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHKYsVB3UeJtjax8Ujkm1sfWJw8JaQwEmPAWFHfeK/90
 [45.56.113.70]:5344 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOfVM2VnJ3j+psTwMXLEmJYN/EHG/0mb5vCx+JjiVeX8
-10.10.15.15 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF4bv162wtBF6StTYHHuimobDOQzY76Q27lWzvUkib92
-10.10.15.12 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMPK1NSyw8NMx2voGhmk3Lb87ZVNiRRgr2emCG7IqASk
+10.10.15.15 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL/mn6srGTs+OiT7UUX4/t1Nlb/jFx6v/6QovmnIq2Ec
 10.10.15.16 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE0D8lK8bBYwR1a6w3y1bZJcIdMKlLy1xbb5D7Fszb+f
 45.56.118.89 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINfWTdyQLltJcYNdrrvX6ycrIwKD7WXEKW18qCEDcHVH
 [10.10.15.4]:5344 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIQ7fXFgerwMGM1yQfDwG1VGC4uE1vzTwD5aQO6KI4Xr

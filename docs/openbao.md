@@ -235,17 +235,18 @@ Automated daily Raft snapshots are stored on NFS:
 - **Mount Point**: `/mnt/backups`
 - **Backup Directory**: `/mnt/backups/vm/openbao`
 - **Retention**: 30 days
-- **Schedule**: Daily at 00:30 (server local time) via cron
+- **Schedule**: Daily at 00:30 (server local time) via systemd timer
 
 ```bash
-# Check cron job
-sudo crontab -l
+# Check timer status
+systemctl status openbao-backup.timer
+systemctl list-timers openbao-backup.timer
 
 # Manually trigger a backup
-sudo /usr/local/bin/openbao-backup.sh
+sudo systemctl start openbao-backup.service
 
 # View backup logs
-journalctl -t openbao-backup --no-pager -n 20
+journalctl -u openbao-backup.service --no-pager -n 20
 ```
 
 Manual snapshots can also be taken:
@@ -282,7 +283,8 @@ sudo chmod 600 /etc/openbao/backup-token
 sudo chown root:root /etc/openbao/backup-token
 
 # Verify
-sudo /usr/local/bin/openbao-backup.sh
+sudo systemctl start openbao-backup.service
+journalctl -u openbao-backup.service --no-pager -n 20
 ```
 
 To prevent future expiry, consider increasing `max_lease_ttl` in the server config
