@@ -144,7 +144,16 @@ Once it's running, the agent keeps them current.
 
 If the cert expired in place (i.e., openbao-agent stopped renewing for some reason):
 
-1. `make lego-renew && make lego-store` — get a fresh cert into KV.
+1. Get a fresh cert into KV. Both lego targets talk to OpenBao (lego-renew fetches the
+   Cloudflare credentials, lego-store posts the renewed cert back) and TLS verification
+   against bao's now-expired listener will fail — set `BAO_SKIP_VERIFY=true` so the
+   wrapped curl calls pass `--insecure`:
+   ```bash
+   export BAO_SKIP_VERIFY=true
+   make lego-renew
+   make lego-store
+   unset BAO_SKIP_VERIFY
+   ```
 2. On `bao`: `sudo systemctl restart openbao-agent` to force an immediate re-render,
    or wait for the next poll cycle.
 3. Verify the new cert is live:
