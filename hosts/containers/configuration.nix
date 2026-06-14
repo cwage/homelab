@@ -147,6 +147,38 @@
   # CDI-based GPU access for containers (also used by the runtime above).
   hardware.nvidia-container-toolkit.enable = true;
 
+  # Work around a Docker startup race that breaks GPU containers after every
+  # reboot / docker.service restart. dockerd restores `restart: unless-stopped`
+  # containers during daemon startup *before* its CDI registry is populated, so
+  # the jellyfin container (devices: nvidia.com/gpu=all) comes up with
+  # "could not select device driver cdi", exits 128, and is never retried -
+  # which 404s Jellyfin until a manual `docker start`. The CDI spec file is
+  # already present in /run/cdi at that point, so spec-generator ordering does
+  # not help; the fix is to (re)start the container once dockerd is fully up.
+  #
+  # partOf docker.service => this re-runs whenever docker restarts (e.g. on a
+  # nixos activation that bounces docker). The guard skips the start when the
+  # container is already running, so a normal activation won't kill live
+  # playback.
+  systemd.services.jellyfin-gpu-start = {
+    description = "Start the Jellyfin GPU container once Docker's CDI registry is ready";
+    after = [ "docker.service" ];
+    requires = [ "docker.service" ];
+    partOf = [ "docker.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = pkgs.writeShellScript "start-jellyfin-gpu" ''
+        set -eu
+        running=$(${pkgs.docker}/bin/docker inspect -f '{{.State.Running}}' jellyfin 2>/dev/null || echo missing)
+        if [ "$running" != "true" ]; then
+          ${pkgs.docker}/bin/docker start jellyfin
+        fi
+      '';
+    };
+  };
+
   users.users.deploy.extraGroups = [ "docker" ];
   users.users.cwage.extraGroups = [ "docker" ];
 
