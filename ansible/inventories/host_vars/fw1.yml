@@ -14,3 +14,7 @@ wireguard_peers:
     public_key: "N/gPS5QD6K4cKgt7iCYbpepXGmU9JZrp6+RJ0Mfm3D4="
     allowed_ips: "10.10.16.4/32"
     persistent_keepalive: 0
+  - name: macbookpro
+    public_key: "+Wt0dW9Zg1z8i4G2wJ0BUZcMXAKJnRVZ8WMERLWXdH8="
+    allowed_ips: "10.10.16.5/32"
+    persistent_keepalive: 0
