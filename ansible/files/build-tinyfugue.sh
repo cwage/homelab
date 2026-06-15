@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Building TinyFugue (widechar branch)..."
+echo "Building TinyFugue (main branch)..."
 
 # Clone the repository
 if [ ! -d "tinyfugue" ]; then
@@ -11,56 +11,67 @@ fi
 
 cd tinyfugue
 
-# Checkout the widechar branch
-echo "Checking out widechar branch..."
-git checkout widechar
-git pull origin widechar
+# Checkout the main branch
+echo "Checking out main branch..."
+git checkout main
+git pull origin main
 
-# Configure and build with static linking
-echo "Running configure..."
-# Use absolute paths to force static linking of specific libraries
-export LDFLAGS="-static-libgcc -static-libstdc++"
-export LIBS="/usr/lib/x86_64-linux-gnu/libicui18n.a /usr/lib/x86_64-linux-gnu/libicuuc.a /usr/lib/x86_64-linux-gnu/libicudata.a /usr/lib/x86_64-linux-gnu/libpcre.a /usr/lib/x86_64-linux-gnu/libz.a -lstdc++ -lm -lpthread -ldl"
-./configure --prefix=/usr
+# Configure with CMake. Upstream migrated from autotools to CMake (and from
+# PCRE to PCRE2). Features are auto-detected from the build deps installed in
+# the builder image: TLS (OpenSSL), wide-character (ICU), MCCP (zlib), PCRE2.
+echo "Running CMake configure..."
+# CMAKE_INSTALL_PREFIX must be /usr (not the default /usr/local): the runtime
+# library directory (TFLIBDIR, e.g. /usr/share/tf-lib) is baked into the binary
+# at configure time from this prefix. Files are staged via DESTDIR below.
+cmake -S . -B build -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
 
-echo "Building with static linking..."
-make clean
-make all
+echo "Building..."
+cmake --build build -j"$(nproc)"
 
-# Create debian package manually using dpkg-deb
-echo "Creating debian package structure..."
+# Stage the install into the package tree. cmake installs the binary to
+# usr/bin/tf and the runtime library to usr/share/tf-lib, matching the layout
+# the package has always shipped.
+echo "Staging install..."
 PKG_DIR="tinyfugue-package"
-mkdir -p "${PKG_DIR}/usr/bin"
-mkdir -p "${PKG_DIR}/usr/share/tf-lib"
+rm -rf "${PKG_DIR}"
 mkdir -p "${PKG_DIR}/DEBIAN"
+DESTDIR="$(pwd)/${PKG_DIR}" cmake --install build
 
-# Copy files
-cp src/tf "${PKG_DIR}/usr/bin/tf"
-chmod 755 "${PKG_DIR}/usr/bin/tf"
-cp -r tf-lib/* "${PKG_DIR}/usr/share/tf-lib/"
-chmod -R 755 "${PKG_DIR}/usr/share/tf-lib"
+# Strip the binary to shrink the package.
+strip "${PKG_DIR}/usr/bin/tf" || true
+
+# This is a dynamically-linked build (the old autotools static-link hack does
+# not carry over to CMake). The builder image base matches the target host's
+# Ubuntu release, so the shared-library sonames line up. Derive the runtime
+# Depends from the binary with dpkg-shlibdeps so apt installs the right libs.
+echo "Computing runtime dependencies..."
+mkdir -p debian
+printf 'Source: tinyfugue\nMaintainer: homelab-ansible\n\nPackage: tinyfugue\nArchitecture: amd64\nDescription: placeholder\n' > debian/control
+DEPENDS="$(dpkg-shlibdeps -O "${PKG_DIR}/usr/bin/tf" 2>/dev/null | sed 's/^shlibs:Depends=//')"
+echo "Depends: ${DEPENDS}"
 
 # Create control file
-cat > "${PKG_DIR}/DEBIAN/control" << 'CONTROL_EOF'
+cat > "${PKG_DIR}/DEBIAN/control" << CONTROL_EOF
 Package: tinyfugue
-Version: 5.0-widechar-2
+Version: 1:5.0-main-2
 Section: games
 Priority: optional
 Architecture: amd64
 Maintainer: homelab-ansible
-Description: TinyFugue MUD client with wide character support (static build)
+Depends: ${DEPENDS}
+Description: TinyFugue MUD client (CMake build from upstream main)
  TinyFugue (aka "tf") is a flexible, screen-oriented MUD client.
- This build includes wide character (Unicode) support and is statically
- linked for maximum portability.
+ Built from the upstream main branch with wide-character (ICU),
+ TLS (OpenSSL), MCCP compression (zlib), and PCRE2 support.
 CONTROL_EOF
 
 # Build the .deb package
 echo "Building .deb package..."
-dpkg-deb --build "${PKG_DIR}" tinyfugue_5.0-widechar-2_amd64.deb
+dpkg-deb --build "${PKG_DIR}" tinyfugue_5.0-main-2_amd64.deb
 
 # Move the .deb to the output directory
 echo "Moving package to /output..."
-mv tinyfugue_5.0-widechar-2_amd64.deb /output/
+mv tinyfugue_5.0-main-2_amd64.deb /output/
 
 echo "Build complete! Package available in files/packages/"
 ls -lh /output/*.deb
