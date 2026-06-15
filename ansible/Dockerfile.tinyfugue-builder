@@ -4,13 +4,12 @@ FROM ubuntu:24.04
 RUN apt-get update && \
     apt-get install -y \
         build-essential \
-        autoconf \
-        automake \
+        cmake \
         git \
         libicu-dev \
-        libpcre3-dev \
+        libpcre2-dev \
+        libssl-dev \
         pkg-config \
-        checkinstall \
         zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 

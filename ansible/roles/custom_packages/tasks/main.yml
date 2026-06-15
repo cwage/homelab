@@ -23,7 +23,7 @@
     mode: '0644'
   when: not ansible_check_mode
 
-- name: Install tinyfugue package (static binary, no dependencies)
+- name: Install tinyfugue package (apt resolves shared-library dependencies)
   ansible.builtin.apt:
     deb: "{{ tinyfugue_deb_remote_path }}"
     state: present
