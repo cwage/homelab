@@ -154,13 +154,14 @@ services:
       - proxy
 
   staticomment:
-    image: ghcr.io/cwage/staticomment:0.2.0
+    image: ghcr.io/cwage/staticomment:0.3.0
     container_name: staticomment
     restart: unless-stopped
     environment:
       - STATICOMMENT_GIT_REPO=${STATICOMMENT_GIT_REPO}
       - STATICOMMENT_BRANCH=${STATICOMMENT_BRANCH:-main}
       - STATICOMMENT_ALLOWED_ORIGINS=${STATICOMMENT_ALLOWED_ORIGINS}
+      - STATICOMMENT_TURNSTILE_SECRET=${STATICOMMENT_TURNSTILE_SECRET:-}
       - STATICOMMENT_SSH_KEY_PATH=/app/.ssh/id_ed25519
     volumes:
       - ./staticomment-ssh:/app/.ssh
