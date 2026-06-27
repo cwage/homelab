@@ -14,11 +14,22 @@ All self-hosted services run as Docker containers on the **containers** host (`1
 | **Paperless-ngx** | `paperless-ngx/paperless-ngx` | `https://paperless.lan.quietlife.net` | Document management |
 | **Paperless Redis** | `redis` | — | Backend for Paperless-ngx |
 | **staticomment** | `ghcr.io/cwage/staticomment` | `https://staticomment.lan.quietlife.net` | Comment endpoint for `quietlife.net` |
-| **Cloudflared** | `cloudflare/cloudflared` | — | Cloudflare Tunnel for external access (Jellyfin) |
+| **CryptPad** | `cryptpad/cryptpad` | `https://pad.quietlife.net` (public, via tunnel) | End-to-end encrypted collaborative markdown/docs |
+| **Cloudflared** | `cloudflare/cloudflared` | — | Cloudflare Tunnel for external access (Jellyfin, CryptPad) |
 
 ## External access
 
-Jellyfin is exposed externally via a Cloudflare Tunnel (`cloudflared` container). The tunnel token is stored in OpenBao at `kv/infra/cloudflare/tunnel`. Tunnel ingress routes are configured in the Cloudflare Zero Trust dashboard.
+Jellyfin and CryptPad are exposed externally via a Cloudflare Tunnel (`cloudflared` container). The tunnel token is stored in OpenBao at `kv/infra/cloudflare/tunnel`. Tunnel ingress routes are configured in the Cloudflare Zero Trust dashboard.
+
+CryptPad is **public-only** (no internal Traefik route) and end-to-end encrypted — documents are shared by link, with the decryption key carried in the URL fragment, so no per-user accounts are required to collaborate. It needs **two** hostnames: the main origin `pad.quietlife.net` and a sandbox origin `pad-sandbox.quietlife.net` (security isolation). cloudflared reaches the container over the `proxy` network on **two ports** — HTTP on `:3000` and the realtime WebSocket (`/cryptpad_websocket`) on `:3003` — so the tunnel has three public-hostname routes:
+
+| Public hostname | Path | Service |
+|---|---|---|
+| `pad.quietlife.net` | `cryptpad_websocket` | `http://cryptpad:3003` |
+| `pad.quietlife.net` | (catch-all) | `http://cryptpad:3000` |
+| `pad-sandbox.quietlife.net` | (catch-all) | `http://cryptpad:3000` |
+
+The websocket-path route must be ordered **above** the catch-all. CryptPad needs no OpenBao secret (no DB/SMTP; `adminKeys` is a public key). OnlyOffice is not installed — the markdown and rich-text apps don't require it.
 
 ## How it fits together
 
