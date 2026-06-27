@@ -174,6 +174,39 @@ services:
     networks:
       - proxy
 
+  # Public-only, exposed via the Cloudflare Tunnel at pad.quietlife.net.
+  # CryptPad is end-to-end encrypted (the decryption key lives in the URL
+  # fragment) and requires a SECOND "sandbox" origin for security isolation,
+  # hence pad-sandbox.quietlife.net. cloudflared reaches it over the proxy
+  # network: HTTP on :3000 and the realtime WebSocket on :3003
+  # (/cryptpad_websocket) — both tunnel routes are configured in the
+  # Cloudflare Zero Trust dashboard. OnlyOffice is intentionally not
+  # installed; the markdown (Code) and rich-text apps don't need it.
+  cryptpad:
+    image: cryptpad/cryptpad:version-2026.5.1
+    container_name: cryptpad
+    restart: unless-stopped
+    environment:
+      - CPAD_MAIN_DOMAIN=https://pad.quietlife.net
+      - CPAD_SANDBOX_DOMAIN=https://pad-sandbox.quietlife.net
+      - CPAD_CONF=/cryptpad/config/config.js
+    volumes:
+      - cryptpad_config:/cryptpad/config
+      - cryptpad_datastore:/cryptpad/datastore
+      - cryptpad_data:/cryptpad/data
+      - cryptpad_blob:/cryptpad/blob
+      - cryptpad_block:/cryptpad/block
+      - cryptpad_customize:/cryptpad/customize
+    # CryptPad recommends a generous fd limit; 65536 is ample for this small
+    # instance and well under any host's hard max (avoids host-dependent
+    # `compose up` failures from over-requesting).
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - proxy
+
   cloudflared:
     image: cloudflare/cloudflared:2026.1.2
     container_name: cloudflared
@@ -185,6 +218,7 @@ services:
       - proxy
     depends_on:
       - jellyfin
+      - cryptpad
     profiles:
       - tunnel
 
@@ -195,6 +229,12 @@ volumes:
   radarr_config:
   sonarr_config:
   paperless_redis:
+  cryptpad_config:
+  cryptpad_datastore:
+  cryptpad_data:
+  cryptpad_blob:
+  cryptpad_block:
+  cryptpad_customize:
 
 networks:
   proxy:

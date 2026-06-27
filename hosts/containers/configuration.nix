@@ -371,6 +371,14 @@
         { name = "radarr";          mount = "/config"; }
         { name = "sonarr";          mount = "/config"; }
         { name = "paperless-redis"; mount = "/data"; }
+        # CryptPad stores data across several dirs; back up the four that hold
+        # real state (documents/channels, pins+metadata, uploaded blobs, and
+        # account login blocks). The job stops/starts the container per entry,
+        # so cryptpad briefly flaps a few times during the nightly snapshot.
+        { name = "cryptpad";        mount = "/cryptpad/datastore"; }
+        { name = "cryptpad";        mount = "/cryptpad/data"; }
+        { name = "cryptpad";        mount = "/cryptpad/blob"; }
+        { name = "cryptpad";        mount = "/cryptpad/block"; }
       ];
     };
 
