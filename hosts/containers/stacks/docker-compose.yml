@@ -197,10 +197,13 @@ services:
       - cryptpad_blob:/cryptpad/blob
       - cryptpad_block:/cryptpad/block
       - cryptpad_customize:/cryptpad/customize
+    # CryptPad recommends a generous fd limit; 65536 is ample for this small
+    # instance and well under any host's hard max (avoids host-dependent
+    # `compose up` failures from over-requesting).
     ulimits:
       nofile:
-        soft: 1000000
-        hard: 1000000
+        soft: 65536
+        hard: 65536
     networks:
       - proxy
 

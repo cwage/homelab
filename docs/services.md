@@ -25,7 +25,7 @@ CryptPad is **public-only** (no internal Traefik route) and end-to-end encrypted
 
 | Public hostname | Path | Service |
 |---|---|---|
-| `pad.quietlife.net` | `cryptpad_websocket` | `http://cryptpad:3003` |
+| `pad.quietlife.net` | `/cryptpad_websocket` | `http://cryptpad:3003` |
 | `pad.quietlife.net` | (catch-all) | `http://cryptpad:3000` |
 | `pad-sandbox.quietlife.net` | (catch-all) | `http://cryptpad:3000` |
 
