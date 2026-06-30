@@ -43,3 +43,9 @@ variable "pm_nixos_template_id" {
   type        = number
   default     = 9001 # nixos-template
 }
+
+variable "switch_mgmt_ip" {
+  description = "Management IP of switch1 (CRS310) on the infra LAN"
+  type        = string
+  default     = "10.10.15.7"
+}
