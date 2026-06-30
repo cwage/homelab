@@ -45,3 +45,11 @@ provider "proxmox" {
     agent = true
   }
 }
+
+# switch1 (MikroTik CRS310) REST API — creds from OpenBao (data source in switch.tf)
+provider "routeros" {
+  hosturl  = "https://${var.switch_mgmt_ip}"
+  username = data.vault_kv_secret_v2.switch1.data["username"]
+  password = data.vault_kv_secret_v2.switch1.data["password"]
+  insecure = true # self-signed cert on the switch mgmt interface
+}
