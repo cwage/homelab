@@ -31,7 +31,7 @@
           $TTL 300
 
           @       IN  SOA dns1.lan.quietlife.net. hostmaster.lan.quietlife.net. (
-                      2026042904  ; serial (YYYYMMDDNN)
+                      2026063000  ; serial (YYYYMMDDNN)
                       3600        ; refresh
                       600         ; retry
                       604800      ; expire
@@ -44,6 +44,7 @@
           ; A records — infrastructure
           fw1             IN  A       10.10.15.1
           wap             IN  A       10.10.15.2
+          switch1         IN  A       10.10.15.7
           portaplotz      IN  A       10.10.15.3
           portanas        IN  A       10.10.15.4
           portaptty       IN  A       10.10.15.5
@@ -77,7 +78,7 @@
           $TTL 300
 
           @       IN  SOA dns1.lan.quietlife.net. hostmaster.lan.quietlife.net. (
-                      2026042904  ; serial
+                      2026063000  ; serial
                       3600        ; refresh
                       600         ; retry
                       604800      ; expire
@@ -95,6 +96,7 @@
           4       IN  PTR     portanas.lan.quietlife.net.
           5       IN  PTR     portaptty.lan.quietlife.net.
           6       IN  PTR     portapttyeth.lan.quietlife.net.
+          7       IN  PTR     switch1.lan.quietlife.net.
           13      IN  PTR     nintendoswitch.lan.quietlife.net.
           15      IN  PTR     dns1.lan.quietlife.net.
           16      IN  PTR     bao.lan.quietlife.net.

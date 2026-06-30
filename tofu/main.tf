@@ -18,6 +18,10 @@ terraform {
       source  = "hashicorp/vault"
       version = "~> 4.0"
     }
+    routeros = {
+      source  = "terraform-routeros/routeros"
+      version = "~> 1.0"
+    }
   }
 }
 

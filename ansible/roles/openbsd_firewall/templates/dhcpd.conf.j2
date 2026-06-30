@@ -32,6 +32,10 @@ host pve {                                          # Proxmox VE hypervisor
   fixed-address 10.10.15.18;
 }
 
+# switch1 (MikroTik CRS310) has a static IP set on-device at 10.10.15.7 — it is
+# not a DHCP client, so there is no host stanza here. .7 is in the infra range
+# (outside the .100-.254 pool). See the NSD zone for its A/PTR records.
+
 # --- Workstations ---
 host portaplotz {                                   # desktop
   hardware ethernet a0:36:bc:ad:d2:74;
