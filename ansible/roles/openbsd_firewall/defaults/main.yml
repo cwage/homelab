@@ -26,7 +26,7 @@ unbound_access_control:
   - 10.10.15.0/24  # LAN network
   - 10.10.16.0/24  # WireGuard VPN network
 
-# Upstream DNS forwarders (Cloudflare)
-unbound_forwarders:
-  - 1.1.1.1
-  - 1.0.0.1
+# Emergency fallback resolver for fw1's own resolv.conf, used only when the
+# local Unbound is down (e.g. during a restart). Normal LAN queries never
+# touch this — Unbound does full recursion from the root servers.
+resolv_fallback_nameserver: 1.1.1.1

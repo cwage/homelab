@@ -44,9 +44,8 @@ server:
     hide-identity: yes
     hide-version: yes
 
-    # DNSSEC
-    # Note: root.key will be created automatically by unbound-anchor on first start
-    # auto-trust-anchor-file: "/var/unbound/db/root.key"
+    # DNSSEC validation (root.key bootstrapped by unbound-anchor in tasks/unbound.yml)
+    auto-trust-anchor-file: "/var/unbound/db/root.key"
 
     # Logging (adjust verbosity as needed)
     verbosity: 1
@@ -66,10 +65,3 @@ stub-zone:
 stub-zone:
     name: "15.10.10.in-addr.arpa"
     stub-addr: 10.10.15.15
-
-# Forward queries to upstream resolvers
-forward-zone:
-    name: "."
-{% for forwarder in unbound_forwarders %}
-    forward-addr: {{ forwarder }}
-{% endfor %}

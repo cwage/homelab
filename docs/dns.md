@@ -6,10 +6,10 @@ Internal DNS uses a split setup between two hosts:
 
 ```
 LAN clients → fw1 (Unbound, recursive) → dns1 (NSD, authoritative)
-                                        → upstream (everything else)
+                                        → root/TLD/authoritative servers (everything else)
 ```
 
-**fw1** (10.10.15.1) runs **Unbound** as the recursive resolver for all LAN and VPN clients. DHCP hands out fw1 as the DNS server. Unbound stubs queries for `lan.quietlife.net` and `15.10.10.in-addr.arpa` to dns1; all other queries go upstream.
+**fw1** (10.10.15.1) runs **Unbound** as the recursive resolver for all LAN and VPN clients. DHCP hands out fw1 as the DNS server. Unbound stubs queries for `lan.quietlife.net` and `15.10.10.in-addr.arpa` to dns1; everything else is resolved by full recursion from the root servers with DNSSEC validation — no upstream forwarder dependency (issue #263 documents the Cloudflare outage that motivated this). fw1's own `resolv.conf` keeps `1.1.1.1` in second position as an emergency fallback for when local Unbound itself is down.
 
 **dns1** (10.10.15.15) runs **NSD** as the authoritative server for the `lan.quietlife.net` forward zone (NixOS). It serves A records for infrastructure hosts and CNAME records for container services pointing to `containers.lan.quietlife.net`.
 
