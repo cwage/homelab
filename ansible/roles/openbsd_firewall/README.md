@@ -102,7 +102,7 @@ These can be overridden in `group_vars/openbsd_firewalls.yml` or host-specific v
 ### DNS Configuration Summary
 
 - **DHCP clients** (LAN): Receive `10.10.15.1` as their DNS server via DHCP
-- **Firewall itself**: Uses localhost (127.0.0.1) with `resolv_fallback_nameserver` (1.1.1.1) as an emergency second entry, only consulted when local Unbound is down
+- **Firewall itself**: Uses localhost (127.0.0.1) first; the libc resolver falls through to `resolv_fallback_nameserver` (1.1.1.1) when the local Unbound is unreachable or times out
 - **WireGuard clients**: Must manually add `DNS = 10.10.16.1` to their client config
 - **External names**: Resolved by full recursion from the root servers with DNSSEC validation — no upstream forwarder dependency (see issue #263)
 - **Local zones**: `lan.quietlife.net` and `15.10.10.in-addr.arpa` are stub zones pointing at NSD on dns1 (10.10.15.15); a `transparent` local-zone for `15.10.10.in-addr.arpa` overrides unbound's builtin RFC 6303 empty zone so reverse lookups reach the stub

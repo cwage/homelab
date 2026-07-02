@@ -60,7 +60,7 @@ server:
     # Let reverse lookups for our /24 reach the stub zone below; unbound's
     # builtin RFC 6303 empty zone for 10.in-addr.arpa otherwise answers
     # NXDOMAIN before the stub is consulted
-    local-zone: "15.10.10.in-addr.arpa." transparent
+    local-zone: "15.10.10.in-addr.arpa" transparent
 
 # Stub zones for local authoritative DNS (NSD on dns1)
 stub-zone:

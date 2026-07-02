@@ -26,7 +26,8 @@ unbound_access_control:
   - 10.10.15.0/24  # LAN network
   - 10.10.16.0/24  # WireGuard VPN network
 
-# Emergency fallback resolver for fw1's own resolv.conf, used only when the
-# local Unbound is down (e.g. during a restart). Normal LAN queries never
-# touch this — Unbound does full recursion from the root servers.
+# Fallback resolver for fw1's own resolv.conf, second in line behind local
+# Unbound (127.0.0.1). The libc resolver tries it when the first nameserver
+# is unreachable or times out (e.g. Unbound down or restarting). LAN client
+# queries never touch this — Unbound does full recursion from the roots.
 resolv_fallback_nameserver: 1.1.1.1
