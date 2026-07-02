@@ -5,7 +5,7 @@
     # Managed by Ansible
     search lan.quietlife.net
     nameserver 127.0.0.1
-    nameserver {{ unbound_forwarders[0] }}
+    nameserver {{ resolv_fallback_nameserver }}
     lookup file bind
     RESOLV_EOF
   changed_when: false
