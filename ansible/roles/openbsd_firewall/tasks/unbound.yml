@@ -6,24 +6,32 @@
   changed_when: "'unbound' in pkg_result.stdout and 'already installed' not in pkg_result.stdout"
 
 - name: Check for DNSSEC root trust anchor
-  ansible.builtin.raw: test -f /var/unbound/db/root.key
+  ansible.builtin.raw: test -s /var/unbound/db/root.key
   become: true
   register: root_key_check
   changed_when: false
   failed_when: false
   check_mode: false
 
-# unbound-anchor exits 1 when it writes/updates the anchor file, so verify the
-# file exists instead of trusting the exit code. check_mode: false because the
+# unbound-anchor exits 0 (anchor OK) or 1 (anchor was created/updated); treat
+# anything else as a real failure. check_mode: false because the
 # unbound-checkconf validation below requires the file to exist.
 - name: Bootstrap DNSSEC root trust anchor
   ansible.builtin.raw: |
-    /usr/sbin/unbound-anchor -a /var/unbound/db/root.key || true
-    test -f /var/unbound/db/root.key
-    chown _unbound:_unbound /var/unbound/db /var/unbound/db/root.key
+    /usr/sbin/unbound-anchor -a /var/unbound/db/root.key
+    rc=$?
+    if [ "$rc" -gt 1 ]; then echo "unbound-anchor failed with exit $rc" >&2; exit "$rc"; fi
+    test -s /var/unbound/db/root.key
   become: true
   when: root_key_check.rc != 0
   check_mode: false
+
+# _unbound must own the anchor (and its directory, for the temp files RFC 5011
+# probes write) or rollover updates silently fail; enforce on every run
+- name: Ensure _unbound owns the trust anchor
+  ansible.builtin.raw: chown _unbound:_unbound /var/unbound/db /var/unbound/db/root.key
+  become: true
+  changed_when: false
 
 - name: Write unbound.conf to temporary location
   ansible.builtin.raw: |

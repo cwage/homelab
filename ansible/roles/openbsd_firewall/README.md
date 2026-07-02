@@ -40,8 +40,9 @@ This allows the deploy user to run privileged commands with password authenticat
    - Validates with `unbound-checkconf`
    - Deploys to `/var/unbound/etc/unbound.conf` if validation passes
    - Enables and starts unbound service
-   - Configured as a forwarding resolver (forwards to Cloudflare DNS by default)
-   - Includes placeholder for future stub-zone configuration for `lan.quietlife.net`
+   - Full recursive resolver (no upstream forwarders) with DNSSEC validation
+   - Bootstraps the DNSSEC root trust anchor (`/var/unbound/db/root.key`) via `unbound-anchor` and keeps it owned by `_unbound` for RFC 5011 rollover
+   - Stub zones delegate `lan.quietlife.net` and `15.10.10.in-addr.arpa` to NSD on dns1
 
 4. **Resolv.conf Management** (`roles/openbsd_firewall/tasks/resolv.yml`)
    - Configures firewall's own DNS resolution
@@ -91,10 +92,9 @@ unbound_access_control:
   - 10.10.15.0/24  # LAN network
   - 10.10.16.0/24  # WireGuard VPN network
 
-# Upstream DNS forwarders (Cloudflare)
-unbound_forwarders:
-  - 1.1.1.1
-  - 1.0.0.1
+# Emergency fallback resolver for fw1's own resolv.conf, used only when the
+# local Unbound is down (e.g. during a restart)
+resolv_fallback_nameserver: 1.1.1.1
 ```
 
 These can be overridden in `group_vars/openbsd_firewalls.yml` or host-specific variables.
@@ -102,20 +102,10 @@ These can be overridden in `group_vars/openbsd_firewalls.yml` or host-specific v
 ### DNS Configuration Summary
 
 - **DHCP clients** (LAN): Receive `10.10.15.1` as their DNS server via DHCP
-- **Firewall itself**: Uses localhost (127.0.0.1) with fallback to Cloudflare
+- **Firewall itself**: Uses localhost (127.0.0.1) with `resolv_fallback_nameserver` (1.1.1.1) as an emergency second entry, only consulted when local Unbound is down
 - **WireGuard clients**: Must manually add `DNS = 10.10.16.1` to their client config
-- **Upstream forwarders**: Unbound forwards queries to Cloudflare (1.1.1.1, 1.0.0.1)
-
-### Future: Stub Zone for Local Domain
-
-The Unbound configuration includes a commented-out stub zone section for `lan.quietlife.net`. When you're ready to set up an authoritative bind instance for your local domain, uncomment and configure:
-
-```yaml
-# In unbound.conf.j2
-stub-zone:
-    name: "lan.quietlife.net"
-    stub-addr: <bind-server-ip>
-```
+- **External names**: Resolved by full recursion from the root servers with DNSSEC validation — no upstream forwarder dependency (see issue #263)
+- **Local zones**: `lan.quietlife.net` and `15.10.10.in-addr.arpa` are stub zones pointing at NSD on dns1 (10.10.15.15); a `transparent` local-zone for `15.10.10.in-addr.arpa` overrides unbound's builtin RFC 6303 empty zone so reverse lookups reach the stub
 
 ## Safety Features
 
