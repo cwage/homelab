@@ -389,9 +389,16 @@ in
             # Random file per run (a fixed sample could be the one healthy
             # object). Listing the *source* with the same excludes as the sync
             # means we only ever pick files the backup claims to contain.
-            sample=$(rclone lsf --recursive --files-only --min-age "$MIN_AGE" \
-              "''${RCLONE_FLAGS[@]}" "$src" | shuf -n 1) || sample=""
+            # Listing failure is a failure, not a skip — only an empty
+            # (successful) listing means there's nothing to sample.
+            if ! rclone lsf --recursive --files-only --min-age "$MIN_AGE" \
+                "''${RCLONE_FLAGS[@]}" "$src" > "$WORKDIR/listing"; then
+              echo "FAILED: $path (source listing failed)"
+              FAILED+=("$path (source listing failed)")
+              continue
+            fi
 
+            sample=$(shuf -n 1 "$WORKDIR/listing")
             if [[ -z "$sample" ]]; then
               echo "SKIP: $path (no files older than $MIN_AGE)"
               SKIPPED+=("$path")
@@ -481,6 +488,9 @@ in
             exit 1
           fi
 
+          WORKDIR=$(mktemp -d)
+          trap 'rm -rf "$WORKDIR"' EXIT
+
           FAILED=()
           SUCCEEDED=()
           SKIPPED=()
@@ -496,9 +506,16 @@ in
               continue
             fi
 
-            sample=$(rclone lsf --recursive --files-only --min-age "$MIN_AGE" \
-              "''${RCLONE_FLAGS[@]}" "$src" | shuf -n 1) || sample=""
+            # Listing failure is a failure, not a skip — only an empty
+            # (successful) listing means there's nothing to sample.
+            if ! rclone lsf --recursive --files-only --min-age "$MIN_AGE" \
+                "''${RCLONE_FLAGS[@]}" "$src" > "$WORKDIR/listing"; then
+              echo "FAILED: $path (source listing failed)"
+              FAILED+=("$path (source listing failed)")
+              continue
+            fi
 
+            sample=$(shuf -n 1 "$WORKDIR/listing")
             if [[ -z "$sample" ]]; then
               echo "SKIP: $path (no files older than $MIN_AGE)"
               SKIPPED+=("$path")
