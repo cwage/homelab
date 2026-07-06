@@ -84,6 +84,29 @@ let
     fi
   '';
 
+  # Env-var rclone config for the b2 + b2crypt remotes, shared by the nightly
+  # sweep and the verify jobs.
+  b2CredsBlock = ''
+    export RCLONE_CONFIG_B2_TYPE=b2
+    RCLONE_CONFIG_B2_ACCOUNT=$(cat ${lib.escapeShellArg "${cfg.b2.secretsDir}/b2-account"})
+    RCLONE_CONFIG_B2_KEY=$(cat ${lib.escapeShellArg "${cfg.b2.secretsDir}/b2-key"})
+    export RCLONE_CONFIG_B2_ACCOUNT RCLONE_CONFIG_B2_KEY
+
+    export RCLONE_CONFIG_B2CRYPT_TYPE=crypt
+    export RCLONE_CONFIG_B2CRYPT_REMOTE=${lib.escapeShellArg cfg.b2.cryptRemote}
+    RCLONE_CONFIG_B2CRYPT_PASSWORD=$(cat ${lib.escapeShellArg "${cfg.b2.secretsDir}/b2crypt-pw"})
+    export RCLONE_CONFIG_B2CRYPT_PASSWORD
+
+    # Salt (password2) is optional. Only export if openbao-agent has
+    # templated a real value — a stale file containing the literal
+    # "<no value>" sentinel (consul-template's output for a missing
+    # field) is rejected so rclone falls back to its default salt.
+    pw2=$(cat ${lib.escapeShellArg "${cfg.b2.secretsDir}/b2crypt-pw2"} 2>/dev/null) || pw2=""
+    if [[ -n "$pw2" && "$pw2" != "<no value>" ]]; then
+      export RCLONE_CONFIG_B2CRYPT_PASSWORD2="$pw2"
+    fi
+  '';
+
   notifyHooks = {
     OnFailure = [ "notify-failure@%n.service" ];
     OnSuccess = [ "notify-success@%n.service" ];
@@ -161,6 +184,50 @@ in
       };
     };
 
+    verify = {
+      enable = lib.mkEnableOption "Monthly restore verification of the b2/local backups";
+
+      minAge = lib.mkOption {
+        type = lib.types.str;
+        default = "48h";
+        description = ''
+          rclone --min-age filter applied when selecting files to verify.
+          Files modified more recently than this are skipped, so files that
+          changed after the last nightly sync don't produce false mismatches.
+        '';
+      };
+
+      cryptcheckPaths = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        defaultText = lib.literalExpression "config.homelab.backups.b2.paths";
+        description = ''
+          Shares to hash-verify against B2 with rclone cryptcheck. Defaults to
+          all b2 paths. cryptcheck reads and re-encrypts every source byte to
+          compare hashes, so trimming multi-TB shares (e.g. Media) out of this
+          list keeps the monthly run short at the cost of hash coverage there —
+          the sample-restore job still covers retrievability for all paths.
+        '';
+      };
+
+      cryptcheckOnCalendar = lib.mkOption {
+        type = lib.types.str;
+        default = "*-*-01 05:00:00";
+        description = "systemd OnCalendar expression for the B2 cryptcheck timer.";
+      };
+
+      sampleB2OnCalendar = lib.mkOption {
+        type = lib.types.str;
+        default = "*-*-01 06:30:00";
+        description = "systemd OnCalendar expression for the B2 sample-restore timer.";
+      };
+
+      sampleLocalOnCalendar = lib.mkOption {
+        type = lib.types.str;
+        default = "*-*-01 07:00:00";
+        description = "systemd OnCalendar expression for the local sample-restore timer.";
+      };
+    };
+
     configs = {
       enable = lib.mkEnableOption "Daily container volume snapshots";
 
@@ -202,6 +269,272 @@ in
   };
 
   config = lib.mkMerge [
+    { homelab.backups.verify.cryptcheckPaths = lib.mkDefault cfg.b2.paths; }
+
+    (lib.mkIf (cfg.verify.enable && cfg.b2.enable) {
+      systemd.services.verify-b2-cryptcheck = {
+        description = "Monthly B2 backup integrity verification (rclone cryptcheck)";
+        path = with pkgs; [ rclone coreutils util-linux ];
+        wants = [ "openbao-agent.service" ];
+        after = [ "openbao-agent.service" ];
+        unitConfig = notifyHooks // {
+          RequiresMountsFor = mkMountReqs cfg.verify.cryptcheckPaths;
+        };
+        serviceConfig = {
+          Type = "oneshot";
+          User = "root";
+        };
+        script = ''
+          set -euo pipefail
+
+          START_TIME=$(date +%s)
+          NAS_ROOT=${lib.escapeShellArg cfg.nasRoot}
+          MIN_AGE=${lib.escapeShellArg cfg.verify.minAge}
+          ${shellPathArray "PATHS" cfg.verify.cryptcheckPaths}
+
+          ${b2CredsBlock}
+
+          ${rcloneFlagsArray}
+
+          FAILED=()
+          SUCCEEDED=()
+
+          echo "Starting B2 cryptcheck — ''${#PATHS[@]} path(s)"
+
+          for path in "''${PATHS[@]}"; do
+            src="$NAS_ROOT/$path"
+
+            if ! mountpoint -q "$src"; then
+              echo "ERROR: $src is not a mountpoint — cannot verify against a stale mount"
+              FAILED+=("$path (source not mounted)")
+              continue
+            fi
+
+            echo "Checking: $src vs b2crypt:$path"
+            # --one-way: files present only on the remote (deleted locally
+            # since the last sync) are not errors. --min-age skips files the
+            # nightly sync may not have uploaded yet.
+            if rclone cryptcheck "$src" "b2crypt:$path" --one-way --min-age "$MIN_AGE" "''${RCLONE_FLAGS[@]}"; then
+              echo "OK: $path"
+              SUCCEEDED+=("$path")
+            else
+              echo "FAILED: $path"
+              FAILED+=("$path")
+            fi
+          done
+
+          DURATION=$(( $(date +%s) - START_TIME ))
+          echo "---"
+          echo "Cryptcheck complete: ''${#SUCCEEDED[@]} ok, ''${#FAILED[@]} failed (''${DURATION}s)"
+
+          if [[ ''${#FAILED[@]} -gt 0 ]]; then
+            echo "Failed paths:"
+            for p in "''${FAILED[@]}"; do echo "  - $p"; done
+            exit 1
+          fi
+        '';
+      };
+
+      systemd.timers.verify-b2-cryptcheck = {
+        description = "Monthly B2 cryptcheck timer";
+        wantedBy = [ "timers.target" ];
+        timerConfig = {
+          OnCalendar = cfg.verify.cryptcheckOnCalendar;
+          Persistent = true;
+        };
+      };
+
+      systemd.services.verify-b2-sample = {
+        description = "Monthly B2 sample-restore verification";
+        path = with pkgs; [ rclone coreutils util-linux ];
+        wants = [ "openbao-agent.service" ];
+        after = [ "openbao-agent.service" ];
+        unitConfig = notifyHooks // {
+          RequiresMountsFor = mkMountReqs cfg.b2.paths;
+        };
+        serviceConfig = {
+          Type = "oneshot";
+          User = "root";
+        };
+        script = ''
+          set -euo pipefail
+
+          START_TIME=$(date +%s)
+          NAS_ROOT=${lib.escapeShellArg cfg.nasRoot}
+          MIN_AGE=${lib.escapeShellArg cfg.verify.minAge}
+          ${shellPathArray "PATHS" cfg.b2.paths}
+
+          ${b2CredsBlock}
+
+          ${rcloneFlagsArray}
+
+          WORKDIR=$(mktemp -d)
+          trap 'rm -rf "$WORKDIR"' EXIT
+
+          FAILED=()
+          SUCCEEDED=()
+          SKIPPED=()
+
+          echo "Starting B2 sample restore — ''${#PATHS[@]} path(s)"
+
+          for path in "''${PATHS[@]}"; do
+            src="$NAS_ROOT/$path"
+
+            if ! mountpoint -q "$src"; then
+              echo "ERROR: $src is not a mountpoint — cannot pick a sample"
+              FAILED+=("$path (source not mounted)")
+              continue
+            fi
+
+            # Random file per run (a fixed sample could be the one healthy
+            # object). Listing the *source* with the same excludes as the sync
+            # means we only ever pick files the backup claims to contain.
+            sample=$(rclone lsf --recursive --files-only --min-age "$MIN_AGE" \
+              "''${RCLONE_FLAGS[@]}" "$src" | shuf -n 1) || sample=""
+
+            if [[ -z "$sample" ]]; then
+              echo "SKIP: $path (no files older than $MIN_AGE)"
+              SKIPPED+=("$path")
+              continue
+            fi
+
+            echo "Sample: $path/$sample"
+            restored="$WORKDIR/sample"
+            rm -f "$restored"
+
+            # No RCLONE_FLAGS here: rclone rejects filters (--exclude) on a
+            # single-file copyto, and the sample was already chosen from a
+            # filtered listing.
+            if ! rclone copyto "b2crypt:$path/$sample" "$restored" --log-level INFO; then
+              echo "FAILED: $path (download failed: $sample)"
+              FAILED+=("$path (download failed: $sample)")
+              continue
+            fi
+
+            if cmp -s "$src/$sample" "$restored"; then
+              echo "OK: $path ($sample)"
+              SUCCEEDED+=("$path")
+            else
+              echo "FAILED: $path (content mismatch: $sample)"
+              FAILED+=("$path (content mismatch: $sample)")
+            fi
+          done
+
+          DURATION=$(( $(date +%s) - START_TIME ))
+          echo "---"
+          echo "Sample restore complete: ''${#SUCCEEDED[@]} ok, ''${#FAILED[@]} failed, ''${#SKIPPED[@]} skipped (''${DURATION}s)"
+
+          if [[ ''${#SKIPPED[@]} -gt 0 ]]; then
+            echo "Skipped paths (nothing old enough to sample):"
+            for p in "''${SKIPPED[@]}"; do echo "  - $p"; done
+          fi
+
+          if [[ ''${#FAILED[@]} -gt 0 ]]; then
+            echo "Failed paths:"
+            for p in "''${FAILED[@]}"; do echo "  - $p"; done
+            exit 1
+          fi
+        '';
+      };
+
+      systemd.timers.verify-b2-sample = {
+        description = "Monthly B2 sample-restore timer";
+        wantedBy = [ "timers.target" ];
+        timerConfig = {
+          OnCalendar = cfg.verify.sampleB2OnCalendar;
+          Persistent = true;
+        };
+      };
+    })
+
+    (lib.mkIf (cfg.verify.enable && cfg.local.enable) {
+      systemd.services.verify-local-sample = {
+        description = "Monthly local (USB) sample-restore verification";
+        path = with pkgs; [ rclone coreutils util-linux ];
+        unitConfig = notifyHooks // {
+          RequiresMountsFor = "${cfg.local.destination} ${mkMountReqs cfg.local.paths}";
+        };
+        serviceConfig = {
+          Type = "oneshot";
+          User = "root";
+        };
+        script = ''
+          set -euo pipefail
+
+          START_TIME=$(date +%s)
+          NAS_ROOT=${lib.escapeShellArg cfg.nasRoot}
+          DEST=${lib.escapeShellArg cfg.local.destination}
+          MIN_AGE=${lib.escapeShellArg cfg.verify.minAge}
+          ${shellPathArray "PATHS" cfg.local.paths}
+
+          ${rcloneFlagsArray}
+
+          if ! mountpoint -q "$DEST"; then
+            echo "ERROR: $DEST is not mounted — nothing to verify"
+            exit 1
+          fi
+
+          FAILED=()
+          SUCCEEDED=()
+          SKIPPED=()
+
+          echo "Starting local sample verification — ''${#PATHS[@]} path(s)"
+
+          for path in "''${PATHS[@]}"; do
+            src="$NAS_ROOT/$path"
+
+            if ! mountpoint -q "$src"; then
+              echo "ERROR: $src is not a mountpoint — cannot pick a sample"
+              FAILED+=("$path (source not mounted)")
+              continue
+            fi
+
+            sample=$(rclone lsf --recursive --files-only --min-age "$MIN_AGE" \
+              "''${RCLONE_FLAGS[@]}" "$src" | shuf -n 1) || sample=""
+
+            if [[ -z "$sample" ]]; then
+              echo "SKIP: $path (no files older than $MIN_AGE)"
+              SKIPPED+=("$path")
+              continue
+            fi
+
+            echo "Sample: $path/$sample"
+            if cmp -s "$src/$sample" "$DEST/$path/$sample"; then
+              echo "OK: $path ($sample)"
+              SUCCEEDED+=("$path")
+            else
+              echo "FAILED: $path (missing or differs: $sample)"
+              FAILED+=("$path (missing or differs: $sample)")
+            fi
+          done
+
+          DURATION=$(( $(date +%s) - START_TIME ))
+          echo "---"
+          echo "Local sample verification complete: ''${#SUCCEEDED[@]} ok, ''${#FAILED[@]} failed, ''${#SKIPPED[@]} skipped (''${DURATION}s)"
+
+          if [[ ''${#SKIPPED[@]} -gt 0 ]]; then
+            echo "Skipped paths (nothing old enough to sample):"
+            for p in "''${SKIPPED[@]}"; do echo "  - $p"; done
+          fi
+
+          if [[ ''${#FAILED[@]} -gt 0 ]]; then
+            echo "Failed paths:"
+            for p in "''${FAILED[@]}"; do echo "  - $p"; done
+            exit 1
+          fi
+        '';
+      };
+
+      systemd.timers.verify-local-sample = {
+        description = "Monthly local sample-restore timer";
+        wantedBy = [ "timers.target" ];
+        timerConfig = {
+          OnCalendar = cfg.verify.sampleLocalOnCalendar;
+          Persistent = true;
+        };
+      };
+    })
+
     (lib.mkIf cfg.b2.enable {
       systemd.services.backup-b2 = {
         description = "Daily encrypted Backblaze B2 sync";
@@ -219,26 +552,7 @@ in
           target = "B2";
           dest = "b2crypt:";
           paths = cfg.b2.paths;
-          credsBlock = ''
-            export RCLONE_CONFIG_B2_TYPE=b2
-            RCLONE_CONFIG_B2_ACCOUNT=$(cat ${lib.escapeShellArg "${cfg.b2.secretsDir}/b2-account"})
-            RCLONE_CONFIG_B2_KEY=$(cat ${lib.escapeShellArg "${cfg.b2.secretsDir}/b2-key"})
-            export RCLONE_CONFIG_B2_ACCOUNT RCLONE_CONFIG_B2_KEY
-
-            export RCLONE_CONFIG_B2CRYPT_TYPE=crypt
-            export RCLONE_CONFIG_B2CRYPT_REMOTE=${lib.escapeShellArg cfg.b2.cryptRemote}
-            RCLONE_CONFIG_B2CRYPT_PASSWORD=$(cat ${lib.escapeShellArg "${cfg.b2.secretsDir}/b2crypt-pw"})
-            export RCLONE_CONFIG_B2CRYPT_PASSWORD
-
-            # Salt (password2) is optional. Only export if openbao-agent has
-            # templated a real value — a stale file containing the literal
-            # "<no value>" sentinel (consul-template's output for a missing
-            # field) is rejected so rclone falls back to its default salt.
-            pw2=$(cat ${lib.escapeShellArg "${cfg.b2.secretsDir}/b2crypt-pw2"} 2>/dev/null) || pw2=""
-            if [[ -n "$pw2" && "$pw2" != "<no value>" ]]; then
-              export RCLONE_CONFIG_B2CRYPT_PASSWORD2="$pw2"
-            fi
-          '';
+          credsBlock = b2CredsBlock;
         };
       };
 
