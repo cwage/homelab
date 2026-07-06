@@ -334,7 +334,7 @@
   };
 
   # --- Backups ---
-  # Three jobs:
+  # Three nightly jobs:
   #   - configs (03:00): briefly stop/start each compose service while
   #     rsyncing its named volume to /mnt/nas/containers-configs/
   #   - b2 (03:40):       encrypted Backblaze sync (configs land here too,
@@ -342,7 +342,35 @@
   #   - local (02:00):    full unencrypted copy to the USB drive at /mnt/nasbak
   # Schedules are deliberately staggered: local first, then configs, then b2
   # consumes the fresh containers-configs snapshot.
+  #
+  # Plus monthly restore verification on the 1st (issue #174), after the
+  # nightly jobs have finished:
+  #   - verify-b2-cryptcheck (05:00): hash-verify every synced file against
+  #     B2 without downloading (Media excluded — cryptcheck reads all source
+  #     bytes, and multi-TB over NFS makes the run take most of a day)
+  #   - verify-b2-sample (06:30):     random file per share pulled back
+  #     through b2crypt and byte-compared against the NAS source
+  #   - verify-local-sample (07:00):  random file per share compared against
+  #     the USB copy
   homelab.backups = {
+    verify = {
+      enable = true;
+      cryptcheckPaths = [
+        "Pictures"
+        "Documents"
+        "paperless"
+        "Books"
+        "bp"
+        "caitstuff"
+        "syncthing-data"
+        "backup"
+        "Misc"
+        "homelab-backups"
+        "containers-configs"
+        "tofu-state"
+      ];
+    };
+
     local = {
       enable = true;
       paths = [
