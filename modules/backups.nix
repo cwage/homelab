@@ -346,7 +346,7 @@ in
 
       systemd.services.verify-b2-sample = {
         description = "Monthly B2 sample-restore verification";
-        path = with pkgs; [ rclone coreutils util-linux ];
+        path = with pkgs; [ rclone coreutils diffutils util-linux ];
         wants = [ "openbao-agent.service" ];
         after = [ "openbao-agent.service" ];
         unitConfig = notifyHooks // {
@@ -411,12 +411,19 @@ in
               continue
             fi
 
-            if cmp -s "$src/$sample" "$restored"; then
+            # cmp: 0 = identical, 1 = differ, >1 = couldn't compare — don't
+            # report a tooling error as a corrupted backup.
+            rc=0
+            cmp -s "$src/$sample" "$restored" || rc=$?
+            if [[ $rc -eq 0 ]]; then
               echo "OK: $path ($sample)"
               SUCCEEDED+=("$path")
-            else
+            elif [[ $rc -eq 1 ]]; then
               echo "FAILED: $path (content mismatch: $sample)"
               FAILED+=("$path (content mismatch: $sample)")
+            else
+              echo "FAILED: $path (compare error rc=$rc: $sample)"
+              FAILED+=("$path (compare error: $sample)")
             fi
           done
 
@@ -450,7 +457,7 @@ in
     (lib.mkIf (cfg.verify.enable && cfg.local.enable) {
       systemd.services.verify-local-sample = {
         description = "Monthly local (USB) sample-restore verification";
-        path = with pkgs; [ rclone coreutils util-linux ];
+        path = with pkgs; [ rclone coreutils diffutils util-linux ];
         unitConfig = notifyHooks // {
           RequiresMountsFor = "${cfg.local.destination} ${mkMountReqs cfg.local.paths}";
         };
@@ -499,12 +506,19 @@ in
             fi
 
             echo "Sample: $path/$sample"
-            if cmp -s "$src/$sample" "$DEST/$path/$sample"; then
+            # cmp: 0 = identical, 1 = differ, >1 = missing/unreadable — keep
+            # "backup content wrong" distinct from "couldn't compare".
+            rc=0
+            cmp -s "$src/$sample" "$DEST/$path/$sample" || rc=$?
+            if [[ $rc -eq 0 ]]; then
               echo "OK: $path ($sample)"
               SUCCEEDED+=("$path")
+            elif [[ $rc -eq 1 ]]; then
+              echo "FAILED: $path (content differs: $sample)"
+              FAILED+=("$path (content differs: $sample)")
             else
-              echo "FAILED: $path (missing or differs: $sample)"
-              FAILED+=("$path (missing or differs: $sample)")
+              echo "FAILED: $path (missing or unreadable rc=$rc: $sample)"
+              FAILED+=("$path (missing or unreadable: $sample)")
             fi
           done
 
