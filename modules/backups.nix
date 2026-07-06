@@ -368,7 +368,9 @@ in
 
           ${rcloneFlagsArray}
 
-          WORKDIR=$(mktemp -d)
+          # /var/tmp, not /tmp: the sample download can be a multi-GB Media
+          # file, which must not land in RAM if /tmp is ever tmpfs.
+          WORKDIR=$(mktemp -d -p /var/tmp)
           trap 'rm -rf "$WORKDIR"' EXIT
 
           FAILED=()
@@ -488,7 +490,9 @@ in
             exit 1
           fi
 
-          WORKDIR=$(mktemp -d)
+          # /var/tmp, not /tmp: recursive listings of large shares shouldn't
+          # land in RAM if /tmp is ever tmpfs.
+          WORKDIR=$(mktemp -d -p /var/tmp)
           trap 'rm -rf "$WORKDIR"' EXIT
 
           FAILED=()
