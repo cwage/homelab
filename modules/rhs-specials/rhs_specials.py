@@ -18,6 +18,7 @@ import json
 import os
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -47,7 +48,7 @@ def parse_args():
     p.add_argument("--ignore", action="append", default=None, metavar="TEXT",
                    help="skip posts whose caption contains TEXT (case-insensitive); "
                         "repeatable. Env: IGNORE_KEYWORDS (comma-separated)")
-    p.add_argument("--days", type=int, default=1,
+    p.add_argument("--days", type=_positive_int, default=1,
                    help="how many calendar days back (restaurant-local time) to consider; "
                         "1 = today only (default: %(default)s)")
     p.add_argument("--state-file", type=Path,
@@ -71,6 +72,15 @@ def parse_args():
 def _env_list(name):
     raw = os.environ.get(name, "")
     return [s.strip() for s in raw.split(",") if s.strip()]
+
+
+def _positive_int(value):
+    n = int(value)
+    if n < 1:
+        # 0 or negative would put the cutoff in the future and silently
+        # suppress every post.
+        raise argparse.ArgumentTypeError("must be >= 1")
+    return n
 
 
 def caption_wanted(caption, match, ignore):
@@ -175,6 +185,7 @@ def main():
     cutoff = datetime.now(RESTAURANT_TZ).date() - timedelta(days=args.days - 1)
     seen = load_seen(args.state_file)
     matched = 0
+    publish_failures = 0
     for post in posts:
         if post["taken_at"].date() < cutoff:
             continue
@@ -182,16 +193,23 @@ def main():
             continue
         if post["shortcode"] in seen:
             continue
-        publish(args.server, args.topic, post, args.dry_run)
+        try:
+            publish(args.server, args.topic, post, args.dry_run)
+        except (urllib.error.URLError, OSError) as e:
+            # Not marked seen, so the next run retries it.
+            print(f"error: failed to publish {post['shortcode']} to ntfy: {e}",
+                  file=sys.stderr)
+            publish_failures += 1
+            continue
         matched += 1
         if not args.dry_run:
             append_log(args.log_file, post)
             seen.add(post["shortcode"])
             save_seen(args.state_file, seen)
 
-    if matched == 0:
+    if matched == 0 and publish_failures == 0:
         print(f"no new matching posts since {cutoff:%Y-%m-%d} (checked {len(posts)} posts)")
-    return 0
+    return 1 if publish_failures else 0
 
 
 if __name__ == "__main__":

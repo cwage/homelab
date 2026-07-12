@@ -74,8 +74,12 @@ in
       unitConfig.OnFailure = [ "notify-failure@%n.service" ];
       serviceConfig = {
         Type = "oneshot";
+        # DynamicUser already implies ProtectSystem=strict and
+        # ProtectHome=read-only (systemd.exec(5)); tighten home to
+        # inaccessible since the script has no business there.
         DynamicUser = true;
         StateDirectory = "rhs-specials";
+        ProtectHome = true;
         NoNewPrivileges = true;
         PrivateTmp = true;
         ExecStart = utils.escapeSystemdExecArgs ([
