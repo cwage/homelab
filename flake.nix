@@ -58,6 +58,7 @@
           ./modules/openbao-agent.nix
           ./modules/ntfy-notify.nix
           ./modules/backups.nix
+          ./modules/rhs-specials
           ./hosts/containers/configuration.nix
         ];
       };

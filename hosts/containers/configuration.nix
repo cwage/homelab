@@ -333,6 +333,12 @@
     topic = "https://ntfy.sh/cwage-homelab-backup";
   };
 
+  # --- Redheaded Stranger specials -> ntfy ---
+  # Polls their Instagram feed hourly 07:00-13:00 plus a 19:00 sweep (module
+  # defaults) and pushes new posts to ntfy.sh/rhs-specials. Failures ping the
+  # notify-failure@ hook above.
+  homelab.rhs-specials.enable = true;
+
   # --- Backups ---
   # Three nightly jobs:
   #   - configs (03:00): briefly stop/start each compose service while
