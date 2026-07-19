@@ -334,7 +334,7 @@
   };
 
   # --- Redheaded Stranger specials -> ntfy ---
-  # Toast ordering-menu stock watcher (hourly 07:00-19:00, via the
+  # Toast ordering-menu stock watcher (hourly 07:00-21:00, via the
   # flaresolverr compose service) pushing to ntfy.sh/rhs-specials; failures
   # ping the notify-failure@ hook above. The Instagram feed poller
   # (homelab.rhs-specials.enable) is deliberately off: the Toast menu is the

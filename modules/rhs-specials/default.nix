@@ -81,11 +81,14 @@ in
 
       onCalendar = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [ "*-*-* 07..19:00:00" ];
+        default = [ "*-*-* 07..21:00:00" ];
         description = ''
-          systemd OnCalendar expressions, host-local time. Stock flips can
-          happen any time during service, so the default covers open hours
-          hourly. Each run is one headless-browser page load against Toast.
+          systemd OnCalendar expressions, host-local time. Stock flips
+          follow the kitchen, not a posting schedule: they're open until
+          22:00 nightly, so the default covers pre-open prep (weekends open
+          at 08:00) through an hour before close, hourly. Each run is one
+          headless-browser page load against Toast. Revisit against
+          toast_log.md once real flip times accumulate.
         '';
       };
     };
