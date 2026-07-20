@@ -50,7 +50,9 @@ help:
 # tofu provider (#242). SKIP_BAO_PREFLIGHT=1 bypasses the check (e.g. for
 # targets that don't touch OpenBao, or when bao itself is down).
 bao-preflight:
-ifndef SKIP_BAO_PREFLIGHT
+# Only explicit truthy values disable the guard — SKIP_BAO_PREFLIGHT=0,
+# empty, or unset all keep the check active.
+ifeq ($(filter 1 true yes,$(SKIP_BAO_PREFLIGHT)),)
 	@./bin/bao-token-status --check-min-ttl=1d || { echo "ERROR: OpenBao preflight failed — renew BAO_TOKEN and update .env (docs/openbao-secrets.md), or bypass with SKIP_BAO_PREFLIGHT=1"; exit 1; }
 endif
 
