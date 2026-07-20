@@ -17,7 +17,7 @@ TRUFFLEHOG_ARGS ?= filesystem /repo --fail --no-update --exclude-paths /repo/.tr
 
 .DEFAULT_GOAL := help
 
-.PHONY: help ansible tofu lego backup nix openbao ansible-% tofu-% lego-% backup-% nix-% openbao-% trufflehog install-precommit-hook
+.PHONY: help ansible tofu lego backup nix openbao ansible-% tofu-% lego-% backup-% nix-% openbao-% trufflehog install-precommit-hook bao-preflight bao-token-status
 
 help:
 	@echo "homelab monorepo"
@@ -31,6 +31,10 @@ help:
 	@echo "  make nix-<target>       (targets: $(NIX_TARGETS))"
 	@echo "  make openbao-<target>   (targets: $(OPENBAO_TARGETS))"
 	@echo "  make trufflehog         (root) scan entire repo for secrets"
+	@echo "  make bao-token-status   (root) show workstation OpenBao token TTL/expiry"
+	@echo ""
+	@echo "ansible-*/tofu-* targets preflight the OpenBao token first (fail fast"
+	@echo "instead of a cryptic 403 mid-run). Bypass with SKIP_BAO_PREFLIGHT=1."
 	@echo ""
 	@echo "Shortcuts:"
 	@echo "  make ansible            # same as: (cd ansible && make)  -> opens component help/defaults"
@@ -41,10 +45,22 @@ help:
 	@echo "  make openbao            # same as: (cd openbao && make)  -> opens component help/defaults"
 	@echo "  make install-precommit-hook # install root pre-commit hook (trufflehog)"
 
-ansible-%:
+# Fail fast if the workstation OpenBao token is missing, expired, or expiring
+# within a day — the alternative is a cryptic 403 deep inside a playbook or
+# tofu provider (#242). SKIP_BAO_PREFLIGHT=1 bypasses the check (e.g. for
+# targets that don't touch OpenBao, or when bao itself is down).
+bao-preflight:
+ifndef SKIP_BAO_PREFLIGHT
+	@./bin/bao-token-status --check-min-ttl=1d || { echo "ERROR: OpenBao preflight failed — renew BAO_TOKEN and update .env (docs/openbao-secrets.md), or bypass with SKIP_BAO_PREFLIGHT=1"; exit 1; }
+endif
+
+bao-token-status:
+	@./bin/bao-token-status
+
+ansible-%: bao-preflight
 	@$(MAKE) -C $(ANSIBLE_DIR) $*
 
-tofu-%:
+tofu-%: bao-preflight
 	@$(MAKE) -C $(TOFU_DIR) $*
 
 ansible:

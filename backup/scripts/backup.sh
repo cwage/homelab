@@ -34,6 +34,8 @@ fi
 
 NAS_ROOT="/mnt/nas"
 LOG_DIR="/var/log/backup"
+# Warn via ntfy when the OpenBao token's TTL drops below this many days (#250)
+TOKEN_TTL_WARN_DAYS="${TOKEN_TTL_WARN_DAYS:-30}"
 
 TARGET=""
 INTERACTIVE=false
@@ -140,6 +142,35 @@ ntfy_send() {
     [[ -n "$title" ]]    && curl_args+=(-H "Title: ${title}")
     [[ -n "$tags" ]]     && curl_args+=(-H "Tags: ${tags}")
     curl "${curl_args[@]}" -d "${sanitized_body}" "${NTFY_TOPIC}" || true
+}
+
+# Warn when the OpenBao token nears expiry (#250). The workstation token is
+# periodic but only renewed by deliberate human action, so it dies silently
+# unless someone notices — and the alternative is finding out via a 403 on a
+# future run. Skipped when running on .env fallback creds (no BAO_TOKEN).
+# Never fails the backup: warning-only, distinct tags/priority from failures.
+check_token_ttl() {
+    [[ -z "${BAO_ADDR:-}" || -z "${BAO_TOKEN:-}" ]] && return 0
+
+    local curl_opts=(-sf -H "X-Vault-Token: ${BAO_TOKEN}")
+    if [[ "${BAO_SKIP_VERIFY:-}" == "true" ]]; then
+        curl_opts+=(--insecure)
+    fi
+
+    local ttl
+    ttl=$(curl "${curl_opts[@]}" "${BAO_ADDR}/v1/auth/token/lookup-self" 2>/dev/null | jq -r '.data.ttl // empty' 2>/dev/null) || ttl=""
+    if [[ -z "$ttl" ]]; then
+        log "WARNING: could not determine OpenBao token TTL"
+        return 0
+    fi
+
+    if (( ttl > 0 && ttl < TOKEN_TTL_WARN_DAYS * 86400 )); then
+        local days=$(( ttl / 86400 ))
+        log "WARNING: OpenBao token expires in ${days} day(s)"
+        ntfy_send default "OpenBao backup token expiring" \
+            "Workstation backup token TTL is ${days} day(s) — renew it before backups start failing (see docs/openbao-secrets.md)" \
+            "warning,hourglass"
+    fi
 }
 
 format_duration() {
@@ -255,6 +286,11 @@ for path in "${PATHS[@]}"; do
         FAILED+=("$path")
     fi
 done
+
+# ---------------------------------------------------------------------------
+# Token expiry warning (runs regardless of sync outcome)
+# ---------------------------------------------------------------------------
+check_token_ttl
 
 # ---------------------------------------------------------------------------
 # Summary

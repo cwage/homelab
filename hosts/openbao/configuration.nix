@@ -163,7 +163,7 @@
 
   systemd.services.openbao-backup = {
     description = "OpenBao Raft snapshot backup";
-    path = with pkgs; [ openbao coreutils gnugrep findutils ];
+    path = with pkgs; [ openbao coreutils gnugrep findutils jq curl ];
     # Refuse to run if the NFS share isn't mounted — otherwise snapshots
     # would silently land on the root filesystem.
     unitConfig = {
@@ -180,6 +180,7 @@
 
       BACKUP_DIR="/mnt/backups/vm/openbao"
       RETENTION_DAYS=30
+      TOKEN_TTL_WARN_DAYS=30
       TIMESTAMP=$(date +%Y%m%d-%H%M%S)
       SNAPSHOT_FILE="''${BACKUP_DIR}/openbao-''${TIMESTAMP}.snap"
 
@@ -215,6 +216,25 @@
 
       echo "Removing backups older than ''${RETENTION_DAYS} days"
       find "''${BACKUP_DIR}" -name "openbao-*.snap" -type f -mtime +''${RETENTION_DAYS} -delete
+
+      # Warn when the backup token nears expiry (#250). The token is periodic
+      # but nothing renews it, so it dies ~8760h after minting and the first
+      # symptom would be this job 403ing. Non-fatal: a lookup hiccup must not
+      # turn a successful backup into a failure alert. Priority/tags differ
+      # from the urgent/x failure notifications so this reads as a warning.
+      ttl_seconds=$(bao token lookup -format=json 2>/dev/null | jq -r '.data.ttl // empty') || ttl_seconds=""
+      if [[ -z "''${ttl_seconds}" ]]; then
+        echo "WARNING: could not determine backup token TTL"
+      elif (( ttl_seconds > 0 && ttl_seconds < TOKEN_TTL_WARN_DAYS * 86400 )); then
+        ttl_days=$(( ttl_seconds / 86400 ))
+        echo "WARNING: backup token expires in ''${ttl_days} day(s)"
+        curl -sf -o /dev/null \
+          -H "Priority: default" \
+          -H "Title: OpenBao backup token expiring on ${config.networking.hostName}" \
+          -H "Tags: warning,hourglass,${config.networking.hostName}" \
+          --data-raw "Raft snapshot token TTL is ''${ttl_days} day(s). Re-mint per hosts/openbao/configuration.nix and stage at /etc/openbao/backup-token." \
+          ${lib.escapeShellArg config.homelab.ntfy.topic} || true
+      fi
 
       echo "Backup completed successfully"
     '';
