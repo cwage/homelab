@@ -104,6 +104,12 @@ make tofu-<target>        # runs target in tofu/Makefile
 
 Use `make ansible-help` and `make tofu-help` to list all available targets.
 
+All `ansible-*` and `tofu-*` targets run an OpenBao token preflight first
+(`bin/bao-token-status --check-min-ttl=1d`), so an expired/expiring `BAO_TOKEN`
+fails immediately with a clear message instead of a cryptic 403 partway through
+a playbook or provider call. Bypass with `SKIP_BAO_PREFLIGHT=1` (e.g. for
+targets that don't touch OpenBao, or when bao itself is down).
+
 ## Make targets
 
 ### Ansible (host configuration)
@@ -149,6 +155,21 @@ make openbao-approle-show-role NAME=dns1                 # show role_id for a ho
 make openbao-approle-list                                # list all AppRole roles
 make openbao-shell                                       # interactive bao CLI shell
 ```
+
+### OpenBao token status (workstation)
+
+```bash
+make bao-token-status                        # human-readable token state (TTL, policies, expiry)
+bin/bao-token-status                         # same, direct invocation
+bin/bao-token-status --check-min-ttl=1d      # silent pass/fail for scripts (exit 0/1)
+make bao-preflight                           # the check ansible-*/tofu-* targets run automatically
+```
+
+`bao-token-status` reads `BAO_ADDR`/`BAO_TOKEN` from the environment or the
+root `.env`, calls `auth/token/lookup-self`, and reports TTL and expiry
+without ever printing the token. Renewal itself stays a deliberate manual
+step — see [docs/openbao-secrets.md](docs/openbao-secrets.md). Requires
+`curl` and `jq` on the host (runs natively, no container).
 
 ### Security scanning
 

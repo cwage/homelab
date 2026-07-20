@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# bao-token-status — report the workstation OpenBao token's health (#242)
+#
+# Usage:
+#   bin/bao-token-status                      Human-readable status
+#   bin/bao-token-status --check-min-ttl=1d   Silent; exit 0 if TTL >= 1d,
+#                                             1 otherwise (for scripts/make)
+#
+# Durations accept 30d / 12h / 45m / 90s or plain seconds.
+#
+# Reads BAO_ADDR / BAO_TOKEN / BAO_SKIP_VERIFY from the environment; any that
+# are unset fall back to the repo-root .env. The token value itself is never
+# printed. Requires curl and jq on the host.
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+MIN_TTL_RAW=""
+for arg in "$@"; do
+    case "$arg" in
+        --check-min-ttl=*) MIN_TTL_RAW="${arg#--check-min-ttl=}" ;;
+        --help|-h)
+            sed -n '4,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $arg (see --help)" >&2
+            exit 2
+            ;;
+    esac
+done
+
+# In check mode, success is silent; everything else goes to stderr so make
+# output stays clean.
+CHECK_MODE=false
+[[ -n "$MIN_TTL_RAW" ]] && CHECK_MODE=true
+
+fail() {
+    echo "$*" >&2
+    exit 1
+}
+
+parse_duration() {
+    local d="$1"
+    if [[ "$d" =~ ^([0-9]+)([dhms]?)$ ]]; then
+        local n="${BASH_REMATCH[1]}"
+        case "${BASH_REMATCH[2]}" in
+            d) echo $(( n * 86400 )) ;;
+            h) echo $(( n * 3600 )) ;;
+            m) echo $(( n * 60 )) ;;
+            *) echo "$n" ;;
+        esac
+    else
+        return 1
+    fi
+}
+
+MIN_TTL=""
+if $CHECK_MODE; then
+    MIN_TTL=$(parse_duration "$MIN_TTL_RAW") \
+        || fail "ERROR: invalid --check-min-ttl duration: $MIN_TTL_RAW (use e.g. 1d, 12h, 3600)"
+fi
+
+command -v curl >/dev/null || fail "ERROR: curl not found on PATH"
+command -v jq   >/dev/null || fail "ERROR: jq not found on PATH"
+
+# Environment wins per-variable; .env only fills in the gaps. Parsed rather
+# than sourced: .env is a compose env-file, not shell (it sets UID, which is
+# readonly in bash, and values are taken literally, not evaluated).
+env_lookup() {
+    local val
+    val=$(sed -n "s/^$1=//p" "$REPO_ROOT/.env" | tail -1)
+    val="${val%\"}"; val="${val#\"}"
+    printf '%s' "$val"
+}
+if [[ -f "$REPO_ROOT/.env" ]]; then
+    [[ -n "${BAO_ADDR:-}" ]]        || BAO_ADDR="$(env_lookup BAO_ADDR)"
+    [[ -n "${BAO_TOKEN:-}" ]]       || BAO_TOKEN="$(env_lookup BAO_TOKEN)"
+    [[ -n "${BAO_SKIP_VERIFY:-}" ]] || BAO_SKIP_VERIFY="$(env_lookup BAO_SKIP_VERIFY)"
+fi
+
+[[ -n "${BAO_ADDR:-}" ]]  || fail "ERROR: BAO_ADDR not set (export it or add it to .env)"
+[[ -n "${BAO_TOKEN:-}" ]] || fail "ERROR: BAO_TOKEN not set (export it or add it to .env)"
+
+curl_opts=(-s -H "X-Vault-Token: ${BAO_TOKEN}" -w $'\n%{http_code}')
+[[ "${BAO_SKIP_VERIFY:-}" == "true" ]] && curl_opts+=(--insecure)
+
+response=$(curl "${curl_opts[@]}" "${BAO_ADDR}/v1/auth/token/lookup-self") \
+    || fail "ERROR: OpenBao unreachable at ${BAO_ADDR}"
+http_code="${response##*$'\n'}"
+body="${response%$'\n'*}"
+
+case "$http_code" in
+    200) ;;
+    403) fail "BAO_TOKEN: expired or invalid (HTTP 403) — renew it and update .env" ;;
+    *)   fail "ERROR: unexpected response from OpenBao (HTTP ${http_code})" ;;
+esac
+
+ttl=$(jq -r '.data.ttl' <<<"$body")
+[[ "$ttl" =~ ^[0-9]+$ ]] || fail "ERROR: could not parse token TTL from OpenBao response"
+
+format_ttl() {
+    local secs=$1
+    if (( secs >= 86400 )); then
+        printf '%d days, %d hours' $(( secs / 86400 )) $(( secs % 86400 / 3600 ))
+    elif (( secs >= 3600 )); then
+        printf '%d hours, %d minutes' $(( secs / 3600 )) $(( secs % 3600 / 60 ))
+    else
+        printf '%d minutes' $(( secs / 60 ))
+    fi
+}
+
+if $CHECK_MODE; then
+    # ttl=0 means a non-expiring token — always passes.
+    if (( ttl != 0 && ttl < MIN_TTL )); then
+        fail "BAO_TOKEN: TTL $(format_ttl "$ttl") is below the required ${MIN_TTL_RAW}"
+    fi
+    exit 0
+fi
+
+display_name=$(jq -r '.data.display_name // "-"' <<<"$body")
+policies=$(jq -r '(.data.policies // []) | join(", ")' <<<"$body")
+expire_time=$(jq -r '.data.expire_time // "never"' <<<"$body")
+
+if (( ttl == 0 )); then
+    echo "BAO_TOKEN: valid (never expires)"
+else
+    echo "BAO_TOKEN: valid (expires in $(format_ttl "$ttl"))"
+fi
+echo "  display name: ${display_name}"
+echo "  policies:     ${policies}"
+echo "  expire time:  ${expire_time}"
