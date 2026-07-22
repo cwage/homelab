@@ -260,6 +260,18 @@ services:
     networks:
       - proxy
 
+  # Cloudflare-challenge solver used by the rhs-toast-specials systemd timer
+  # (modules/rhs-specials) to fetch the Toast ordering page. Host-local
+  # consumers only — bound to 127.0.0.1, no traefik exposure.
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
+    container_name: flaresolverr
+    restart: unless-stopped
+    environment:
+      - TZ=America/Chicago
+    ports:
+      - "127.0.0.1:8191:8191"
+
   cloudflared:
     image: cloudflare/cloudflared:2026.1.2
     container_name: cloudflared
