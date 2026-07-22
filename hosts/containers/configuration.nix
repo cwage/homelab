@@ -287,6 +287,36 @@
         command = "${pkgs.docker}/bin/docker restart staticomment";
       };
 
+      # --- Music stack (gluetun + slskd) secrets ---
+      # Each is stored in OpenBao as a single `content` field whose value is the
+      # entire env-file body (same approach as stacks-env above), rendered here
+      # and consumed via compose `env_file:`. Compose only reads env_file at
+      # up-time, so a `compose up -d` is needed on rotation to recreate the
+      # affected containers. These are two INDEPENDENT secrets (not a fanout
+      # pair), so each carries its own compose-up command — a rotation of either
+      # one alone still recreates the stack. If both rotate together the command
+      # runs twice, which is idempotent.
+      stacks-gluetun-env = {
+        path = "kv/data/stacks/containers/gluetun-env";
+        field = "content";
+        destination = "/opt/stacks/gluetun.env";
+        owner = "deploy";
+        group = "users";
+        permissions = "0600";
+        manageDestinationDir = false;
+        command = "${pkgs.bash}/bin/bash -c 'cd /opt/stacks && ${pkgs.docker}/bin/docker compose up -d'";
+      };
+      stacks-slskd-env = {
+        path = "kv/data/stacks/containers/slskd-env";
+        field = "content";
+        destination = "/opt/stacks/slskd.env";
+        owner = "deploy";
+        group = "users";
+        permissions = "0600";
+        manageDestinationDir = false;
+        command = "${pkgs.bash}/bin/bash -c 'cd /opt/stacks && ${pkgs.docker}/bin/docker compose up -d'";
+      };
+
       # LE wildcard cert delivery for Traefik. The dir at /opt/stacks/certs
       # is 0700 deploy:users (declared above), so we set owner/group on the
       # rendered files explicitly and tell the agent not to redeclare the dir.

@@ -287,6 +287,109 @@ services:
     profiles:
       - tunnel
 
+  # --- Music acquisition stack: gluetun + slskd + beets ---
+  # slskd is a headless Soulseek client. ALL of its traffic is forced through
+  # gluetun (Proton VPN over WireGuard) via network_mode, so nothing ever
+  # touches the WAN un-tunneled — this is the isolation guarantee, not the
+  # Cloudflare tunnel. gluetun owns the shared network namespace, so slskd has
+  # no network/ports/labels of its own; its web UI (5030) is published through
+  # gluetun and fronted by Traefik on gluetun's labels. beets tags/organizes
+  # completed downloads into /media/Music (it only talks to MusicBrainz, so it
+  # stays on the normal proxy network, not the VPN).
+  gluetun:
+    image: qmcgaw/gluetun:v3.41.0
+    container_name: gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      # Interface address from the Proton WireGuard config (US-DC#43). IPv6
+      # left off; the tunnel runs v4-only.
+      - WIREGUARD_ADDRESSES=10.2.0.2/32
+      # Keep egress in the US for latency; Proton US servers support P2P + PF.
+      - SERVER_COUNTRIES=United States
+      # Port forwarding via NAT-PMP. slskd reads the dynamic forwarded port
+      # from the control server (see its SLSKD_VPN_* env) and keeps its listen
+      # port in sync, so uploads stay reachable as the port rotates.
+      - VPN_PORT_FORWARDING=on
+      - TZ=America/Chicago
+    # From OpenBao (kv/stacks/containers/gluetun-env): WIREGUARD_PRIVATE_KEY plus
+    # HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE, a JSON blob applying API-key auth to
+    # all control-server routes. Requires gluetun >= v3.41 (new /v1/portforward
+    # API + env-based auth); v3.40 ignored the env var and couldn't protect that
+    # route, so slskd (which polls /v1/portforward) got 401. slskd sends the
+    # matching key as X-API-Key to poll the forwarded port and set its listen port.
+    env_file:
+      - ./gluetun.env
+    labels:
+      # slskd's web UI lives inside gluetun's netns; Traefik routes to it via
+      # gluetun (the netns owner) at slskd.lan.quietlife.net.
+      - "traefik.enable=true"
+      - "traefik.http.routers.slskd.rule=Host(`slskd.lan.quietlife.net`)"
+      - "traefik.http.routers.slskd.entrypoints=websecure"
+      - "traefik.http.routers.slskd.tls=true"
+      - "traefik.http.services.slskd.loadbalancer.server.port=5030"
+    networks:
+      - proxy
+
+  slskd:
+    image: slskd/slskd:0.24.4
+    container_name: slskd
+    restart: unless-stopped
+    # Share gluetun's network namespace: all slskd traffic exits via the VPN.
+    # gluetun's firewall blocks traffic until the tunnel is up, so no leak on
+    # startup. No networks/ports/labels here — they live on gluetun.
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - SLSKD_HTTP_PORT=5030
+      - SLSKD_DOWNLOADS_DIR=/downloads
+      # Share the whole music library back to the network (Soulseek etiquette
+      # / ratio). slskd only reads it for sharing; imports are done by beets.
+      - SLSKD_SHARED_DIR=/music
+      # Native gluetun integration: slskd polls gluetun's control server for the
+      # forwarded port and keeps its Soulseek listen port in sync — no sidecar.
+      # The API key is the secret half (SLSKD_VPN_GLUETUN_API_KEY, from
+      # slskd.env) and must match gluetun's HTTP_CONTROL_SERVER_AUTH_DEFAULT_ROLE
+      # apikey (in gluetun.env).
+      - SLSKD_VPN=true
+      - SLSKD_VPN_PORT_FORWARDING=true
+      - SLSKD_VPN_GLUETUN_URL=http://localhost:8000
+    # Soulseek creds (SLSKD_SLSK_USERNAME/PASSWORD), web-UI/API auth
+    # (SLSKD_USERNAME/PASSWORD), and the gluetun control-server key
+    # (SLSKD_VPN_GLUETUN_API_KEY) rendered from OpenBao
+    # (kv/stacks/containers/slskd-env).
+    env_file:
+      - ./slskd.env
+    volumes:
+      - slskd_config:/app
+      - /mnt/nas/Media/Downloads/soulseek:/downloads
+      - /mnt/nas/Media/Music:/music
+
+  beets:
+    image: lscr.io/linuxserver/beets:2.3.1
+    container_name: beets
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - beets_config:/config
+      - /mnt/nas/Media/Downloads/soulseek:/downloads
+      - /mnt/nas/Media/Music:/music
+    networks:
+      - proxy
+
 volumes:
   jellyfin_config:
   jellyfin_cache:
@@ -302,6 +405,8 @@ volumes:
   cryptpad_customize:
   forgejo_data:
   forgejo_db:
+  slskd_config:
+  beets_config:
 
 networks:
   proxy:
