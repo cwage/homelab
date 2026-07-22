@@ -6,7 +6,8 @@ toggled in/out of stock as the kitchen runs them — the POS ground truth for
 what's on today, including specials that never make it to Instagram. The page
 sits behind a Cloudflare JS challenge, so the fetch goes through a FlareSolverr
 instance (any solver with the same POST API works); parsing reads the
-window.__APOLLO_STATE__ JSON embedded in the returned HTML.
+window.__OO_STATE__ JSON embedded in the returned HTML (with
+window.__APOLLO_STATE__ as a fallback).
 
 Each run compares current stock against the previous run's state file and
 publishes one ntfy message listing items that just became available
@@ -37,7 +38,7 @@ RESTAURANT_TZ = ZoneInfo("America/Chicago")
 
 def parse_args():
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("--solver-url", default=os.environ.get("SOLVER_URL", "http://localhost:8191/v1"),
+    p.add_argument("--solver-url", default=os.environ.get("SOLVER_URL", "http://127.0.0.1:8191/v1"),
                    help="FlareSolverr endpoint (default: %(default)s)")
     p.add_argument("--page-url", default=PAGE_URL,
                    help="Toast online-ordering page to scrape (default: Redheaded Stranger)")
@@ -98,7 +99,9 @@ def extract_embedded_state(html, marker):
     idx = html.find(marker)
     if idx == -1:
         raise FetchError(f"no {marker} in page (format changed?)")
-    start = html.index("{", idx)
+    start = html.find("{", idx)
+    if start == -1:
+        raise FetchError(f"no JSON object after {marker} (format changed?)")
     # Balanced-brace scan that respects JSON strings/escapes.
     depth = 0
     in_string = False
