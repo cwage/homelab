@@ -22,6 +22,10 @@ terraform {
       source  = "terraform-routeros/routeros"
       version = "~> 1.0"
     }
+    linode = {
+      source  = "linode/linode"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -44,6 +48,11 @@ provider "proxmox" {
   ssh {
     agent = true
   }
+}
+
+# Linode API — token from OpenBao (data source in linode.tf)
+provider "linode" {
+  token = data.vault_kv_secret_v2.linode.data["api_token"]
 }
 
 # switch1 (MikroTik CRS310) REST API — creds from OpenBao (data source in switch.tf)

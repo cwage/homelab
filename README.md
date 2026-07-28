@@ -18,6 +18,7 @@ The LAN is `10.10.15.0/24` under the domain `lan.quietlife.net`. A couple of ext
 | **portanas** | 10.10.15.4 | Synology NAS — NFS storage backing media, documents, and [backups](backup/README.md) |
 | **felix** | 45.56.113.70 | Linode VPS |
 | **gaming1** | 45.56.118.89 | Linode VPS — LinuxGSM game servers |
+| **xmpp1** | (see `tofu output xmpp1_ip`) | Linode VPS (NixOS) — [Prosody XMPP + coturn](docs/xmpp.md) for the JMP phone number |
 
 ### Two-layer IaC
 
