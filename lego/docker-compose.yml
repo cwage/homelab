@@ -7,7 +7,10 @@
 
 services:
   lego:
-    image: goacme/lego:latest
+    # Pinned: :latest jumped to lego v5, which restructured the CLI (flags like
+    # --accept-tos are no longer global) and broke every target here mid-cert-
+    # outage. Bump deliberately, testing against renew-staging first.
+    image: goacme/lego:v4.35.2
     user: "${UID:-1000}:${GID:-1000}"
     working_dir: /work
     volumes:
