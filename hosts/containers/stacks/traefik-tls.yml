@@ -11,3 +11,42 @@ tls:
       defaultCertificate:
         certFile: /etc/traefik/certs/lan.quietlife.net.crt
         keyFile: /etc/traefik/certs/lan.quietlife.net.key
+
+# Reverse-proxy the Converse.js web client's XMPP websocket to prosody on the
+# public xmpp1 box. The browser can't connect to prosody directly: prosody keys
+# TLS on XMPP identity (SNI), and the only name pointing at that box —
+# xmpp.quietlife.net — is not a VirtualHost, so a browser's wss://xmpp... SNI is
+# refused. Instead the browser talks to Traefik here (chat.lan.quietlife.net,
+# under the LAN wildcard cert it already trusts, same-origin as the page), and
+# Traefik bridges to prosody presenting SNI `quietlife.net` — an identity
+# prosody DOES serve. Defined in the file provider (not docker labels) because
+# the upstream is an external internet host, not a container. See docs/xmpp.md.
+http:
+  routers:
+    # More specific than the docker-label `converse` router (Host only), so this
+    # wins for the websocket path while static files keep flowing to nginx.
+    converse-ws:
+      rule: "Host(`chat.lan.quietlife.net`) && PathPrefix(`/xmpp-websocket`)"
+      entryPoints:
+        - websecure
+      service: prosody-ws
+      priority: 100
+      tls: {}
+
+  services:
+    prosody-ws:
+      loadBalancer:
+        # Host header stays chat.lan.quietlife.net; prosody's http_default_host
+        # routes that unmatched host to the apex vhost's mod_websocket.
+        passHostHeader: true
+        servers:
+          - url: "https://xmpp.quietlife.net:443"
+        serversTransport: prosody-backend
+
+  serversTransports:
+    # xmpp.quietlife.net resolves to the box, but we must present the apex
+    # identity for prosody to serve a cert and for verification to pass (the
+    # cert's CN/SAN is quietlife.net). serverName sets both the SNI and the
+    # name verified against the returned cert.
+    prosody-backend:
+      serverName: quietlife.net

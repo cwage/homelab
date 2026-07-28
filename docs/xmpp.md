@@ -254,6 +254,48 @@ notification reliability, message delivery latency, and whether MMS works with
 the people you actually text. Porting out of Google Voice costs $3 to unlock and
 is effectively one-way, so the trial is the point.
 
+## Web client
+
+The Google-Voice-in-a-browser equivalent is [Converse.js](https://conversejs.org)
+at **https://chat.lan.quietlife.net** — log in as `cwage` (the domain is locked
+to `quietlife.net`) with the prosody account password.
+
+How it hangs together:
+
+- There is no official Converse.js Docker image, so instead of trusting a
+  third-party build, the official release tarball is fetched (pinned by hash)
+  as a nix derivation in `hosts/containers/configuration.nix` and served by a
+  stock nginx container (`converse` in the compose stack) behind Traefik.
+- The page is pure static files. The chat connection is a websocket to
+  `wss://chat.lan.quietlife.net/xmpp-websocket` — **same origin as the page**,
+  terminated by Traefik under the LAN wildcard cert and reverse-proxied to
+  prosody on xmpp1 (`converse-ws` router in `stacks/traefik-tls.yml`).
+- **Why not connect to the box directly?** The browser *can't*. Prosody selects
+  its TLS certificate by XMPP *identity* — the name a client asks for via SNI —
+  and its identity is the apex `quietlife.net`. `xmpp.quietlife.net` is only a
+  connection hostname (a DNS pointer to the box), not a VirtualHost, so a
+  browser opening `wss://xmpp.quietlife.net/...` sends an SNI prosody has no
+  cert context for and the TLS handshake is refused (`unrecognized_name`).
+  Native clients (Cheogram) dodge this because they ask for the identity
+  `quietlife.net` over TLS even though DNS routes them to the box. Traefik
+  bridges the gap: it presents SNI `quietlife.net` on the backend connection
+  (`prosody-backend` serversTransport), a name prosody *does* serve, and
+  forwards the request with `http_default_host` on prosody catching the
+  unmatched Host header. Nothing on the public box needs changing.
+- **LAN-only, on purpose.** Off-LAN texting is what Cheogram on the phone is
+  for; exposing this page publicly would just put a login form for the XMPP
+  account on the internet. It also means the web client dies with the homelab —
+  acceptable, because the phone path (Cheogram → prosody on the VPS → JMP) does
+  not touch the homelab at all.
+- Because prosody keeps the full archive (`mam`, never expires) and `carbons`
+  is on, the web client and the phone both see the complete conversation
+  history regardless of which one sent a message.
+
+Upgrading Converse.js is a version + hash bump in
+`hosts/containers/configuration.nix`; after deploying, recreate the container
+(`docker compose up -d --force-recreate converse`) since the bind-mount
+source path doesn't change.
+
 ## Known limitations
 
 - **No 911.** JMP does not provide emergency services. Emergency calls go
@@ -270,9 +312,6 @@ is effectively one-way, so the trial is the point.
 
 ## Future work
 
-- **Converse.js** container on `containers` behind Traefik for web texting. Pure
-  HTTP, so it rides the existing Cloudflare Tunnel — no new inbound ports.
-  Prosody already has `websocket` and `bosh` enabled for this.
 - **MAM archive backups.** The archive is the reason for self-hosting and
   currently exists only on the VPS. It should be pulled into the B2/local timers
   in `modules/backups.nix` over an outbound connection.

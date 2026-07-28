@@ -1,5 +1,26 @@
 { config, lib, pkgs, ... }:
 
+let
+  # Converse.js web client assets for the converse compose service (see
+  # stacks/docker-compose.yml). There is no official Docker image — only
+  # third-party builds — so instead of trusting one of those with the phone
+  # comms path, the official release tarball is fetched here, pinned by hash,
+  # and served by a stock nginx. Upgrades are a version+hash bump; note that
+  # `docker compose up -d` will NOT pick up the new webroot on its own (the
+  # bind-mount source string is unchanged), so after deploying a bump run:
+  #   docker compose up -d --force-recreate converse
+  converseVersion = "14.0.0";
+  converseDist = pkgs.fetchurl {
+    url = "https://github.com/conversejs/converse.js/releases/download/v${converseVersion}/converse.js-${converseVersion}.tgz";
+    hash = "sha256-Y08x+g97Dkfxq8YNhw/2gFxzdXc5mSDr6S2kx+W8r/A=";
+  };
+  converseWebroot = pkgs.runCommand "converse-webroot-${converseVersion}" { } ''
+    mkdir -p $out
+    tar -xzf ${converseDist} package/dist
+    cp -r package/dist $out/dist
+    cp ${./stacks/converse/index.html} $out/index.html
+  '';
+in
 {
   networking.hostName = "containers";
 
@@ -197,6 +218,7 @@
     "z /opt/stacks/staticomment-ssh 0700 deploy users -"
     "L+ /opt/stacks/docker-compose.yml - - - - ${./stacks/docker-compose.yml}"
     "L+ /opt/stacks/traefik-tls.yml    - - - - ${./stacks/traefik-tls.yml}"
+    "L+ /opt/stacks/converse-webroot   - - - - ${converseWebroot}"
   ];
 
   environment.systemPackages = with pkgs; [
