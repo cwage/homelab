@@ -1,4 +1,4 @@
-.PHONY: help build shell init plan apply destroy fmt validate trufflehog clean
+.PHONY: help build shell init plan apply run destroy fmt validate trufflehog clean
 
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /workspace --fail --no-update --exclude-paths /workspace/.trufflehog-exclude.txt
@@ -13,11 +13,13 @@ help:
 	@echo "  init       - Initialize OpenTofu backend"
 	@echo "  plan       - Show planned infrastructure changes [OPTS=...]"
 	@echo "  apply      - Apply infrastructure changes [OPTS=...]"
-	@echo "  destroy    - Destroy ALL infrastructure — you almost never want this;"
-	@echo "               use apply OPTS='-replace=<resource>' for a single resource"
+	@echo "  run        - Run an arbitrary tofu command: make tofu-run ARGS='import <addr> <id>'"
+	@echo "  destroy    - Destroy ALL infrastructure — you almost never want this"
 	@echo ""
-	@echo "  OPTS passes flags through to tofu, e.g.:"
-	@echo "    make tofu-apply OPTS='-replace=linode_instance.xmpp1'"
+	@echo "  OPTS passes flags through to tofu:"
+	@echo "    -target=<resource>   scope plan/apply to one resource (leaves it in place)"
+	@echo "    -replace=<resource>  DESTROY and recreate that one resource"
+	@echo "  e.g. make tofu-apply OPTS='-target=linode_firewall.xmpp1'"
 	@echo "  fmt        - Format OpenTofu files"
 	@echo "  validate   - Validate OpenTofu configuration"
 	@echo "  trufflehog - Run TruffleHog secrets scan"
@@ -36,18 +38,24 @@ init:
 	$(DC) run --rm tofu tofu init
 
 # Plan changes
-# OPTS passes through to tofu, e.g. targeted work on a single resource:
-#   make tofu-plan OPTS='-replace=linode_instance.xmpp1'
+# OPTS passes through to tofu. -target scopes to one resource; -replace
+# forces destroy+recreate of one resource (read the plan before applying):
+#   make tofu-plan OPTS='-target=linode_firewall.xmpp1'
 plan:
 	$(DC) run --rm tofu tofu plan $(OPTS)
 
 # Apply changes
 # Use OPTS for targeted operations rather than reaching for `destroy`, which
-# tears down the ENTIRE fleet:
-#   make tofu-apply OPTS='-replace=linode_instance.xmpp1'
-#   make tofu-apply OPTS='-target=linode_firewall.xmpp1'
+# tears down the ENTIRE fleet. Note the difference:
+#   make tofu-apply OPTS='-target=linode_firewall.xmpp1'    # scope only
+#   make tofu-apply OPTS='-replace=linode_instance.xmpp1'   # destroy+recreate
 apply:
 	$(DC) run --rm tofu tofu apply $(OPTS)
+
+# Run an arbitrary tofu command, e.g. adopting an existing resource:
+#   make tofu-run ARGS='import linode_instance.felix 12345'
+run:
+	$(DC) run --rm tofu tofu $(ARGS)
 
 # Destroy infrastructure (interactive confirmation)
 destroy:

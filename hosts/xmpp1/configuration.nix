@@ -243,10 +243,16 @@ in
 
       -- TURN credentials for Jingle voice calls. The secret is read from disk
       -- at startup rather than interpolated, because this config file lives in
-      -- the world-readable nix store.
+      -- the world-readable nix store. Read and close in one expression so the
+      -- file handle isn't leaked (config is re-evaluated on every reload).
       turn_external_host = "${turnDomain}"
       turn_external_port = 3478
-      turn_external_secret = assert(io.open("${config.sops.secrets.coturn-auth-secret.path}")):read("*l")
+      turn_external_secret = (function()
+        local f = assert(io.open("${config.sops.secrets.coturn-auth-secret.path}"))
+        local secret = f:read("*l")
+        f:close()
+        return secret
+      end)()
 
       -- One legitimate user lives here; anything near these rates is not us.
       limits = {

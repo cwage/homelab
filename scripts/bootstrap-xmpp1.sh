@@ -31,8 +31,6 @@ SOPS_YAML="${REPO_ROOT}/.sops.yaml"
 STAGE_DIR="/tmp/xmpp1-etc"
 HOST_KEY="${STAGE_DIR}/etc/ssh/ssh_host_ed25519_key"
 AGE_KEY_FILE="${HOME}/.config/sops/age/keys.txt"
-XMPP1_IP="${XMPP1_IP:-172.239.56.233}"
-
 # nix run needs flakes; they're off by default in the workstation nix.conf.
 export NIX_CONFIG="${NIX_CONFIG:-experimental-features = nix-command flakes}"
 
@@ -40,6 +38,14 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 
 command -v nix >/dev/null || die "nix not found on PATH"
 [ -f "${SOPS_YAML}" ] || die "${SOPS_YAML} not found — run this from the homelab repo"
+
+# No hardcoded IP default: it changes on every instance replacement, and a
+# stale value here would put the wrong host into copy-pasteable install
+# commands. Read it from tofu state, or take an explicit XMPP1_IP override.
+if [ -z "${XMPP1_IP:-}" ]; then
+    XMPP1_IP="$(cd "${REPO_ROOT}/tofu" && docker compose --env-file ../.env run --rm tofu tofu output -raw xmpp1_ip 2>/dev/null | tail -1)"
+fi
+[ -n "${XMPP1_IP}" ] || die "could not determine xmpp1's IP from tofu — pass it explicitly: XMPP1_IP=<ip> $0"
 
 # --- 1. Your admin age key ---------------------------------------------------
 
