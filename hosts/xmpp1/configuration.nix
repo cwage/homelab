@@ -225,6 +225,14 @@ in
     ];
 
     extraConfig = ''
+      -- Explicit debug logging for the calling shake-out — stanzadebug's
+      -- output is debug-level, so it must not depend on whatever level the
+      -- module's emitted `log = "*syslog"` happens to imply. Re-declared here
+      -- deliberately: prosody warns about the duplicate and takes ours, the
+      -- same pattern as https_ports below. Relax to info alongside removing
+      -- stanzadebug once calling is trusted.
+      log = { debug = "*syslog" }
+
       storage = "sql"
       sql = { driver = "SQLite3"; database = "prosody.sqlite"; }
 

@@ -326,7 +326,7 @@ What the logs give you while shaking this out:
   us during call setup, it isn't gathering our relay candidates — check that
   `turn_external` is advertising correctly (`prosodyctl check turn`, which
   does a live allocation against coturn).
-- The phone's XMPP TCP session (`journalctl -u prosody | grep <conn-id>`)
+- The phone's XMPP TCP session (`journalctl -u prosody | grep '<conn-id>'`)
   doubles as a network-change detector: a WiFi↔cellular hop severs it and
   leaves a smacks hibernate/resume trail with the new source IP. A continuous
   session with the same source port proves the phone never changed networks —
