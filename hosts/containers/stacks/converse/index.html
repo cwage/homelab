@@ -1,0 +1,39 @@
+<!doctype html>
+<!--
+  Converse.js web client for the self-hosted XMPP server (hosts/xmpp1) — the
+  browser equivalent of texting from voice.google.com. This page is static;
+  the actual chat connection goes from the browser straight to prosody at
+  wss://xmpp.quietlife.net/xmpp-websocket. The dist/ assets next to this file
+  come from the pinned release tarball unpacked by nix (converse-webroot in
+  ../../configuration.nix), not from a CDN.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>chat.lan.quietlife.net</title>
+  <link rel="icon" href="/dist/images/favicon.ico">
+  <link rel="stylesheet" href="/dist/converse.min.css">
+  <script src="/dist/converse.min.js" charset="utf-8"></script>
+</head>
+<body>
+  <script>
+    converse.initialize({
+      websocket_url: 'wss://xmpp.quietlife.net/xmpp-websocket',
+      // Single-user server: lock logins to the one domain so the login form
+      // only asks for a username, and typos can't send credentials elsewhere.
+      default_domain: 'quietlife.net',
+      locked_domain: 'quietlife.net',
+      // JMP delivers group texts as MUCs on this component.
+      muc_domain: 'conference.quietlife.net',
+      view_mode: 'fullscreen',
+      auto_reconnect: true,
+      allow_registration: false,
+      // Sync archive prefs with the server: prosody keeps everything
+      // (archive_expires_after = "never"), so scrollback here is the full
+      // SMS history, not just what this browser has seen.
+      message_archiving: 'always'
+    });
+  </script>
+</body>
+</html>

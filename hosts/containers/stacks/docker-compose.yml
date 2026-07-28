@@ -260,6 +260,30 @@ services:
     networks:
       - proxy
 
+  # Converse.js web client for the self-hosted XMPP server (hosts/xmpp1) —
+  # the browser equivalent of texting from voice.google.com. Static files
+  # only: nginx serves the pinned Converse.js dist assembled by nix
+  # (converse-webroot in ../configuration.nix, symlinked into /opt/stacks);
+  # the chat connection itself goes from the BROWSER straight to
+  # wss://xmpp.quietlife.net/xmpp-websocket, nothing proxies through here.
+  # LAN-only on purpose: exposing this page publicly would gain nothing (the
+  # phone uses Cheogram directly) and would put a login form for the XMPP
+  # account on the internet.
+  converse:
+    image: nginx:1.30.4-alpine
+    container_name: converse
+    restart: unless-stopped
+    volumes:
+      - ./converse-webroot:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.converse.rule=Host(`chat.lan.quietlife.net`)"
+      - "traefik.http.routers.converse.entrypoints=websecure"
+      - "traefik.http.routers.converse.tls=true"
+      - "traefik.http.services.converse.loadbalancer.server.port=80"
+    networks:
+      - proxy
+
   # Cloudflare-challenge solver used by the rhs-toast-specials systemd timer
   # (modules/rhs-specials) to fetch the Toast ordering page. Host-local
   # consumers only — bound to 127.0.0.1, no traefik exposure.

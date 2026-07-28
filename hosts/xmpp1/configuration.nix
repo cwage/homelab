@@ -235,6 +235,16 @@ in
       -- No plaintext HTTP listener: everything here carries message content.
       http_ports = {}
 
+      -- The only DNS name pointing at this box is xmpp.quietlife.net (the
+      -- apex A record points at the website), so browser-facing requests —
+      -- the websocket the Converse.js client on chat.lan.quietlife.net
+      -- connects to, BOSH — arrive with a Host header that matches no
+      -- VirtualHost. Route unmatched hosts to the apex vhost so
+      -- wss://xmpp.quietlife.net/xmpp-websocket reaches mod_websocket
+      -- instead of 404ing. Components (upload.quietlife.net) still match
+      -- their own names first.
+      http_default_host = "${domain}"
+
       -- Prosody's default certificate-index directory is "certs" relative to
       -- /etc/prosody, which doesn't exist here — certs live under /var/lib/acme
       -- and the explicit ssl blocks below point straight at them. Redirect the
