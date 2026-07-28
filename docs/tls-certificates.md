@@ -50,26 +50,56 @@ After `make lego-store` writes the new cert to `kv/infra/certs/lan.quietlife.net
 
 ### Renewal when the cert is already expired
 
-If the cert has already expired, OpenBao (which serves its own TLS on port 8200) will also have the expired cert and the workstation can't trust it for `make lego-store`. The recovery is short:
+If the cert has already expired, OpenBao (which serves its own TLS on port
+8200) has the expired cert too, and *everything that verifies TLS against bao
+starts failing with misleading errors* (see below). Every step that touches
+bao needs `BAO_SKIP_VERIFY=true` — including `lego-renew`, which fetches the
+Cloudflare credentials from bao before it ever talks to Let's Encrypt.
 
 ```bash
-# 1. Renew cert from Let's Encrypt (doesn't talk to OpenBao).
-make lego-renew
+# 1. Renew cert from Let's Encrypt. Needs the skip flag: the Cloudflare
+#    creds come from bao, whose cert the workstation can't validate.
+BAO_SKIP_VERIFY=true make lego-renew
 
-# 2. Push the new cert to OpenBao with TLS verification disabled. The
-#    workstation can't validate bao's expired cert, so verify-skip is
-#    needed for this one push.
+# 2. Push the new cert to OpenBao, same flag, same reason.
 BAO_SKIP_VERIFY=true make lego-store
 
-# 3. bao and containers auto-rotate within ~2 minutes — no further
-#    action needed. bao's openbao-agent connects via loopback with TLS
-#    verification disabled (intentional, see modules/openbao-agent.nix
-#    and hosts/openbao/configuration.nix), so an expired listener cert
-#    doesn't block the agent from refreshing it.
+# 3. bao and containers SHOULD auto-rotate within ~5 minutes: bao's
+#    openbao-agent connects via loopback with TLS verification disabled
+#    (intentional — see modules/openbao-agent.nix), renders the new cert
+#    and reloads openbao; containers' agent (which does verify TLS)
+#    errors in a retry loop until bao's listener heals, then rotates
+#    Traefik. VERIFY IT ACTUALLY HAPPENED:
+echo | openssl s_client -connect bao.lan.quietlife.net:8200 2>/dev/null | openssl x509 -noout -enddate
+echo | openssl s_client -connect chat.lan.quietlife.net:443 2>/dev/null | openssl x509 -noout -enddate
+
+# 3b. If bao still serves the old cert after ~10 minutes, its agent has
+#     wedged on the changed-but-never-re-read KV secret (happened
+#     2026-07-28: healthy agent, silent template engine). Restarting the
+#     agent is safe — auth is a CIDR-bound AppRole, no secret_id — and
+#     unsticks it immediately; containers then heals on its own:
+#     ssh bao 'sudo systemctl restart openbao-agent'
 
 # 4. Push the new cert to the Proxmox web UI (still Ansible-managed).
 make ansible-proxmox
 ```
+
+### What an expired cert looks like from the workstation
+
+None of these mention certificates, which cost real debugging time on
+2026-07-28. If several appear at once, check the cert dates first:
+
+- `make <anything>` → `ERROR: OpenBao unreachable at https://bao...:8200` —
+  the `bao-preflight` guard can't distinguish a TLS refusal from a down
+  server.
+- `make lego-renew` → `ERROR: Failed to retrieve Cloudflare credentials from
+  OpenBao / Ensure BAO_TOKEN is set...` — the creds curl fails TLS quietly
+  and the Makefile blames the token.
+- containers' `openbao-agent` journal fills with
+  `tls: failed to verify certificate: x509: certificate has expired`.
+
+`BAO_SKIP_VERIFY=true make bao-token-status` cuts through all of it: if it
+reports a valid token, bao is up and the only problem is the cert.
 
 ### OpenBao storage
 

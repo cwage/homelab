@@ -7,6 +7,15 @@
 
 export UID := $(shell id -u)
 export GID := $(shell id -g)
+# Rootless docker inverts the uid mapping: container root IS the host user,
+# while container uid 1000 maps to an unprivileged subuid that cannot write
+# the bind-mounted certs/ ("mkdir /work/.lego/accounts: permission denied").
+# Run as container-root there — files still land owned by the host user.
+# Rootful docker keeps the normal uid pin so files don't end up root-owned.
+ifneq ($(findstring rootless,$(shell docker info -f '{{.SecurityOptions}}' 2>/dev/null)),)
+export UID := 0
+export GID := 0
+endif
 DC := docker compose --env-file ../.env
 
 # Certificate configuration
@@ -69,7 +78,7 @@ run: ensure-dirs ## Run lego with custom arguments (ARGS="...")
 renew: ensure-dirs ## Request or renew wildcard certificate (PRODUCTION - use sparingly)
 	$(call fetch_cf_creds)
 	@echo "Requesting PRODUCTION certificate for $(WILDCARD) and $(DOMAIN)..."
-	$(DC) run --rm -e CF_DNS_API_TOKEN="$(CF_TOKEN)" -e CF_ZONE_ID="$(CF_ZONE_ID)" lego \
+	@$(DC) run --rm -e CF_DNS_API_TOKEN="$(CF_TOKEN)" -e CF_ZONE_ID="$(CF_ZONE_ID)" lego \
 		--accept-tos \
 		--email=$(ACME_EMAIL) \
 		--server=$(ACME_PROD) \
@@ -83,7 +92,7 @@ renew-staging: ensure-dirs ## Request certificate from STAGING (for testing, fak
 	$(call fetch_cf_creds)
 	@echo "Requesting STAGING certificate for $(WILDCARD) and $(DOMAIN)..."
 	@echo "(This will issue a fake cert - use for testing only)"
-	$(DC) run --rm -e CF_DNS_API_TOKEN="$(CF_TOKEN)" -e CF_ZONE_ID="$(CF_ZONE_ID)" lego \
+	@$(DC) run --rm -e CF_DNS_API_TOKEN="$(CF_TOKEN)" -e CF_ZONE_ID="$(CF_ZONE_ID)" lego \
 		--accept-tos \
 		--email=$(ACME_EMAIL) \
 		--server=$(ACME_STAGING) \
@@ -96,7 +105,7 @@ renew-staging: ensure-dirs ## Request certificate from STAGING (for testing, fak
 renew-force: ensure-dirs ## Force renewal even if certificate is still valid (PRODUCTION)
 	$(call fetch_cf_creds)
 	@echo "Force renewing certificate for $(WILDCARD) and $(DOMAIN)..."
-	$(DC) run --rm -e CF_DNS_API_TOKEN="$(CF_TOKEN)" -e CF_ZONE_ID="$(CF_ZONE_ID)" lego \
+	@$(DC) run --rm -e CF_DNS_API_TOKEN="$(CF_TOKEN)" -e CF_ZONE_ID="$(CF_ZONE_ID)" lego \
 		--accept-tos \
 		--email=$(ACME_EMAIL) \
 		--server=$(ACME_PROD) \
