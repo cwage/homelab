@@ -20,6 +20,11 @@
        it never exposes the global `converse` and the init below throws on
        undefined (symptom: blank page, bundle fetched but nothing else). -->
   <script type="module" src="/dist/converse.min.js"></script>
+  <!-- converse-shrink (vendored from github.com/cwage/converse-shrink):
+       compresses images below the carrier MMS cap before upload, so photos
+       arrive inline instead of as a cache.cheogram.com link. Must load after
+       the Converse bundle; module scripts run in document order. -->
+  <script type="module" src="/converse-shrink.js"></script>
 </head>
 <body>
   <script type="module">
@@ -47,7 +52,12 @@
       // Sync archive prefs with the server: prosody keeps everything
       // (archive_expires_after = "never"), so scrollback here is the full
       // SMS history, not just what this browser has seen.
-      message_archiving: 'always'
+      message_archiving: 'always',
+      // Third-party plugins are rejected unless whitelisted. Defaults are
+      // tuned for JMP's MMS cap (target 500 KiB); see the plugin header for
+      // the shrink_* knobs, e.g. shrink_debug: true to log before/after
+      // sizes when tuning.
+      whitelisted_plugins: ['converse-shrink']
     });
   </script>
 </body>
