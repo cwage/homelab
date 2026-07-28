@@ -315,12 +315,15 @@ in
       # Call debugging. verbose logs the full session lifecycle (allocations,
       # permissions, refreshes, per-peer traffic) and log-binding logs plain
       # STUN binding requests — without it a client that only STUNs us leaves
-      # no trace at all. syslog routes it all to journald: the default file
-      # log lands in /var/tmp, which systemd's PrivateTmp hides inside a
-      # namespace directory nobody thinks to look in (found the hard way).
+      # no trace at all. log-file=stdout routes it all to journald. The two
+      # tempting alternatives both blackhole the logs (found the hard way):
+      # the default file lands in /var/tmp, which PrivateTmp hides inside a
+      # namespace directory, and `syslog` dies against the unit's sandboxing —
+      # journald shows every coturn line ever captured as _TRANSPORT=stdout,
+      # never syslog.
       verbose
       log-binding
-      syslog
+      log-file=stdout
 
       # Refuse to relay into private ranges. This box has no route to the LAN,
       # but deny it explicitly so a coturn compromise can never be used to probe
