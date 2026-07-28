@@ -296,6 +296,47 @@ Upgrading Converse.js is a version + hash bump in
 (`docker compose up -d --force-recreate converse`) since the bind-mount
 source path doesn't change.
 
+## Debugging calls
+
+Voice calls have two planes and only one of them touches this box. All
+**signaling** (ring, accept, hang up, and the ICE negotiation where both ends
+exchange candidate addresses) flows through prosody as Jingle stanzas. The
+**media** (RTP audio) then takes the best direct path — for JMP calls that is
+usually phone ↔ Cheogram's public media gateway, bypassing xmpp1 entirely.
+coturn is the relay of last resort, used only when ICE can't find a working
+direct pair, so an idle coturn during a working call is normal. The corollary:
+a call that sets up fine but loses audio mid-call usually broke on a path we
+don't carry — first suspects are the client-side NAT (a UDP mapping getting
+remapped mid-flow turns into one-way audio: the media server drops RTP from
+the unrecognized new source, while the old inbound mapping keeps working) and
+JMP's SIP leg.
+
+What the logs give you while shaking this out:
+
+- `journalctl -u prosody` — with `stanzadebug` loaded (see
+  `hosts/xmpp1/configuration.nix`), the *complete* Jingle payloads:
+  session-initiate/accept, every ICE candidate offered, transport-info,
+  session-terminate with reason. Without it, prosody's debug log records only
+  stanza envelopes, which is useless for call forensics. `stanzadebug` also
+  puts message bodies in the journal — it is a debugging aid to remove once
+  calling is trusted.
+- `journalctl -u coturn` — `verbose` + `log-binding` + `syslog` mean every
+  STUN binding request and TURN allocation (with client address, refreshes,
+  per-peer permissions) lands in the journal. If a client never even STUNs
+  us during call setup, it isn't gathering our relay candidates — check that
+  `turn_external` is advertising correctly (`prosodyctl check turn`, which
+  does a live allocation against coturn).
+- The phone's XMPP TCP session (`journalctl -u prosody | grep <conn-id>`)
+  doubles as a network-change detector: a WiFi↔cellular hop severs it and
+  leaves a smacks hibernate/resume trail with the new source IP. A continuous
+  session with the same source port proves the phone never changed networks —
+  which is how the first one-way-audio investigation ruled out a mid-call
+  5G handoff.
+
+`prosodyctl check turn` (on the box, as root) is the one-shot health check for
+the whole STUN/TURN path: it fetches credentials the way a client would and
+performs a real allocation.
+
 ## Known limitations
 
 - **No 911.** JMP does not provide emergency services. Emergency calls go

@@ -170,8 +170,13 @@ in
     # is still a community module. Without it Cheogram misses messages while
     # the phone is asleep. luadbi-sqlite3 backs the MAM archive — the default
     # flat-file store degrades badly once it holds years of SMS history.
+    # stanzadebug is the call-debugging aid: prosody's normal debug log only
+    # records stanza envelopes (<iq to=... type=...>), which made a one-way-
+    # audio investigation blind to the Jingle payloads inside. It logs every
+    # full stanza. Noisy and privacy-heavy (message bodies land in the
+    # journal); drop it once calling is trusted. See docs/xmpp.md.
     package = pkgs.prosody.override {
-      withCommunityModules = [ "cloud_notify" ];
+      withCommunityModules = [ "cloud_notify" "stanzadebug" ];
       withExtraLuaPackages = luaPkgs: [ luaPkgs.luadbi-sqlite3 ];
     };
 
@@ -209,6 +214,7 @@ in
       "csi_simple" # suppress chatter while the client is idle
       "cloud_notify" # push notifications
       "turn_external" # hand clients coturn credentials for Jingle RTP
+      "stanzadebug" # log full stanzas (call debugging — see package comment)
       "blocklist"
       "vcard4"
       "vcard_legacy"
@@ -298,6 +304,16 @@ in
     pkey = keyFile;
 
     extraConfig = ''
+      # Call debugging. verbose logs the full session lifecycle (allocations,
+      # permissions, refreshes, per-peer traffic) and log-binding logs plain
+      # STUN binding requests — without it a client that only STUNs us leaves
+      # no trace at all. syslog routes it all to journald: the default file
+      # log lands in /var/tmp, which systemd's PrivateTmp hides inside a
+      # namespace directory nobody thinks to look in (found the hard way).
+      verbose
+      log-binding
+      syslog
+
       # Refuse to relay into private ranges. This box has no route to the LAN,
       # but deny it explicitly so a coturn compromise can never be used to probe
       # RFC1918 space from inside somebody else's network.
