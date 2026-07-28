@@ -11,9 +11,13 @@ help:
 	@echo "  build      - Build the OpenTofu Docker image"
 	@echo "  shell      - Open interactive shell in container"
 	@echo "  init       - Initialize OpenTofu backend"
-	@echo "  plan       - Show planned infrastructure changes"
-	@echo "  apply      - Apply infrastructure changes"
-	@echo "  destroy    - Destroy infrastructure (with confirmation)"
+	@echo "  plan       - Show planned infrastructure changes [OPTS=...]"
+	@echo "  apply      - Apply infrastructure changes [OPTS=...]"
+	@echo "  destroy    - Destroy ALL infrastructure — you almost never want this;"
+	@echo "               use apply OPTS='-replace=<resource>' for a single resource"
+	@echo ""
+	@echo "  OPTS passes flags through to tofu, e.g.:"
+	@echo "    make tofu-apply OPTS='-replace=linode_instance.xmpp1'"
 	@echo "  fmt        - Format OpenTofu files"
 	@echo "  validate   - Validate OpenTofu configuration"
 	@echo "  trufflehog - Run TruffleHog secrets scan"
@@ -32,12 +36,18 @@ init:
 	$(DC) run --rm tofu tofu init
 
 # Plan changes
+# OPTS passes through to tofu, e.g. targeted work on a single resource:
+#   make tofu-plan OPTS='-replace=linode_instance.xmpp1'
 plan:
-	$(DC) run --rm tofu tofu plan
+	$(DC) run --rm tofu tofu plan $(OPTS)
 
 # Apply changes
+# Use OPTS for targeted operations rather than reaching for `destroy`, which
+# tears down the ENTIRE fleet:
+#   make tofu-apply OPTS='-replace=linode_instance.xmpp1'
+#   make tofu-apply OPTS='-target=linode_firewall.xmpp1'
 apply:
-	$(DC) run --rm tofu tofu apply
+	$(DC) run --rm tofu tofu apply $(OPTS)
 
 # Destroy infrastructure (interactive confirmation)
 destroy:

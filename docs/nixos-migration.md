@@ -1,6 +1,20 @@
 # NixOS VM migration
 
-Tracked by [#132](https://github.com/cwage/homelab/issues/132). Proxmox VMs are migrating from Debian + Ansible to NixOS, managed declaratively from `flake.nix`. Ansible stays for non-NixOS hosts (OpenBSD firewall, Linode VPSes, Synology NAS).
+Tracked by [#132](https://github.com/cwage/homelab/issues/132). Proxmox VMs are migrating from Debian + Ansible to NixOS, managed declaratively from `flake.nix`. Ansible stays for the OpenBSD firewall, the Synology NAS, and the remaining Debian/Ubuntu Linodes (felix, gaming1).
+
+**Linodes are no longer Ansible-only.** `xmpp1` is NixOS on Linode — the first
+host outside the LAN. It differs from the Proxmox VMs in two ways that will
+apply to any future off-LAN NixOS host:
+
+- **Install**: `nixos-anywhere` + `disko` rather than cloning VMA template 9001,
+  since Linode can't consume a Proxmox image.
+- **Secrets**: `sops-nix` rather than `openbao-agent`. The AppRole approach below
+  is CIDR-bound to a LAN address and reaches `bao.lan.quietlife.net:8200`, so it
+  cannot work from a public VPS — and exposing OpenBao to make it work is not an
+  option. See [docs/xmpp.md](xmpp.md) and [secrets/README.md](../secrets/README.md).
+
+OpenBao remains canonical for secrets; sops files are encrypted copies for hosts
+that cannot reach it.
 
 ## How it works
 

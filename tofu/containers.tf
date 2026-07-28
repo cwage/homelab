@@ -33,7 +33,7 @@ resource "proxmox_virtual_environment_vm" "containers" {
   # Uses USB mapping (like GPU PCI mapping) so non-root API tokens can manage it
   usb {
     mapping = proxmox_virtual_environment_hardware_mapping_usb.seagate_backup.name
-    usb3   = true
+    usb3    = true
   }
 
   # GTX 1050 Ti GPU passthrough (IOMMU Group 14)
