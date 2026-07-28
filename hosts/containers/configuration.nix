@@ -19,6 +19,7 @@ let
     tar -xzf ${converseDist} package/dist
     cp -r package/dist $out/dist
     cp ${./stacks/converse/index.html} $out/index.html
+    cp ${./stacks/converse/converse-shrink.js} $out/converse-shrink.js
   '';
 in
 {
