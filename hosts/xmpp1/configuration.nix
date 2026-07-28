@@ -235,14 +235,15 @@ in
       -- No plaintext HTTP listener: everything here carries message content.
       http_ports = {}
 
-      -- The only DNS name pointing at this box is xmpp.quietlife.net (the
-      -- apex A record points at the website), so browser-facing requests —
-      -- the websocket the Converse.js client on chat.lan.quietlife.net
-      -- connects to, BOSH — arrive with a Host header that matches no
-      -- VirtualHost. Route unmatched hosts to the apex vhost so
-      -- wss://xmpp.quietlife.net/xmpp-websocket reaches mod_websocket
-      -- instead of 404ing. Components (upload.quietlife.net) still match
-      -- their own names first.
+      -- The websocket for the Converse.js web client is reverse-proxied here by
+      -- Traefik on the LAN (chat.lan.quietlife.net), which forwards it with the
+      -- browser's Host header (chat.lan.quietlife.net) — a name that matches no
+      -- VirtualHost here. Route unmatched hosts to the apex vhost so the
+      -- forwarded /xmpp-websocket reaches mod_websocket instead of 404ing.
+      -- Components (upload.quietlife.net) still match their own names first.
+      -- (The TLS handshake is terminated by Traefik under its own LAN cert, so
+      -- prosody never has to serve a cert for a non-VirtualHost SNI — see
+      -- docs/xmpp.md for why the browser can't connect to this box directly.)
       http_default_host = "${domain}"
 
       -- Prosody's default certificate-index directory is "certs" relative to

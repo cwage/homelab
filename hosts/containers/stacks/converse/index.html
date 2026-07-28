@@ -1,11 +1,13 @@
 <!doctype html>
 <!--
   Converse.js web client for the self-hosted XMPP server (hosts/xmpp1) — the
-  browser equivalent of texting from voice.google.com. This page is static;
-  the actual chat connection goes from the browser straight to prosody at
-  wss://xmpp.quietlife.net/xmpp-websocket. The dist/ assets next to this file
-  come from the pinned release tarball unpacked by nix (converse-webroot in
-  ../../configuration.nix), not from a CDN.
+  browser equivalent of texting from voice.google.com. This page is static; the
+  chat connection is a same-origin websocket to wss://chat.lan.quietlife.net/
+  xmpp-websocket, which Traefik terminates (LAN cert) and reverse-proxies to
+  prosody (see stacks/traefik-tls.yml and docs/xmpp.md — the browser can't reach
+  prosody directly). The dist/ assets next to this file come from the pinned
+  release tarball unpacked by nix (converse-webroot in ../../configuration.nix),
+  not from a CDN.
 -->
 <html lang="en">
 <head>
@@ -14,12 +16,25 @@
   <title>chat.lan.quietlife.net</title>
   <link rel="icon" href="/dist/images/favicon.ico">
   <link rel="stylesheet" href="/dist/converse.min.css">
-  <script src="/dist/converse.min.js" charset="utf-8"></script>
+  <!-- Converse 14's bundle is an ES module: it MUST load as type="module", or
+       it never exposes the global `converse` and the init below throws on
+       undefined (symptom: blank page, bundle fetched but nothing else). -->
+  <script type="module" src="/dist/converse.min.js"></script>
 </head>
 <body>
-  <script>
+  <script type="module">
     converse.initialize({
-      websocket_url: 'wss://xmpp.quietlife.net/xmpp-websocket',
+      // Same-origin as this page: Traefik terminates TLS here under the LAN
+      // wildcard cert and reverse-proxies the websocket to prosody on xmpp1
+      // (see traefik-tls.yml). Connecting to the public box directly fails —
+      // prosody won't serve TLS for the xmpp.quietlife.net SNI, which is a
+      // connection hostname, not an XMPP identity. See docs/xmpp.md.
+      websocket_url: 'wss://chat.lan.quietlife.net/xmpp-websocket',
+      // The page is served at /, but the dist bundle lazy-loads chunks, emoji,
+      // sounds and wasm from here. As a module script, webpack can't auto-detect
+      // its own path, so point Converse at /dist/ explicitly or the chunks 404
+      // (also a blank page). Trailing slash matters.
+      assets_path: '/dist/',
       // Single-user server: lock logins to the one domain so the login form
       // only asks for a username, and typos can't send credentials elsewhere.
       default_domain: 'quietlife.net',
