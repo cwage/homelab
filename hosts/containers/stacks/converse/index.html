@@ -55,10 +55,9 @@
       message_archiving: 'always',
       // Third-party plugins are rejected unless whitelisted. Defaults are
       // tuned for JMP's MMS cap (target 500 KiB); see the plugin header for
-      // the shrink_* knobs.
-      whitelisted_plugins: ['converse-shrink'],
-      // Log before/after sizes to the console while this is a PoC.
-      shrink_debug: true
+      // the shrink_* knobs, e.g. shrink_debug: true to log before/after
+      // sizes when tuning.
+      whitelisted_plugins: ['converse-shrink']
     });
   </script>
 </body>
