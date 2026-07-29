@@ -25,6 +25,12 @@
        arrive inline instead of as a cache.cheogram.com link. Must load after
        the Converse bundle; module scripts run in document order. -->
   <script type="module" src="/converse-shrink.js"></script>
+  <!-- converse-tel (vendored from github.com/cwage/converse-tel): type a
+       phone number in the add-contact form and it's translated to a gateway
+       JID via XEP-0100 (jabber:iq:gateway). Provider-agnostic: the gateway is
+       auto-discovered from domain-only roster entries (cheogram.com today) —
+       nothing is hardcoded, so a gateway swap needs no client change. -->
+  <script type="module" src="/converse-tel.js"></script>
 </head>
 <body>
   <script type="module">
@@ -59,7 +65,9 @@
       // tuned for JMP's MMS cap (target 500 KiB); see the plugin header for
       // the shrink_* knobs, e.g. shrink_debug: true to log before/after
       // sizes when tuning.
-      whitelisted_plugins: ['converse-shrink']
+      whitelisted_plugins: ['converse-shrink', 'converse-tel'],
+      // Log gateway lookups to the console during the shake-out period.
+      tel_debug: true
     });
   </script>
 </body>
