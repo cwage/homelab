@@ -20,6 +20,7 @@ let
     cp -r package/dist $out/dist
     cp ${./stacks/converse/index.html} $out/index.html
     cp ${./stacks/converse/converse-shrink.js} $out/converse-shrink.js
+    cp ${./stacks/converse/converse-tel.js} $out/converse-tel.js
   '';
 in
 {
