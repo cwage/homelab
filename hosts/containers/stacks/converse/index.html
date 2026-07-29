@@ -65,9 +65,11 @@
       // tuned for JMP's MMS cap (target 500 KiB); see the plugin header for
       // the shrink_* knobs, e.g. shrink_debug: true to log before/after
       // sizes when tuning.
-      whitelisted_plugins: ['converse-shrink', 'converse-tel'],
-      // Log gateway lookups to the console during the shake-out period.
-      tel_debug: true
+      // converse-tel's tel_debug is left off: it logs the phone number typed
+      // and the JID it resolves to, which is exactly the sort of thing that
+      // ends up in a screen share. Set it here temporarily when diagnosing a
+      // lookup.
+      whitelisted_plugins: ['converse-shrink', 'converse-tel']
     });
   </script>
 </body>

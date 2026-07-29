@@ -109,7 +109,19 @@ export function registerTelPlugin(converse) {
 
             customElements.whenDefined('converse-add-contact-modal').then(() => {
                 const Modal = customElements.get('converse-add-contact-modal');
-                const original = Modal.prototype.addContactFromForm;
+                const original = Modal?.prototype?.addContactFromForm;
+
+                // Bail rather than patch if the method isn't where we expect —
+                // a future Converse refactor, or another plugin patching first,
+                // would otherwise leave us calling undefined and breaking the
+                // very form this is supposed to improve.
+                if (typeof original !== 'function') {
+                    console.warn(
+                        `[${PLUGIN_NAME}] addContactFromForm not found on converse-add-contact-modal; ` +
+                            'leaving add-contact untouched.'
+                    );
+                    return;
+                }
 
                 Modal.prototype.addContactFromForm = async function (ev) {
                     ev.preventDefault();
