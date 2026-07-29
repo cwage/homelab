@@ -40,8 +40,8 @@
       // its own path, so point Converse at /dist/ explicitly or the chunks 404
       // (also a blank page). Trailing slash matters.
       assets_path: '/dist/',
-      // Single-user server: default_domain completes a bare username to
-      // cwage@quietlife.net on the login form. Deliberately NOT locked_domain:
+      // Single-user server: default_domain completes any bare username on the
+      // login form (e.g. cwage → cwage@quietlife.net). Deliberately NOT locked_domain:
       // that would escape every add-contact input into a local JID
       // (+1…@cheogram.com → +1…\40cheogram.com@quietlife.net), making gateway
       // contacts impossible to add (#283).

@@ -262,7 +262,10 @@ auto-completes to `@quietlife.net` via `default_domain`) with the prosody
 account password. Deliberately *not* `locked_domain`: that setting escapes
 every add-contact input into a local JID (`+1…@cheogram.com` would become
 `+1…\40cheogram.com@quietlife.net`), making SMS gateway contacts impossible
-to add from the web client.
+to add from the web client. The trade-off is that a mistyped *full* JID on
+the login form could submit credentials to a foreign domain — accepted for a
+LAN-only, single-user client, where the add-contact breakage was the bigger
+daily papercut.
 
 How it hangs together:
 
