@@ -257,8 +257,12 @@ is effectively one-way, so the trial is the point.
 ## Web client
 
 The Google-Voice-in-a-browser equivalent is [Converse.js](https://conversejs.org)
-at **https://chat.lan.quietlife.net** — log in as `cwage` (the domain is locked
-to `quietlife.net`) with the prosody account password.
+at **https://chat.lan.quietlife.net** — log in as `cwage` (a bare username
+auto-completes to `@quietlife.net` via `default_domain`) with the prosody
+account password. Deliberately *not* `locked_domain`: that setting escapes
+every add-contact input into a local JID (`+1…@cheogram.com` would become
+`+1…\40cheogram.com@quietlife.net`), making SMS gateway contacts impossible
+to add from the web client.
 
 How it hangs together:
 
@@ -290,6 +294,8 @@ How it hangs together:
 - Because prosody keeps the full archive (`mam`, never expires) and `carbons`
   is on, the web client and the phone both see the complete conversation
   history regardless of which one sent a message.
+- The roster is server-side and shared for the same reason: a contact added in
+  Cheogram appears in Converse and vice versa — nothing needs adding twice.
 
 Upgrading Converse.js is a version + hash bump in
 `hosts/containers/configuration.nix`; after deploying, recreate the container
