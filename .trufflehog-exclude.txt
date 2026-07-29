@@ -11,3 +11,6 @@
 ^/repo/tofu/secrets/
 # Exclude generated Let's Encrypt certificates (lego)
 ^/repo/lego/certs/
+# Exclude nix build artifacts (gitignored; the 506MB compressed VM template
+# image is pure false positives — 524 unverified hits — and dominates scan time)
+^/repo/nix/output/
