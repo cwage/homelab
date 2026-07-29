@@ -40,10 +40,12 @@
       // its own path, so point Converse at /dist/ explicitly or the chunks 404
       // (also a blank page). Trailing slash matters.
       assets_path: '/dist/',
-      // Single-user server: lock logins to the one domain so the login form
-      // only asks for a username, and typos can't send credentials elsewhere.
+      // Single-user server: default_domain completes a bare username to
+      // cwage@quietlife.net on the login form. Deliberately NOT locked_domain:
+      // that would escape every add-contact input into a local JID
+      // (+1…@cheogram.com → +1…\40cheogram.com@quietlife.net), making gateway
+      // contacts impossible to add (#283).
       default_domain: 'quietlife.net',
-      locked_domain: 'quietlife.net',
       // JMP delivers group texts as MUCs on this component.
       muc_domain: 'conference.quietlife.net',
       view_mode: 'fullscreen',
