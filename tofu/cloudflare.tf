@@ -16,6 +16,19 @@ data "cloudflare_zone" "chriswage" {
   name = "chriswage.com"
 }
 
+# asterism.quietlife.net -> Fly.io (cwage/asterism)
+# NOT proxied: Fly terminates TLS with its own cert (fly certs add), and the
+# cert validation needs to see the CNAME directly — proxying would also put
+# Cloudflare in front of Fly's proxy for no benefit.
+resource "cloudflare_record" "asterism" {
+  zone_id = data.cloudflare_zone.quietlife.zone_id
+  name    = "asterism"
+  type    = "CNAME"
+  content = "asterism.fly.dev"
+  proxied = false
+  comment = "asterism night-sky labeler on Fly.io"
+}
+
 # photos.chriswage.com -> GitHub Pages
 resource "cloudflare_record" "photos_chriswage" {
   zone_id = data.cloudflare_zone.chriswage.zone_id
