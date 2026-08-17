@@ -53,6 +53,8 @@
   loop_control:
     label: "{{ item.server_name }}"
 
+# Autoindex sites deliberately get no index.html: nginx serves an index file in
+# preference to generating a listing, so a placeholder here hides the content.
 - name: Create blank index.html files
   ansible.builtin.copy:
     content: |
@@ -72,6 +74,7 @@
   loop: "{{ nginx_sites }}"
   loop_control:
     label: "{{ item.server_name }}"
+  when: not (item.autoindex | default(false))
 
 - name: Create htpasswd directory
   ansible.builtin.file:
