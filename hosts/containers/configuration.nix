@@ -472,6 +472,10 @@ in
         { name = "cryptpad";        mount = "/cryptpad/data"; }
         { name = "cryptpad";        mount = "/cryptpad/blob"; }
         { name = "cryptpad";        mount = "/cryptpad/block"; }
+        # calibre-web's app.db: user accounts, shelves, reading progress.
+        # The library itself is /mnt/nas/Books, already covered by the b2,
+        # local, and cryptcheck lists below.
+        { name = "calibre-web";     mount = "/config"; }
       ];
     };
 

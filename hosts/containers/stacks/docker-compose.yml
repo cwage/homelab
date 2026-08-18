@@ -308,6 +308,7 @@ services:
     depends_on:
       - jellyfin
       - cryptpad
+      - calibre-web
     profiles:
       - tunnel
 
@@ -414,6 +415,38 @@ services:
     networks:
       - proxy
 
+  # Web reader over the existing Calibre library on the NAS. The library is
+  # mounted READ-ONLY on purpose: desktop Calibre is the only writer, and a
+  # second writer against metadata.db is how the library gets corrupted.
+  # Read-only disables metadata editing, upload, and on-the-fly conversion
+  # here — convert in desktop Calibre instead (about half the library is
+  # mobi/kfx, which the in-browser reader cannot render, only download).
+  # Per-user state — accounts, shelves, reading progress, bookmarks — lives
+  # in app.db in the config volume, so none of that is affected.
+  #
+  # PUBLIC-ONLY, no Traefik labels — deliberately, same as cryptpad. Auth is
+  # Cloudflare Access on calibre.quietlife.net: it authenticates the visitor
+  # by email OTP and injects Cf-Access-Authenticated-User-Email, which
+  # calibre-web is configured to trust for login (Admin -> Edit Basic
+  # Configuration -> Allow Reverse Proxy Authentication). That trust is only
+  # safe while cloudflared is the ONLY path to this container — an internal
+  # LAN route would let anyone on the LAN spoof the header and arrive as
+  # admin. Do not add Traefik labels here without first turning reverse
+  # proxy auth back off.
+  calibre-web:
+    image: linuxserver/calibre-web:0.6.27-ls397
+    container_name: calibre-web
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - calibre_web_config:/config
+      - /mnt/nas/Books:/books:ro
+    networks:
+      - proxy
+
 volumes:
   jellyfin_config:
   jellyfin_cache:
@@ -431,6 +464,7 @@ volumes:
   forgejo_db:
   slskd_config:
   beets_config:
+  calibre_web_config:
 
 networks:
   proxy:

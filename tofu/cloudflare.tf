@@ -146,3 +146,60 @@ resource "cloudflare_record" "xmpp_srv_server_conference" {
     target   = "xmpp.quietlife.net"
   }
 }
+
+# --- Cloudflare Access: calibre.quietlife.net -------------------------------
+#
+# THIS IS THE ENTIRE SECURITY BOUNDARY for Calibre-Web. That app runs with
+# anonymous browsing on, so it serves the whole library to any request that
+# reaches it. Delete this application, set its policy to bypass, or add a
+# Traefik route or published port to the container, and the library is
+# world-readable. See docs/calibre.md.
+#
+# Scope note: only the Access application and its policy are managed here.
+# Tunnel ingress routes stay in the Zero Trust dashboard -- adopting
+# cloudflare_tunnel_config would take ownership of ALL routes for the tunnel,
+# silently dropping jellyfin and pad/pad-sandbox unless every one of them were
+# redeclared in this file.
+#
+# Adding a reader: update the allowed_emails list in OpenBao (see
+# docs/calibre.md), then apply. Nothing is provisioned in Calibre-Web.
+#
+# The reader allowlist lives in OpenBao, NOT in a variable or tfvars: this
+# repo is public, and friends' email addresses don't belong in it. The value
+# is a single comma-separated string (KV v2 stores strings), split below.
+data "vault_kv_secret_v2" "calibre_access" {
+  mount = "kv"
+  name  = "infra/cloudflare/calibre-access"
+}
+
+resource "cloudflare_zero_trust_access_application" "calibre" {
+  account_id = data.vault_kv_secret_v2.cloudflare_tofu.data["account_id"]
+  name       = "Calibre-Web"
+  domain     = "calibre.quietlife.net"
+  type       = "self_hosted"
+
+  # A week between PIN prompts. Readers open this occasionally, and the point
+  # was to stop handing people passwords -- a short session just means more
+  # PIN emails for no security gain.
+  session_duration = "168h"
+
+  app_launcher_visible      = true
+  auto_redirect_to_identity = false
+}
+
+resource "cloudflare_zero_trust_access_policy" "calibre_allow" {
+  application_id = cloudflare_zero_trust_access_application.calibre.id
+  account_id     = data.vault_kv_secret_v2.cloudflare_tofu.data["account_id"]
+  name           = "Allow known readers"
+  precedence     = 1
+  decision       = "allow"
+
+  # Only these addresses can complete the one-time-PIN login. This list is
+  # the whole access-control surface: Calibre-Web itself has anonymous
+  # browsing on and will serve the library to anyone Access lets through.
+  # (An earlier iteration used `everyone = true` -- any mailbox could get a
+  # PIN -- but that made the hostname the only real secret.)
+  include {
+    email = split(",", data.vault_kv_secret_v2.calibre_access.data["allowed_emails"])
+  }
+}
