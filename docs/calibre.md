@@ -28,7 +28,7 @@ The pieces and where they're defined:
 | DNS + tunnel ingress | Zero Trust dashboard | route `calibre.quietlife.net` → `http://calibre-web:8083` |
 | Access application + policy | `tofu/cloudflare.tf` | one-time PIN, 168h session |
 | Reader allowlist | OpenBao `kv/infra/cloudflare/calibre-access` | read by Tofu (Access policy) and the seed script (accounts); edit via `scripts/calibre-readers.py` |
-| Container | `hosts/containers/stacks/docker-compose.yml` | `linuxserver/calibre-web`, `tunnel` profile |
+| Container | `hosts/containers/stacks/docker-compose.yml` | `linuxserver/calibre-web` — proxy network only, no ports, no Traefik labels |
 | App configuration | `scripts/calibre-web-seed.py` | stamps `/config/app.db`; the UI is not the source of truth |
 | Library | NAS `/mnt/nas/Books`, mounted read-only | desktop Calibre is the only writer |
 
@@ -150,7 +150,9 @@ Reader accounts are derived from the OpenBao allowlist (see above); `READERS`
 in the script only defines the exceptions — the admin's role and Guest's.
 Existing users keep whatever password they have since set — the script never
 resets passwords, only creates missing accounts and corrects roles.
-Rebuilding from an empty volume is one `--apply`. `/config` is in the nightly
+Rebuilding from an empty volume: let the container start once first
+(calibre-web creates its schema on first boot — the script refuses to guess
+at an empty `app.db`), then one `--apply`. `/config` is in the nightly
 configs backup, so per-user state survives independently.
 
 **The library mount is read-only.** Desktop Calibre is the only writer; a

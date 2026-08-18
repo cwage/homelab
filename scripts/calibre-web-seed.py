@@ -28,7 +28,6 @@ defines the exceptions: the admin role, and Guest. Needs BAO_ADDR/BAO_TOKEN.
 """
 
 import argparse
-import base64
 import json
 import os
 import secrets
@@ -139,14 +138,17 @@ def build_readers():
 # --- the part that runs inside the container --------------------------------
 
 INNER = r'''
-import json, os, sqlite3, sys
+import json, sqlite3, sys
 
-desired = json.loads(os.environ["SEED_SETTINGS"])
-readers = json.loads(os.environ["SEED_READERS"])
-apply = os.environ.get("SEED_APPLY") == "1"
+cfg = json.loads(SEED_JSON)
+desired, readers, apply = cfg["settings"], cfg["readers"], cfg["apply"]
 
 db = sqlite3.connect("/config/app.db")
 cols = [r[1] for r in db.execute("pragma table_info(settings)")]
+if not cols:
+    print("app.db has no settings table yet -- start the container once so "
+          "calibre-web creates its schema, then re-run this script")
+    sys.exit(1)
 row = list(db.execute("select * from settings"))[0]
 current = dict(zip(cols, row))
 
@@ -218,24 +220,40 @@ def ssh(cmd, stdin=None):
 
 
 def run_inner(apply, readers):
-    """Pipe INNER into a throwaway container that mounts the config volume."""
-    payload = base64.b64encode(INNER.encode()).decode()
-    env = (
-        f"-e SEED_SETTINGS={json.dumps(json.dumps(DESIRED_SETTINGS))} "
-        f"-e SEED_READERS={json.dumps(json.dumps(readers))} "
-        f"-e SEED_APPLY={'1' if apply else '0'}"
-    )
+    """Send the seed script over stdin and run it in a throwaway container.
+
+    The reader list (OpenBao-sourced) and the generated passwords are embedded
+    in the script itself and delivered via stdin -- never interpolated into
+    the remote shell command line and never passed as docker -e args. That
+    keeps a hostile value in the allowlist from becoming shell code on the
+    containers host, and keeps passwords out of the remote process list.
+    """
+    cfg = {"settings": DESIRED_SETTINGS, "readers": readers, "apply": apply}
+    script = f"SEED_JSON = {json.dumps(json.dumps(cfg))}\n" + INNER
     cmd = (
-        f"echo {payload} | base64 -d > /tmp/cw-seed.py && "
+        f"umask 077 && cat > /tmp/cw-seed.py && "
         f"docker run --rm -v {VOLUME}:/config -v /tmp/cw-seed.py:/seed.py:ro "
-        f"{env} --entrypoint python3 {IMAGE} /seed.py; "
+        f"--entrypoint python3 {IMAGE} /seed.py; "
         f"rc=$?; rm -f /tmp/cw-seed.py; exit $rc"
     )
-    return ssh(cmd)
+    return ssh(cmd, stdin=script)
 
 
 def compose(action):
     return ssh(f"cd /opt/stacks && docker compose {action} {CONTAINER}")
+
+
+def show_output(res):
+    """Print a result's stdout, and its stderr whenever it failed.
+
+    stdout-or-stderr alone loses the traceback when the inner script fails
+    after printing its diff.
+    """
+    out, err = res.stdout.rstrip(), res.stderr.rstrip()
+    if out:
+        print(out)
+    if err and (res.returncode != 0 or not out):
+        print(err, file=sys.stderr)
 
 
 def main():
@@ -256,7 +274,7 @@ def main():
     if not args.apply:
         print(f"Checking {CONTAINER} on {HOST}...\n")
         res = run_inner(apply=False, readers=readers)
-        print(res.stdout.rstrip() or res.stderr.rstrip())
+        show_output(res)
         return res.returncode
 
     print(f"Stopping {CONTAINER}...")
@@ -266,7 +284,7 @@ def main():
     try:
         print("Enforcing configuration...\n")
         res = run_inner(apply=True, readers=readers)
-        print(res.stdout.rstrip() or res.stderr.rstrip())
+        show_output(res)
         if res.returncode != 0:
             print("\nseed failed -- starting the container again anyway",
                   file=sys.stderr)

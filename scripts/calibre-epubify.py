@@ -67,7 +67,8 @@ def calibre_gui_running():
         if "calibre-server" in line or "/calibre-gui" in line:
             return True
         parts = line.split(None, 1)
-        if len(parts) == 2 and parts[1].split()[0].endswith("/calibre"):
+        cmd0 = parts[1].split()[0] if len(parts) == 2 else ""
+        if cmd0 == "calibre" or cmd0.endswith("/calibre"):
             return True
     return False
 
