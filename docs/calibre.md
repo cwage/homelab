@@ -107,6 +107,15 @@ Skipping the seed step is fine — the new reader can get in immediately after
 `tofu-apply`, just as Guest rather than as themselves. Nothing else is
 provisioned anywhere: they visit the URL, type their address, get a PIN.
 
+**"I never got the code":** the login page shows "a code has been emailed
+to you" for EVERY address, allowlisted or not — Cloudflare deliberately never
+reveals whether an address is authorized (verified empirically: a bogus
+address gets the same screen and simply no email). So a reader stuck at that
+screen looks like an email-delivery problem but usually isn't. Diagnose in
+this order: are they on the allowlist, did they type the exact address that's
+on it, then spam folders. The Access logs (Zero Trust dashboard → Logs →
+Access) show what address they actually submitted.
+
 **Removal is not instant.** The policy is evaluated at login, and sessions
 last 168h — a removed reader's existing session keeps working until it
 expires. To cut access immediately, also revoke their session in the Zero
