@@ -70,7 +70,13 @@ path "kv/data/services/postgres/*" {
 ## Workstation Bootstrap
 
 To set up a new workstation (or replace an expired token), you just need to generate a
-token against the existing `ansible-deploy` policy and drop it into your `.env`.
+token against the existing policies and drop it into your `.env`. Workstation tokens
+carry two policies: `ansible-deploy` (read-only secrets access for ansible/tofu) and
+`calibre-readers` (write access to the one calibre allowlist key — see
+`docs/calibre.md`). Do NOT add `-no-default-policy`: the `default` policy is what
+grants `auth/token/lookup-self`, which `bin/bao-token-status` (the make preflight)
+depends on — without it every `make tofu-*`/`ansible-*` fails with a bogus
+"expired or invalid" error even though the token works.
 
 1. SSH into the OpenBao server and authenticate with the root token:
 
@@ -84,7 +90,7 @@ bao login
 2. Create a token:
 
 ```bash
-bao token create -policy=ansible-deploy -ttl=720h -display-name="ansible-deploy-<machine>"
+bao token create -policy=ansible-deploy -policy=calibre-readers -ttl=720h -display-name="ansible-deploy-<machine>"
 ```
 
 3. Copy the token into your repo's `.env`:

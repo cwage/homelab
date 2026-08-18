@@ -77,6 +77,12 @@ The scripts take `BAO_ADDR`/`BAO_TOKEN` from the environment or the repo-root
 `docs/openbao-secrets.md`). The `bao` CLI is *not* needed (workstations don't
 have it; it only exists on the OpenBao server).
 
+**Writing the allowlist needs the `calibre-readers` policy** on the
+workstation token — `ansible-deploy` alone is read-only, so `add`/`remove`
+fail with HTTP 403 permission denied. Workstation tokens are minted with both
+policies (see the Workstation Bootstrap section of `docs/openbao-secrets.md`);
+the policy itself is defined in `docs/openbao.md`.
+
 **The easy way** — `scripts/calibre-readers.py` wraps the list edit (the
 OpenBao key is replace-only, so hand-editing risks dropping someone). It only
 touches OpenBao, then prints the deploy commands for review:
