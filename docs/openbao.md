@@ -319,11 +319,20 @@ path "kv/data/backup/*" {
   capabilities = ["read"]
 }
 EOF
+
+# Write access to exactly one key: the Calibre-Web reader allowlist
+# (docs/calibre.md). Kept out of ansible-deploy so the broad policy stays
+# read-only; workstation tokens carry BOTH policies.
+bao policy write calibre-readers - <<EOF
+path "kv/data/infra/cloudflare/calibre-access" {
+  capabilities = ["create", "update", "read"]
+}
+EOF
 ```
 
 ### Creating Workstation Tokens
 
-Once the policy exists, see the
+Once the policies exist, see the
 [Workstation Bootstrap](openbao-secrets.md#workstation-bootstrap) section in
 `openbao-secrets.md` to generate a token for a new machine or replace an expired one.
 

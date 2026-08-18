@@ -15,11 +15,12 @@ All self-hosted services run as Docker containers on the **containers** host (`1
 | **Paperless Redis** | `redis` | — | Backend for Paperless-ngx |
 | **staticomment** | `ghcr.io/cwage/staticomment` | `https://staticomment.lan.quietlife.net` | Comment endpoint for `quietlife.net` |
 | **CryptPad** | `cryptpad/cryptpad` | `https://pad.quietlife.net` (public, via tunnel) | End-to-end encrypted collaborative markdown/docs |
-| **Cloudflared** | `cloudflare/cloudflared` | — | Cloudflare Tunnel for external access (Jellyfin, CryptPad) |
+| **Calibre-Web** | `linuxserver/calibre-web` | `https://calibre.quietlife.net` (public, via tunnel) | Web reader for the Calibre library on the NAS |
+| **Cloudflared** | `cloudflare/cloudflared` | — | Cloudflare Tunnel for external access (Jellyfin, CryptPad, Calibre-Web) |
 
 ## External access
 
-Jellyfin and CryptPad are exposed externally via a Cloudflare Tunnel (`cloudflared` container). The tunnel token is stored in OpenBao at `kv/infra/cloudflare/tunnel`. Tunnel ingress routes are configured in the Cloudflare Zero Trust dashboard.
+Jellyfin, CryptPad, and Calibre-Web are exposed externally via a Cloudflare Tunnel (`cloudflared` container). The tunnel token is stored in OpenBao at `kv/infra/cloudflare/tunnel`. Tunnel ingress routes are configured in the Cloudflare Zero Trust dashboard.
 
 CryptPad is **public-only** (no internal Traefik route) and end-to-end encrypted — documents are shared by link, with the decryption key carried in the URL fragment, so no per-user accounts are required to collaborate. It needs **two** hostnames: the main origin `pad.quietlife.net` and a sandbox origin `pad-sandbox.quietlife.net` (security isolation). cloudflared reaches the container over the `proxy` network on **two ports** — HTTP on `:3000` and the realtime WebSocket (`/cryptpad_websocket`) on `:3003` — so the tunnel has three public-hostname routes:
 
@@ -30,6 +31,12 @@ CryptPad is **public-only** (no internal Traefik route) and end-to-end encrypted
 | `pad-sandbox.quietlife.net` | (catch-all) | `http://cryptpad:3000` |
 
 The websocket-path route must be ordered **above** the catch-all. CryptPad needs no OpenBao secret (no DB/SMTP; `adminKeys` is a public key). OnlyOffice is not installed — the markdown and rich-text apps don't require it.
+
+## Calibre-Web
+
+A web reader over the existing Calibre library at `/mnt/nas/Books`, exposed at `calibre.quietlife.net` through the Cloudflare Tunnel with **Cloudflare Access (email one-time PIN + allowlist) as the entire security boundary** — behind Access, the app itself has anonymous browsing on. The reader allowlist lives in OpenBao (`kv/infra/cloudflare/calibre-access`), not in this public repo.
+
+Full architecture, the reader add/remove runbook, the seed script, and the format-conversion notes: **see `docs/calibre.md`.**
 
 ## How it fits together
 
@@ -54,6 +61,7 @@ containers mounts NAS shares under `/mnt/nas/`:
 |-------|-----------|---------|
 | `/mnt/nas/Media` | `portanas:/volume1/Media` | Jellyfin, Radarr, Sonarr, SABnzbd |
 | `/mnt/nas/paperless` | `portanas:/volume1/paperless` | Paperless-ngx |
+| `/mnt/nas/Books` | `portanas:/volume1/Books` | Calibre-Web (read-only) |
 
 Additional NAS shares are mounted read-only for backup access. See the `fileSystems` block in `hosts/containers/configuration.nix` for the full list.
 
