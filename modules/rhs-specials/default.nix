@@ -8,10 +8,18 @@
 #     FlareSolverr for the "Specials" menu group and notifies when an item
 #     flips out-of-stock -> in-stock — the POS ground truth, catching
 #     specials that never get an Instagram post.
+#
+# With sms.enable, the toast watcher also texts each alert via XMPP
+# (slixmpp): a message from the JMP account (xmpp1, docs/xmpp.md) to a
+# +1...@cheogram.com JID comes out the other end as a real SMS from the JMP
+# number. Belt-and-suspenders for phones where ntfy push is unreliable.
+# Debug with the script's --sms-test flag (see the sms options below).
 
 let
   cfg = config.homelab.rhs-specials;
   stateDir = "/var/lib/rhs-specials";
+  toastPython = pkgs.python3.withPackages
+    (ps: lib.optional cfg.sms.enable ps.slixmpp);
 in
 {
   options.homelab.rhs-specials = {
@@ -92,6 +100,35 @@ in
         '';
       };
     };
+
+    # Each toast alert is additionally sent as an XMPP message from the JMP
+    # account to a +1...@cheogram.com JID, which JMP relays as a real text
+    # (docs/xmpp.md). Requires the two secret files below, rendered by
+    # openbao-agent from kv/infra/rhs-sms; ntfy remains the primary channel.
+    sms = {
+      enable = lib.mkEnableOption "SMS delivery of toast-watcher alerts via the xmpp1/JMP gateway";
+
+      credsFile = lib.mkOption {
+        type = lib.types.str;
+        default = "/etc/secrets/rhs-sms/xmpp-creds";
+        description = ''
+          XMPP credentials file ("jid: ..." and "password: ..." lines) for
+          the account SMS is sent as; the server is found via the JID
+          domain's SRV records. Root-owned; handed to the DynamicUser
+          service via LoadCredential.
+        '';
+      };
+
+      toFile = lib.mkOption {
+        type = lib.types.str;
+        default = "/etc/secrets/rhs-sms/to";
+        description = ''
+          File holding the SMS recipient — a bare +1... number (the script
+          appends @cheogram.com) or a full JID. A file rather than an
+          option so the phone number stays out of the repo.
+        '';
+      };
+    };
   };
 
   config = lib.mkMerge [
@@ -145,7 +182,9 @@ in
       # The flaresolverr container is compose-managed, so there's no unit to
       # depend on — ordering after docker.service is the best we can do; a
       # run that beats the container up just fails and pings OnFailure.
-      after = [ "docker.service" ];
+      after = [ "docker.service" ]
+        ++ lib.optional cfg.sms.enable "openbao-agent.service";
+      wants = lib.optional cfg.sms.enable "openbao-agent.service";
       unitConfig.OnFailure = [ "notify-failure@%n.service" ];
       serviceConfig = {
         Type = "oneshot";
@@ -155,13 +194,27 @@ in
         NoNewPrivileges = true;
         PrivateTmp = true;
         ExecStart = utils.escapeSystemdExecArgs [
-          "${pkgs.python3}/bin/python3"
+          "${toastPython}/bin/python3"
           "${./toast_specials.py}"
           "--solver-url" cfg.toast.solverUrl
           "--server" cfg.server
           "--topic" cfg.topic
           "--state-file" "/var/lib/rhs-toast-specials/toast_state.json"
           "--log-file" "/var/lib/rhs-toast-specials/toast_log.md"
+        ];
+      } // lib.optionalAttrs cfg.sms.enable {
+        # The secret files are root:root 0400 (rendered by openbao-agent);
+        # LoadCredential is how a DynamicUser service gets to read them.
+        # The paths land in $CREDENTIALS_DIRECTORY, passed to the script via
+        # its env-var config (Environment= expands %d; ExecStart can't,
+        # because escapeSystemdExecArgs escapes the specifier).
+        LoadCredential = [
+          "xmpp-creds:${cfg.sms.credsFile}"
+          "sms-to:${cfg.sms.toFile}"
+        ];
+        Environment = [
+          "XMPP_CREDS=%d/xmpp-creds"
+          "SMS_TO_FILE=%d/sms-to"
         ];
       };
     };
@@ -175,6 +228,7 @@ in
         Persistent = true;
       };
     };
+
     })
   ];
 }

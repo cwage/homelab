@@ -230,8 +230,8 @@ in
 
   # --- OpenBao agent for secrets ---
   # Delivers: cwage password hash, B2 backup credentials, wildcard TLS cert
-  # for Traefik, and the three stack secrets (compose .env, traefik
-  # basicauth, staticomment SSH deploy key).
+  # for Traefik, the three stack secrets (compose .env, traefik basicauth,
+  # staticomment SSH deploy key), and the rhs-sms XMPP credentials.
   # roleId is per-host and CIDR-bound to 10.10.15.11.
   homelab.openbao-agent = {
     enable = true;
@@ -262,6 +262,22 @@ in
       # password2 (salt) intentionally omitted — this rclone crypt remote uses
       # the default salt, not a custom one. Templating a non-existent field
       # would write the literal string "<no value>" to disk and break rclone.
+
+      # --- RHS specials SMS (modules/rhs-specials, sms.enable) ---
+      # xmpp_creds is a credentials file ("jid: ..." / "password: ..."
+      # lines) for the JMP account; to is the recipient number, kept in
+      # OpenBao rather than the repo. Read access comes from the rhs-sms
+      # policy attached to the containers2 AppRole (docs/openbao.md).
+      rhs-sms-xmpp-creds = {
+        path = "kv/data/infra/rhs-sms";
+        field = "xmpp_creds";
+        destination = "/etc/secrets/rhs-sms/xmpp-creds";
+      };
+      rhs-sms-to = {
+        path = "kv/data/infra/rhs-sms";
+        field = "to";
+        destination = "/etc/secrets/rhs-sms/to";
+      };
 
       # --- Stack secrets ---
       # /opt/stacks is 0755 deploy:users (declared above); render each file
@@ -393,9 +409,13 @@ in
   # ping the notify-failure@ hook above. The Instagram feed poller
   # (homelab.rhs-specials.enable) is deliberately off: the Toast menu is the
   # POS ground truth for specials, the feed is mostly other content.
+  # sms.enable additionally texts each alert through the xmpp1/JMP gateway
+  # (credentials from the rhs-sms secrets above) — ntfy on iOS proved flaky,
+  # SMS doesn't.
   homelab.rhs-specials = {
     enable = false;
     toast.enable = true;
+    sms.enable = true;
   };
 
   # --- Backups ---
