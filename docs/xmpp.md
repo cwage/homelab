@@ -254,7 +254,26 @@ notification reliability, message delivery latency, and whether MMS works with
 the people you actually text. Porting out of Google Voice costs $3 to unlock and
 is effectively one-way, so the trial is the point.
 
-## Web client
+## Automated SMS from the homelab
+
+Because SMS through JMP is just an XMPP message to `+1<number>@cheogram.com`,
+any service that can authenticate to prosody can send real texts from the JMP
+number. The RHS specials watcher (`modules/rhs-specials`, `sms.enable` on the
+containers host) does exactly that: alerts go out as XMPP messages via
+slixmpp, sent **as `cwage@quietlife.net`** — JMP only bridges SMS for the JID
+registered with it, so automation shares the human account rather than using
+a bot JID.
+
+Consequences of sharing the account:
+
+- The plaintext account password lives in OpenBao (`kv/infra/rhs-sms`,
+  readable only by the containers host's AppRole via the `rhs-sms` policy —
+  docs/openbao.md) and on the containers VM. Rotating the XMPP password means
+  updating that KV entry too.
+- Because of carbons + MAM, every automated text also appears in Cheogram
+  and Converse in the conversation with that contact, as if typed by hand.
+- If automation ever needs its own identity, the clean upgrade is a second
+  prosody account with its own JMP number (~$3/mo).
 
 The Google-Voice-in-a-browser equivalent is [Converse.js](https://conversejs.org)
 at **https://chat.lan.quietlife.net** — log in as `cwage` (a bare username

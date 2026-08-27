@@ -328,6 +328,17 @@ path "kv/data/infra/cloudflare/calibre-access" {
   capabilities = ["create", "update", "read"]
 }
 EOF
+
+# Read access to the RHS specials SMS credentials (the JMP account's
+# XMPP creds + recipient number — modules/rhs-specials). Attached to
+# the containers host's AppRole, NOT the base nixos-host policy, so the
+# plaintext XMPP password is readable only by the one host that sends SMS:
+#   make openbao-approle-create-role NAME=containers2 IP=10.10.15.11 EXTRA_POLICIES=rhs-sms
+bao policy write rhs-sms - <<EOF
+path "kv/data/infra/rhs-sms" {
+  capabilities = ["read"]
+}
+EOF
 ```
 
 ### Creating Workstation Tokens
@@ -335,6 +346,26 @@ EOF
 Once the policies exist, see the
 [Workstation Bootstrap](openbao-secrets.md#workstation-bootstrap) section in
 `openbao-secrets.md` to generate a token for a new machine or replace an expired one.
+
+### The approle-admin Token (Reminting)
+
+The `make openbao-approle-*` targets fetch a privileged token from
+`kv/infra/openbao/admin-token` (field `token`, policy `approle-admin`) to
+manage AppRole roles. It is periodic and nothing renews it, so roughly once a
+year it expires and the targets start failing with `403 permission denied`.
+Remint it on the bao server (`bao login` with the root token) — command
+substitution keeps the new token off the screen:
+
+```bash
+bao kv put -mount=kv infra/openbao/admin-token token=$(bao token create -policy=approle-admin -no-default-policy -orphan -period=8760h -field=token -display-name=approle-admin)
+```
+
+Heads-up when a create-role run fails this way: `setup-approle.sh` merges the
+role's *existing* policies client-side, and with a dead token that read
+silently returns nothing. Always confirm the rerun prints
+`(preserved existing: ...)` with the expected extra policies (e.g.
+`backup-remote` on `containers2`) — a write that "succeeds" without them
+would strip those attachments.
 
 ## Related
 

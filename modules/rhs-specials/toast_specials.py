@@ -15,9 +15,19 @@ publishes one ntfy message listing items that just became available
 first run only records a baseline and never notifies. All observed changes,
 including items going off, are appended to a human-readable log.
 
+Optionally also delivers each alert as an SMS: with an XMPP account whose JID
+is registered with JMP (see docs/xmpp.md in the homelab repo), sending an XMPP
+message to a +1...@cheogram.com JID comes out the other end as a real text
+from the JMP number. Needs the slixmpp package, an XMPP credentials file
+(lines "jid: user@domain" and "password: ..."; the server is found via the
+domain's SRV records), and a recipient. ntfy stays the primary channel — an
+SMS failure is reported but does not re-trigger the ntfy alert on the next
+run.
+
 Scheduling-agnostic: run from cron/systemd/by hand; state diffing makes
 repeated runs idempotent. Config via flags or NTFY_TOPIC / NTFY_SERVER /
-SOLVER_URL / STATE_FILE / LOG_FILE environment variables.
+SOLVER_URL / STATE_FILE / LOG_FILE / XMPP_CREDS / SMS_TO / SMS_TO_FILE
+environment variables.
 """
 
 import argparse
@@ -54,6 +64,21 @@ def parse_args():
     p.add_argument("--log-file", type=Path,
                    default=Path(os.environ.get("LOG_FILE", "toast_log.md")),
                    help="human-readable markdown log of stock changes (default: %(default)s)")
+    p.add_argument("--xmpp-creds", type=Path,
+                   default=os.environ.get("XMPP_CREDS"),
+                   help='XMPP credentials file ("jid: ..." / "password: ..." '
+                        "lines); with a recipient, enables SMS delivery via "
+                        "the JMP gateway")
+    p.add_argument("--sms-to", default=os.environ.get("SMS_TO"),
+                   help="SMS recipient: a +1... number (auto-suffixed "
+                        "@cheogram.com) or a full JID")
+    p.add_argument("--sms-to-file", type=Path,
+                   default=os.environ.get("SMS_TO_FILE"),
+                   help="file holding the SMS recipient (overrides --sms-to); "
+                        "lets the number live in a secrets file, not the unit")
+    p.add_argument("--sms-test", metavar="MESSAGE",
+                   help="send MESSAGE as an SMS using the configured "
+                        "credentials/recipient and exit (no menu fetch)")
     p.add_argument("--dry-run", action="store_true",
                    help="print what would be sent instead of publishing; state is not written")
     return p.parse_args()
@@ -199,14 +224,92 @@ def append_log(log_file, lines):
         f.write("\n")
 
 
-def publish(server, topic, page_url, available, dry_run):
+NTFY_TITLE = "Redheaded Stranger: on special today"
+
+
+def format_body(available):
     body_lines = []
     for item in available:
         line = fmt_item(item)
         if item["description"]:
             line += f" — {item['description']}"
         body_lines.append(line)
-    body = "\n".join(body_lines)
+    return "\n".join(body_lines)
+
+
+def sms_recipient(args):
+    """Resolve the SMS recipient, or None if SMS delivery isn't configured.
+
+    A bare phone number becomes a JID on the JMP/Cheogram gateway, which
+    relays the XMPP message as a real text.
+    """
+    if not args.xmpp_creds:
+        return None
+    to = args.sms_to
+    if args.sms_to_file:
+        to = args.sms_to_file.read_text().strip()
+    if not to:
+        return None
+    if "@" not in to:
+        to += "@cheogram.com"
+    return to
+
+
+def parse_xmpp_creds(path):
+    creds = {}
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        creds[key.strip()] = value.strip()
+    missing = [k for k in ("jid", "password") if not creds.get(k)]
+    if missing:
+        raise ValueError(f"{path}: missing {', '.join(missing)}")
+    return creds
+
+
+def send_sms(creds_file, to, message, dry_run):
+    if dry_run:
+        print(f"[dry-run] would SMS {to} via XMPP:")
+        print(f"  {message}")
+        return
+    creds = parse_xmpp_creds(creds_file)
+    # Imported lazily so ntfy-only setups don't need slixmpp installed.
+    import slixmpp
+
+    class Sender(slixmpp.ClientXMPP):
+        def __init__(self):
+            super().__init__(creds["jid"], creds["password"])
+            self.sent = False
+            self.error = None
+            self.add_event_handler("session_start", self._session_start)
+            self.add_event_handler("failed_auth", self._failed)
+            self.add_event_handler("connection_failed", self._failed)
+
+        async def _session_start(self, _event):
+            self.send_message(mto=to, mbody=message, mtype="chat")
+            self.sent = True
+            # wait= flushes the send queue before closing the stream
+            self.disconnect(wait=5.0)
+
+        def _failed(self, event):
+            self.error = str(event)
+            self.abort()
+
+    xmpp = Sender()
+    # Server/port come from the JID domain's SRV records, same as any client.
+    xmpp.connect()
+    # Backstop: a wedged connection would otherwise stall process() forever.
+    xmpp.loop.call_later(120, xmpp.abort)
+    xmpp.process(forever=False)
+    if not xmpp.sent:
+        raise RuntimeError(f"XMPP send failed: {xmpp.error or 'no session'}")
+    print(f"sent SMS to {to}")
+
+
+def publish(server, topic, page_url, available, dry_run):
+    body = format_body(available)
     if dry_run:
         print(f"[dry-run] would publish to {server}/{topic}:")
         print(f"  {body}")
@@ -215,7 +318,7 @@ def publish(server, topic, page_url, available, dry_run):
         f"{server}/{topic}",
         data=body.encode("utf-8"),
         headers={
-            "Title": "Redheaded Stranger: on special today",
+            "Title": NTFY_TITLE,
             "Click": page_url,
             "Tags": "taco",
         },
@@ -228,6 +331,20 @@ def publish(server, topic, page_url, available, dry_run):
 
 def main():
     args = parse_args()
+
+    if args.sms_test is not None:
+        to = sms_recipient(args)
+        if not to:
+            print("error: --sms-test needs --xmpp-creds and a recipient",
+                  file=sys.stderr)
+            return 2
+        try:
+            send_sms(args.xmpp_creds, to, args.sms_test, args.dry_run)
+        except Exception as e:
+            print(f"error: failed to send SMS: {e}", file=sys.stderr)
+            return 1
+        return 0
+
     try:
         html = fetch_page(args.solver_url, args.page_url)
         current = find_menu_items(html, args.group)
@@ -272,6 +389,7 @@ def main():
         if guid not in current:
             changes.append(f"removed from menu: {was.get('name', guid)}")
 
+    sms_failed = False
     if became_available:
         try:
             publish(args.server, args.topic, args.page_url, became_available,
@@ -281,6 +399,21 @@ def main():
             # and retries the notification.
             print(f"error: failed to publish to ntfy: {e}", file=sys.stderr)
             return 1
+        to = sms_recipient(args)
+        if to:
+            try:
+                # SMS has no title field; lead with the ntfy title so the
+                # text stands alone.
+                send_sms(args.xmpp_creds, to,
+                         f"{NTFY_TITLE}\n{format_body(became_available)}",
+                         args.dry_run)
+            except Exception as e:
+                # Deliberately broad: SMS is the best-effort secondary
+                # channel, and ntfy already went out, so state must still be
+                # saved (a retry would duplicate the ntfy alert). Surface
+                # the failure through the exit code instead.
+                print(f"error: failed to send SMS: {e}", file=sys.stderr)
+                sms_failed = True
 
     if not args.dry_run:
         if changes:
@@ -292,7 +425,7 @@ def main():
             print(c)
     else:
         print(f"no changes ({len(current)} item(s) tracked)")
-    return 0
+    return 1 if sms_failed else 0
 
 
 if __name__ == "__main__":
