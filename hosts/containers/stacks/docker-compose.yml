@@ -15,6 +15,12 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
       - "--entrypoints.websecure.address=:443"
+      # Default idleTimeout (180s) also applies to websockets and exactly
+      # ties Converse's default keepalive ping, so idle chat tabs lost their
+      # connection to the proxy (stale until reload). An hour is generous for
+      # a LAN entrypoint; Converse also pings every 60s now (converse/
+      # index.html), so both ends of the race are fixed.
+      - "--entrypoints.websecure.transport.respondingTimeouts.idleTimeout=3600"
     ports:
       - "80:80"
       - "443:443"
