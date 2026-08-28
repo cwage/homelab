@@ -29,7 +29,7 @@ let
   '';
 
   # Common script preamble for the b2/local rclone sweeps.
-  rcloneSweepScript = { target, dest, paths, preflightExtra ? "", credsBlock ? "" }: ''
+  rcloneSweepScript = { target, dest, paths, preflightExtra ? "", credsBlock ? "", extraFlags ? [] }: ''
     set -euo pipefail
 
     START_TIME=$(date +%s)
@@ -42,7 +42,11 @@ let
     ${credsBlock}
 
     ${rcloneFlagsArray}
-
+    ${lib.optionalString (extraFlags != []) ''
+      RCLONE_FLAGS+=(
+        ${lib.concatStringsSep "\n        " extraFlags}
+      )
+    ''}
     FAILED=()
     SUCCEEDED=()
 
@@ -582,12 +586,25 @@ in
         serviceConfig = {
           Type = "oneshot";
           User = "root";
+          # Soft cap: the kernel reclaims/throttles rclone above this before
+          # a global OOM starts shooting containers. Well above the ~400 MiB
+          # of upload buffers the flags below allow for.
+          MemoryHigh = "1G";
         };
         script = rcloneSweepScript {
           target = "B2";
           dest = "b2crypt:";
           paths = cfg.b2.paths;
           credsBlock = b2CredsBlock;
+          # The B2 backend buffers every in-flight multipart chunk in RAM:
+          # transfers x upload-concurrency x chunk-size (96Mi default). The
+          # defaults (4 x 4) allow ~1.5 GiB, which OOM-killed the sweep on
+          # 2026-08-28 when a 13 GiB Media delta hit the 8 GB VM (no swap).
+          # 2 x 2 caps in-flight buffers at ~384 MiB.
+          extraFlags = [
+            "--transfers" "2"
+            "--b2-upload-concurrency" "2"
+          ];
         };
       };
 
