@@ -21,6 +21,7 @@ let
     cp ${./stacks/converse/index.html} $out/index.html
     cp ${./stacks/converse/converse-shrink.js} $out/converse-shrink.js
     cp ${./stacks/converse/converse-tel.js} $out/converse-tel.js
+    cp ${./stacks/converse/converse-domainchat.js} $out/converse-domainchat.js
   '';
 in
 {

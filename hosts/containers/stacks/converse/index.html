@@ -31,6 +31,12 @@
        auto-discovered from domain-only roster entries (cheogram.com today) —
        nothing is hardcoded, so a gateway swap needs no client change. -->
   <script type="module" src="/converse-tel.js"></script>
+  <!-- converse-domainchat (vendored): backports the post-v14 upstream fix
+       for messages from bare-domain roster contacts (the cheogram.com bot)
+       being misclassified as server announcements and never rendered live.
+       See the plugin header; remove together with the headlines blacklist
+       below once the vendored Converse release includes the fix. -->
+  <script type="module" src="/converse-domainchat.js"></script>
 </head>
 <body>
   <script type="module">
@@ -56,6 +62,13 @@
       muc_domain: 'conference.quietlife.net',
       view_mode: 'fullscreen',
       auto_reconnect: true,
+      // Keepalive must outrun Traefik's websocket idle timeout or the proxy
+      // kills the connection mid-race: Converse's default ping (180s) ties
+      // the Traefik default idleTimeout (180s), and browser background-tab
+      // throttling delays the ping timer, so idle tabs went silently stale
+      // until a manual reload. 60s pings plus the raised idleTimeout on the
+      // websecure entrypoint (docker-compose.yml) close both ends of that.
+      ping_interval: 60,
       allow_registration: false,
       // Sync archive prefs with the server: prosody keeps everything
       // (archive_expires_after = "never"), so scrollback here is the full
@@ -69,7 +82,13 @@
       // and the JID it resolves to, which is exactly the sort of thing that
       // ends up in a screen share. Set it here temporarily when diagnosing a
       // lookup.
-      whitelisted_plugins: ['converse-shrink', 'converse-tel']
+      whitelisted_plugins: ['converse-shrink', 'converse-tel', 'converse-domainchat'],
+      // The headlines plugins' handler races converse-domainchat for
+      // bare-domain messages (it grabs anything isServerMessage matches and
+      // collides with the existing private chatbox — see the plugin header).
+      // This is a texting UI with no use for a server-announcements pane, so
+      // drop them rather than risk double-rendering.
+      blacklisted_plugins: ['converse-headlines', 'converse-headlines-view']
     });
   </script>
 </body>
