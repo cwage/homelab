@@ -13,10 +13,15 @@ DC := docker compose --env-file ../.env
 # attached to the containers2 role used by the containers host — though
 # that one is auto-preserved on re-run, the env var is there for the
 # initial attachment).
+# --quiet-build: if the image doesn't exist yet, compose auto-builds it and
+# the build progress would otherwise land in $$token. The whitespace check
+# catches any other stray output before it gets splatted into the run args
+# (an unquoted multi-word token once turned "[internal]" into a service name).
 define run-admin
-	@token=$$($(DC) run --rm --entrypoint bao bao kv get -mount=kv -field=token infra/openbao/admin-token 2>/dev/null) && \
+	@token=$$($(DC) run --rm --quiet-build --quiet-pull --entrypoint bao bao kv get -mount=kv -field=token infra/openbao/admin-token 2>/dev/null) && \
 	[ -n "$$token" ] || (echo "ERROR: could not fetch admin token from kv/infra/openbao/admin-token" && exit 1) && \
-	$(DC) run --rm -e BAO_TOKEN=$$token -e EXTRA_CIDRS=$(EXTRA_CIDRS) -e EXTRA_POLICIES=$(EXTRA_POLICIES) bao $(1)
+	case "$$token" in *[[:space:]]*) echo "ERROR: admin token fetch returned unexpected multi-word output" && exit 1;; esac && \
+	$(DC) run --rm -e BAO_TOKEN="$$token" -e EXTRA_CIDRS=$(EXTRA_CIDRS) -e EXTRA_POLICIES=$(EXTRA_POLICIES) bao $(1)
 endef
 
 help:

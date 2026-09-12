@@ -27,8 +27,10 @@ kv/
 │   ├── traefik/              # Reverse proxy certs/config
 │   └── <app-name>/           # Per-app secrets
 │
-├── backup/                   # Backup-related credentials
-│   └── openbao/              # OpenBao backup token
+├── backup/                   # Backup-related credentials (see backup/README.md)
+│   ├── backblaze/            # B2 keys for the NAS-to-B2 sync
+│   ├── rclone-crypt/         # rclone crypt passwords
+│   └── remote-token/         # workstation token for the backup/ tool
 │
 └── users/                    # User credentials (if needed)
 ```

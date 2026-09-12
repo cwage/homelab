@@ -1,5 +1,10 @@
 { config, lib, pkgs, ... }:
 
+let
+  # Runbook for the Raft snapshot job's auth. Referenced from the backup
+  # script's log output (and therefore the ntfy failure notification).
+  backupDocs = "https://github.com/cwage/homelab/blob/master/docs/openbao.md#troubleshooting-snapshot-fails-with-403";
+in
 {
   networking.hostName = "bao";
 
@@ -142,13 +147,12 @@
   };
 
   # --- Daily Raft snapshot backup ---
-  # Mirrors the cron job that ran on the previous Debian VM. Token must be
-  # staged manually at /etc/openbao/backup-token (mode 0600 root:root).
-  # Mint with:
-  #   bao token create -policy=backup -no-default-policy -orphan \
-  #     -period=8760h -display-name="bao-backup" -field=token \
-  #     | sudo tee /etc/openbao/backup-token >/dev/null
-  #   sudo chmod 0600 /etc/openbao/backup-token
+  # Mirrors the cron job that ran on the previous Debian VM. Authenticates
+  # with openbao-agent's own AppRole token (the sink file the agent keeps
+  # renewed for as long as it runs), so there is no long-lived token to
+  # stage or rotate. The `backup` policy (read sys/storage/raft/snapshot)
+  # must be attached to this host's AppRole role — see
+  # docs/openbao.md#backup-policy-setup-one-time.
 
   fileSystems."/mnt/backups" = {
     device = "10.10.15.4:/volume1/homelab-backups";
@@ -163,7 +167,8 @@
 
   systemd.services.openbao-backup = {
     description = "OpenBao Raft snapshot backup";
-    path = with pkgs; [ openbao coreutils gnugrep findutils jq curl ];
+    path = with pkgs; [ openbao coreutils gnugrep findutils ];
+    after = [ "openbao-agent.service" ];
     # Refuse to run if the NFS share isn't mounted — otherwise snapshots
     # would silently land on the root filesystem.
     unitConfig = {
@@ -180,18 +185,21 @@
 
       BACKUP_DIR="/mnt/backups/vm/openbao"
       RETENTION_DAYS=30
-      TOKEN_TTL_WARN_DAYS=30
       TIMESTAMP=$(date +%Y%m%d-%H%M%S)
       SNAPSHOT_FILE="''${BACKUP_DIR}/openbao-''${TIMESTAMP}.snap"
 
       export BAO_ADDR="https://127.0.0.1:8200"
       export BAO_SKIP_VERIFY=true
 
-      TOKEN_FILE="/etc/openbao/backup-token"
-      if [[ -f "''${TOKEN_FILE}" ]]; then
-        export BAO_TOKEN="$(cat "''${TOKEN_FILE}")"
+      # openbao-agent's auto-auth token (modules/openbao-agent.nix). Root-only
+      # via the 0750 runtime dir; the agent renews it, so it never expires
+      # while the agent is up.
+      AGENT_TOKEN="/run/openbao-agent/token"
+      if [[ -s "''${AGENT_TOKEN}" ]]; then
+        export BAO_TOKEN="$(cat "''${AGENT_TOKEN}")"
       else
-        echo "Backup token file not found: ''${TOKEN_FILE}"
+        echo "openbao-agent token sink missing or empty: ''${AGENT_TOKEN}"
+        echo "Is openbao-agent.service running? See ${backupDocs}"
         exit 1
       fi
 
@@ -211,30 +219,18 @@
       chmod 0755 "''${BACKUP_DIR}"
 
       echo "Taking Raft snapshot to ''${SNAPSHOT_FILE}"
-      bao operator raft snapshot save "''${SNAPSHOT_FILE}"
+      if ! bao operator raft snapshot save "''${SNAPSHOT_FILE}"; then
+        # The CLI opens the output file before making the request, so a
+        # failed save leaves an empty .snap behind that looks like a backup.
+        rm -f "''${SNAPSHOT_FILE}"
+        echo "Snapshot failed. A 403 'permission denied' above means the agent's token lacks the 'backup' policy:"
+        echo "re-attach it to this host's AppRole role and restart openbao-agent. See ${backupDocs}"
+        exit 1
+      fi
       chmod 0644 "''${SNAPSHOT_FILE}"
 
       echo "Removing backups older than ''${RETENTION_DAYS} days"
       find "''${BACKUP_DIR}" -name "openbao-*.snap" -type f -mtime +''${RETENTION_DAYS} -delete
-
-      # Warn when the backup token nears expiry (#250). The token is periodic
-      # but nothing renews it, so it dies ~8760h after minting and the first
-      # symptom would be this job 403ing. Non-fatal: a lookup hiccup must not
-      # turn a successful backup into a failure alert. Priority/tags differ
-      # from the urgent/x failure notifications so this reads as a warning.
-      ttl_seconds=$(bao token lookup -format=json 2>/dev/null | jq -r '.data.ttl // empty') || ttl_seconds=""
-      if [[ -z "''${ttl_seconds}" ]]; then
-        echo "WARNING: could not determine backup token TTL"
-      elif (( ttl_seconds > 0 && ttl_seconds < TOKEN_TTL_WARN_DAYS * 86400 )); then
-        ttl_days=$(( ttl_seconds / 86400 ))
-        echo "WARNING: backup token expires in ''${ttl_days} day(s)"
-        curl -sf -o /dev/null \
-          -H "Priority: default" \
-          -H "Title: OpenBao backup token expiring on ${config.networking.hostName}" \
-          -H "Tags: warning,hourglass,${config.networking.hostName}" \
-          --data-raw "Raft snapshot token TTL is ''${ttl_days} day(s). Re-mint per hosts/openbao/configuration.nix and stage at /etc/openbao/backup-token." \
-          ${lib.escapeShellArg config.homelab.ntfy.topic} || true
-      fi
 
       echo "Backup completed successfully"
     '';
