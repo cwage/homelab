@@ -43,23 +43,25 @@
           - "OpenBao URL: {{ vault_url }}"
           - "Validate certs: {{ vault_validate_certs }}"
 
-    - name: Retrieve backup token from OpenBao
+    # kv/infra/cloudflare is a stable, always-present path (lego reads it) and
+    # zone_id is the least sensitive field in it.
+    - name: Retrieve a known secret from OpenBao (infra/cloudflare)
       ansible.builtin.set_fact:
         secret_result: "{{ lookup('community.hashi_vault.vault_kv2_get',
-                                'backup/openbao',
+                                'infra/cloudflare',
                                 engine_mount_point=openbao_kv_mount,
                                 url=openbao_addr,
                                 token=openbao_token,
                                 validate_certs=openbao_validate_certs) }}"
       no_log: true
 
-    - name: Display retrieved backup token (masked)
+    - name: Display retrieved value (masked)
       ansible.builtin.debug:
-        msg: "Retrieved backup token: {{ secret_result.secret.token[:8] }}..."
+        msg: "Retrieved infra/cloudflare zone_id: {{ secret_result.secret.zone_id[:8] }}..."
       failed_when: >
         secret_result is not mapping or
         ('secret' not in secret_result) or
-        ('token' not in secret_result.secret)
+        ('zone_id' not in secret_result.secret)
 
     - name: Show lookup pattern for playbooks
       ansible.builtin.debug:
