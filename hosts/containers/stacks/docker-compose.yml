@@ -35,7 +35,7 @@ services:
       - proxy
 
   jellyfin:
-    image: linuxserver/jellyfin:10.11.6
+    image: linuxserver/jellyfin:10.11.11
     container_name: jellyfin
     restart: unless-stopped
     environment:
