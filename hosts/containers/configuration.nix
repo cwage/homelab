@@ -139,6 +139,7 @@ in
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
       "nvidia-x11"
+      "nvidia-kernel-modules" # split out of nvidia-x11 in nixpkgs 25.05+
       "nvidia-settings"
       "nvidia-persistenced"
     ];
@@ -148,7 +149,10 @@ in
     modesetting.enable = true;
     open = false;
     nvidiaSettings = false;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    # GTX 1050 Ti is Pascal. NVIDIA dropped Maxwell/Pascal/Volta after the 580
+    # branch, and nixpkgs 26.05 `stable` is 595, so pin to the last supported
+    # legacy branch.
+    package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
   };
 
   # --- Docker host ---

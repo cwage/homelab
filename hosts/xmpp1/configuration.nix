@@ -165,6 +165,11 @@ in
 
   services.prosody = {
     enable = true;
+    # nixpkgs 26.05 runs `prosodyctl check config` in the build sandbox. Our
+    # config reads the coturn secret from /run/secrets at load time (see
+    # turn_external_secret below), which cannot exist there, so the check
+    # cannot pass. Runtime behaviour is unchanged.
+    checkConfig = false;
 
     # nixos-24.11 ships Prosody 0.12, where cloud_notify (push notifications)
     # is still a community module. Without it Cheogram misses messages while
@@ -204,8 +209,20 @@ in
     # JMP delivers group texts as multi-user chats.
     muc = [{ domain = mucDomain; }];
 
-    # MMS attachments and voice messages travel this path.
-    uploadHttp.domain = uploadDomain;
+    # MMS attachments and voice messages travel this path. nixpkgs 26.05 dropped
+    # mod_http_upload for mod_http_file_share; same upload.${domain} host so the
+    # ACME SAN and DNS stay valid. Files stored by the old module are not served
+    # by the new one, but the old module expired uploads after 7 days (the
+    # NixOS default), so pre-migration attachment links were already dead by
+    # policy; the leftover files stay under /var/lib/prosody for manual recovery.
+    httpFileShare = {
+      domain = uploadDomain;
+      # Parity with the old module (NixOS default was 50 MiB; the new one is 10).
+      size_limit = 50 * 1024 * 1024;
+      # Match archive_expires_after = "never" below; attachments are part of
+      # the record the archive exists to keep.
+      expires_after = "never";
+    };
 
     extraModules = [
       "smacks" # survive network flaps mid-conversation
@@ -270,10 +287,12 @@ in
       -- at startup rather than interpolated, because this config file lives in
       -- the world-readable nix store. Read and close in one expression so the
       -- file handle isn't leaked (config is re-evaluated on every reload).
+      -- Prosody 13 exposes the Lua stdlib to config files via the `Lua` table
+      -- and warns on bare `assert`/`io`.
       turn_external_host = "${turnDomain}"
       turn_external_port = 3478
       turn_external_secret = (function()
-        local f = assert(io.open("${config.sops.secrets.coturn-auth-secret.path}"))
+        local f = Lua.assert(Lua.io.open("${config.sops.secrets.coturn-auth-secret.path}"))
         local secret = f:read("*l")
         f:close()
         return secret
@@ -294,9 +313,12 @@ in
   systemd.services.prosody.serviceConfig.AmbientCapabilities =
     [ "CAP_NET_BIND_SERVICE" ];
 
-  # Prosody reads the certificate at startup; make sure it exists first.
-  systemd.services.prosody.after = [ "acme-finished-${domain}.target" ];
-  systemd.services.prosody.wants = [ "acme-finished-${domain}.target" ];
+  # Prosody reads the certificate at startup; make sure it exists first. The
+  # nixpkgs 25.11 acme rework replaced acme-finished-<cert>.target with
+  # acme-order-renew-<cert>.service (the unit that actually obtains the real
+  # certificate); the release notes say dependants should move to it.
+  systemd.services.prosody.after = [ "acme-order-renew-${domain}.service" ];
+  systemd.services.prosody.wants = [ "acme-order-renew-${domain}.service" ];
 
   # --- coturn ---------------------------------------------------------------
 
@@ -336,6 +358,6 @@ in
     '';
   };
 
-  systemd.services.coturn.after = [ "acme-finished-${domain}.target" ];
-  systemd.services.coturn.wants = [ "acme-finished-${domain}.target" ];
+  systemd.services.coturn.after = [ "acme-order-renew-${domain}.service" ];
+  systemd.services.coturn.wants = [ "acme-order-renew-${domain}.service" ];
 }

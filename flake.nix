@@ -2,17 +2,13 @@
   description = "Homelab NixOS configurations";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
     # Secrets for hosts that cannot reach OpenBao. The openbao-agent module
     # authenticates via an AppRole CIDR-bound to a LAN address, which does not
     # work for a public VPS — see docs/xmpp.md.
-    # Pinned, not tracking master. sops-nix builds sops-install-secrets from the
-    # *consuming* system's nixpkgs, and current master needs buildGo125Module —
-    # absent in nixos-24.11. This revision (2025-01-31) is the last that builds
-    # against 24.11. Unpin when nixpkgs moves forward; see docs/xmpp.md.
     sops-nix = {
-      url = "github:Mic92/sops-nix/4c1251904d8a08c86ac6bc0d72cc09975e89aef7";
+      url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
