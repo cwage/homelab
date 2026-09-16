@@ -2,7 +2,7 @@
   description = "Homelab NixOS configurations";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
     # Secrets for hosts that cannot reach OpenBao. The openbao-agent module
     # authenticates via an AppRole CIDR-bound to a LAN address, which does not
