@@ -211,10 +211,14 @@ in
 
     # MMS attachments and voice messages travel this path. nixpkgs 26.05 dropped
     # mod_http_upload for mod_http_file_share; same upload.${domain} host so the
-    # ACME SAN and DNS stay valid. Uploads made under the old module are not
-    # served by the new one, so pre-migration attachment links 404.
+    # ACME SAN and DNS stay valid. Files stored by the old module are not served
+    # by the new one, but the old module expired uploads after 7 days (the
+    # NixOS default), so pre-migration attachment links were already dead by
+    # policy; the leftover files stay under /var/lib/prosody for manual recovery.
     httpFileShare = {
       domain = uploadDomain;
+      # Parity with the old module (NixOS default was 50 MiB; the new one is 10).
+      size_limit = 50 * 1024 * 1024;
       # Match archive_expires_after = "never" below; attachments are part of
       # the record the archive exists to keep.
       expires_after = "never";
@@ -310,11 +314,11 @@ in
     [ "CAP_NET_BIND_SERVICE" ];
 
   # Prosody reads the certificate at startup; make sure it exists first. The
-  # nixpkgs 26.05 acme module dropped acme-finished-<cert>.target; the
-  # acme-<cert>.service "ensure" unit is what guarantees a cert (self-signed
-  # at worst) is on disk before dependants start.
-  systemd.services.prosody.after = [ "acme-${domain}.service" ];
-  systemd.services.prosody.wants = [ "acme-${domain}.service" ];
+  # nixpkgs 25.11 acme rework replaced acme-finished-<cert>.target with
+  # acme-order-renew-<cert>.service (the unit that actually obtains the real
+  # certificate); the release notes say dependants should move to it.
+  systemd.services.prosody.after = [ "acme-order-renew-${domain}.service" ];
+  systemd.services.prosody.wants = [ "acme-order-renew-${domain}.service" ];
 
   # --- coturn ---------------------------------------------------------------
 
@@ -354,6 +358,6 @@ in
     '';
   };
 
-  systemd.services.coturn.after = [ "acme-${domain}.service" ];
-  systemd.services.coturn.wants = [ "acme-${domain}.service" ];
+  systemd.services.coturn.after = [ "acme-order-renew-${domain}.service" ];
+  systemd.services.coturn.wants = [ "acme-order-renew-${domain}.service" ];
 }
