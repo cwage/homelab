@@ -300,9 +300,10 @@ def send_sms(creds_file, to, message, dry_run):
     xmpp = Sender()
     # Server/port come from the JID domain's SRV records, same as any client.
     xmpp.connect()
-    # Backstop: a wedged connection would otherwise stall process() forever.
+    # Backstop: a wedged connection would otherwise block on the disconnected
+    # future forever.
     xmpp.loop.call_later(120, xmpp.abort)
-    xmpp.process(forever=False)
+    xmpp.loop.run_until_complete(xmpp.disconnected)
     if not xmpp.sent:
         raise RuntimeError(f"XMPP send failed: {xmpp.error or 'no session'}")
     print(f"sent SMS to {to}")
