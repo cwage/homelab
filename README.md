@@ -206,4 +206,5 @@ make install-precommit-hook  # install trufflehog pre-commit hook
 | [ansible/README.md](ansible/README.md) | Ansible-specific setup and workflow |
 | [ansible/roles/wireguard_server/README.md](ansible/roles/wireguard_server/README.md) | WireGuard VPN setup and client configuration |
 | [docs/nixos-migration.md](docs/nixos-migration.md) | NixOS migration: pipeline, AppRole secrets, per-host walkthrough |
+| [docs/nixos-updates.md](docs/nixos-updates.md) | Keeping NixOS hosts current: weekly Renovate PRs, deploy prompts, rollback, staleness nag |
 | [tofu/README.md](tofu/README.md) | OpenTofu-specific setup and workflow |
