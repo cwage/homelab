@@ -36,7 +36,7 @@ host/module PR, and runs trufflehog on everything. Green CI on a lock PR means
 every host evaluates and builds against it; it does not mean the services
 behave. That check happens at deploy time.
 
-**Master is what gets deployed.** The order is: merge, pull, deploy.
+**Master is what gets deployed.** The order is: merge, `git checkout master && git pull`, deploy.
 
 ### Deploying a lock refresh
 
@@ -84,6 +84,11 @@ ssh -i ansible/keys/deploy deploy@containers 'cd /opt/stacks && docker compose p
 Compose recreates only the containers whose image changed. Majors deserve a
 read of the release notes first; leaving that PR open costs nothing.
 
+If the grouped PR also bumped `lego/docker-compose.yml`, nothing runs on a
+host for that one: the lego stack runs from the workstation via `make lego-*`,
+so the new image is picked up by the next `make lego-renew` from an
+up-to-date checkout.
+
 ### Deploying from the branch instead
 
 `nix/deploy.sh` builds whatever is checked out, so for a change you want to
@@ -94,7 +99,8 @@ gh pr checkout <n>
 make nix-deploy-host HOST=containers
 ```
 
-Verify, merge, pull. The host ends up on master's closure either way. Don't
+Verify, merge, then `git checkout master && git pull` (a bare `git pull` on the
+PR branch pulls the branch, not master). The host ends up on master's closure either way. Don't
 leave a host on a branch that never merges; the next master deploy shows a
 confusing diff. For a routine lock refresh, merge first: CI already built the
 exact closure you're about to deploy.
@@ -152,10 +158,11 @@ ssh -i ansible/keys/deploy deploy@containers journalctl -u renovate -n 50 --no-p
 date and the release branch's EOL are baked into the generation at build
 time; the check compares them to the clock and, if the deployed nixpkgs is
 older than 30 days or the release is within 30 days of EOL, exits non-zero
-and posts its summary to ntfy through the `notify-failure@` hook. Deploying a
-fresh build resets the clock. This is the piece that catches a merged
-refresh that never got deployed, which a Nix host would otherwise never
-mention.
+and posts its summary to ntfy through the `notify-failure@` hook. Only deploying
+a build from a newer lock resets the clock; redeploying the same lock does not,
+since the date is the nixpkgs commit date, not the build date. This is the
+piece that catches a merged refresh that never got deployed, which a Nix
+host would otherwise never mention.
 
 To see what it thinks right now:
 
