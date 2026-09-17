@@ -30,6 +30,7 @@ jobs:
               - 'hosts/**'
               - 'modules/**'
               - 'nix/**'
+              - 'Makefile'
               - 'secrets/**'
               - '.github/workflows/checks.yml'
 
