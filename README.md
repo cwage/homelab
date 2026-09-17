@@ -142,7 +142,7 @@ make tofu-shell      # interactive shell in Tofu container
 make nix-build      # build the Nix Docker image
 make nix-template   # build NixOS Proxmox VMA template image (outputs to nix/output/)
 make nix-deploy     # upload VMA to Proxmox, restore as VMID 9001, convert to template
-make nix-deploy-host HOST=<name> [TARGET=<ip>]  # build and deploy NixOS config to a remote host
+make nix-deploy-host HOST=<name> [TARGET=<ip>] [NOCONFIRM=1]  # build, copy, show closure diff + dry-activate, confirm, switch
 make nix-shell      # interactive shell in Nix container
 make nix-clean      # remove Docker resources and build output
 ```

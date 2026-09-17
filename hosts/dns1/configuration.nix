@@ -125,4 +125,12 @@
       };
     };
   };
+
+  # --- ntfy.sh notifications + nixpkgs staleness nag ---
+  # See modules/ntfy-notify.nix and modules/nixos-staleness.nix.
+  homelab.ntfy = {
+    enable = true;
+    topic = "https://ntfy.sh/cwage-homelab-backup";
+  };
+  homelab.staleness.enable = true;
 }

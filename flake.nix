@@ -50,6 +50,8 @@
           "${nixpkgs}/nixos/modules/virtualisation/proxmox-image.nix"
           ./modules/base.nix
           ./modules/openbao-agent.nix
+          ./modules/ntfy-notify.nix
+          ./modules/nixos-staleness.nix
           ./hosts/dns1/configuration.nix
         ];
       };
@@ -61,6 +63,7 @@
           ./modules/base.nix
           ./modules/openbao-agent.nix
           ./modules/ntfy-notify.nix
+          ./modules/nixos-staleness.nix
           ./hosts/openbao/configuration.nix
         ];
       };
@@ -74,6 +77,7 @@
           ./modules/ntfy-notify.nix
           ./modules/backups.nix
           ./modules/rhs-specials
+          ./modules/nixos-staleness.nix
           ./hosts/containers/configuration.nix
         ];
       };
@@ -89,6 +93,8 @@
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
           ./modules/base.nix
+          ./modules/ntfy-notify.nix
+          ./modules/nixos-staleness.nix
           ./hosts/xmpp1/disko.nix
           ./hosts/xmpp1/configuration.nix
         ];

@@ -406,6 +406,7 @@ in
     enable = true;
     topic = "https://ntfy.sh/cwage-homelab-backup";
   };
+  homelab.staleness.enable = true;
 
   # --- Redheaded Stranger specials -> ntfy ---
   # Toast ordering-menu stock watcher (hourly 07:00-21:00, via the
