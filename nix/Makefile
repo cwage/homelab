@@ -1,4 +1,4 @@
-.PHONY: help build shell template deploy deploy-host clean clean-all
+.PHONY: help build shell template check deploy deploy-host clean clean-all
 
 DC := docker compose --env-file ../.env
 VMA_FILE := vzdump-qemu-nixos-template.vma.zst
@@ -19,6 +19,7 @@ help:
 	@echo "  build     - Build the Nix builder Docker image"
 	@echo "  shell     - Open interactive shell in Nix container"
 	@echo "  template  - Build the NixOS Proxmox VMA template image"
+	@echo "  check [HOSTS=\"dns1 bao\"] - Build every host toplevel without deploying (the CI gate)"
 	@echo "  deploy    - Upload VMA to Proxmox, restore as VM, convert to template"
 	@echo "  deploy-host HOST=<name> [TARGET=<ip>] [NOCONFIRM=1] - Build, diff, dry-activate, confirm, switch"
 	@echo "  clean     - Remove Docker resources and build output (keeps Nix store cache)"
@@ -41,6 +42,9 @@ deploy: output/$(VMA_FILE)
 	ssh $(SSH_OPTS) $(SSH_USER)@$(PVE_HOST) sudo qm template $(TEMPLATE_VMID)
 	@echo ""
 	@echo "Template $(TEMPLATE_VMID) created on $(PVE_HOST)"
+
+check:
+	$(DC) run --rm --entrypoint bash -e HOSTS="$(HOSTS)" $(NIX_SVC) /workspace/nix/check.sh
 
 deploy-host:
 	@[ -n "$(HOST)" ] || (echo "ERROR: HOST required (e.g., HOST=nixos-test)" && exit 1)
