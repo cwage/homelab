@@ -84,8 +84,12 @@ in
     };
 
     systemd.services.renovate = {
-      # Run after the timer only when the token has been rendered; a missing
-      # credential otherwise fails the unit with a confusing message.
+      # The token is rendered by openbao-agent; order after it so a
+      # Persistent timer catching up at boot doesn't race the render. The
+      # path condition is the backstop for the agent being unable to log in
+      # at all, in which case a clear skip beats a confusing failure.
+      after = [ "openbao-agent.service" ];
+      wants = [ "openbao-agent.service" ];
       unitConfig = {
         ConditionPathExists = cfg.tokenFile;
         OnFailure = [ "notify-failure@%n.service" ];
