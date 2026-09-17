@@ -20,7 +20,7 @@ help:
 	@echo "  shell     - Open interactive shell in Nix container"
 	@echo "  template  - Build the NixOS Proxmox VMA template image"
 	@echo "  deploy    - Upload VMA to Proxmox, restore as VM, convert to template"
-	@echo "  deploy-host HOST=<name> [TARGET=<ip>] - Build and deploy NixOS config to a remote host"
+	@echo "  deploy-host HOST=<name> [TARGET=<ip>] [NOCONFIRM=1] - Build, diff, dry-activate, confirm, switch"
 	@echo "  clean     - Remove Docker resources and build output (keeps Nix store cache)"
 	@echo "  clean-all - Remove everything including Nix store cache volume"
 
@@ -48,6 +48,7 @@ deploy-host:
 	$(DC) run --rm --entrypoint bash \
 		-v $(abspath $(SSH_KEY)):/root/.ssh/deploy:ro \
 		-e DEPLOY_TARGET=$(or $(TARGET),$(HOST)) \
+		-e CONFIRM=$(if $(NOCONFIRM),no,yes) \
 		$(NIX_SVC) /workspace/nix/deploy.sh $(HOST)
 
 output/$(VMA_FILE):
