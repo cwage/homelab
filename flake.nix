@@ -78,6 +78,7 @@
           ./modules/backups.nix
           ./modules/rhs-specials
           ./modules/nixos-staleness.nix
+          ./modules/renovate.nix
           ./hosts/containers/configuration.nix
         ];
       };

@@ -394,6 +394,16 @@ path "kv/data/infra/rhs-sms" {
   capabilities = ["read"]
 }
 EOF
+
+# Read access to the Renovate GitHub token (fine-grained PAT scoped to the
+# homelab repo — modules/renovate.nix). Attached to the containers host's
+# AppRole only, since that's the one host that runs Renovate:
+#   make openbao-approle-create-role NAME=containers2 IP=10.10.15.11 EXTRA_POLICIES=renovate
+bao policy write renovate - <<EOF
+path "kv/data/infra/renovate" {
+  capabilities = ["read"]
+}
+EOF
 ```
 
 ### Creating Workstation Tokens

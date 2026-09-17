@@ -1,31 +1,9 @@
+# Only OpenTofu providers/modules stay on Dependabot. flake.lock, container
+# images, and Actions pins are handled by self-hosted Renovate (renovate.json,
+# modules/renovate.nix) so they come from one tool with one dashboard.
 version: 2
 updates:
-  # OpenTofu provider updates
   - package-ecosystem: "terraform"
     directory: "/tofu"
-    schedule:
-      interval: "weekly"
-
-  # Development/build Dockerfiles
-  # Note: Dependabot's docker ecosystem only works with Dockerfile files,
-  # not docker-compose.yml. Directories with only compose files are excluded.
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-
-  - package-ecosystem: "docker"
-    directory: "/tofu"
-    schedule:
-      interval: "monthly"
-
-  - package-ecosystem: "docker"
-    directory: "/ansible"
-    schedule:
-      interval: "monthly"
-
-  # Nix flake input updates
-  - package-ecosystem: "nix"
-    directory: "/"
     schedule:
       interval: "weekly"

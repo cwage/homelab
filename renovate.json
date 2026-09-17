@@ -1,0 +1,47 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "America/Chicago",
+  "schedule": ["before 8am on monday"],
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Renovate dependency dashboard",
+  "labels": ["dependencies"],
+  "separateMajorMinor": true,
+  "separateMultipleMajor": true,
+  "prHourlyLimit": 0,
+  "enabledManagers": ["nix", "docker-compose", "github-actions", "dockerfile"],
+  "nix": {
+    "enabled": true
+  },
+  "docker-compose": {
+    "managerFilePatterns": [
+      "/^hosts/containers/stacks/docker-compose\\.yml$/",
+      "/^lego/docker-compose\\.yml$/"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "One weekly PR for every flake input; CI builds all four hosts against it",
+      "matchManagers": ["nix"],
+      "groupName": "flake.lock",
+      "commitMessageTopic": "flake.lock"
+    },
+    {
+      "description": "Minor/patch image bumps grouped per weekly run; majors stay separate",
+      "matchManagers": ["docker-compose", "dockerfile"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "container images"
+    },
+    {
+      "description": "Image tags without semver (e.g. 'latest', 'stable') can't be compared; leave them alone",
+      "matchManagers": ["docker-compose", "dockerfile"],
+      "matchCurrentValue": "/^(latest|stable)$/",
+      "enabled": false
+    },
+    {
+      "description": "Actions pins grouped; low stakes",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    }
+  ]
+}
