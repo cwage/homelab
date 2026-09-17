@@ -29,4 +29,8 @@ resource "routeros_system_identity" "switch1" {
 # routeros_interface_bridge_port   — per-port PVIDs
 # routeros_interface_bridge_vlan   — the VLAN table / isolation
 # Management IP itself is set statically on the switch (10.10.15.7), not here,
-# to avoid locking ourselves out on apply.
+# to avoid locking ourselves out on apply. Same for its default route
+# (0.0.0.0/0 via 10.10.15.1): the switch answers LAN hosts fine without one,
+# but replies to VPN clients (10.10.16.0/24) go nowhere, so plan/apply from
+# a WireGuard workstation times out on the REST call. Set on-device:
+#   /ip route add dst-address=0.0.0.0/0 gateway=10.10.15.1
