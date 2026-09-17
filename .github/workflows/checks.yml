@@ -1,0 +1,52 @@
+# Pre-merge checks that can run without reaching the LAN. Everything here
+# calls the same Make targets used locally, so a green run here and a green
+# run on the workstation mean the same thing. Anything that needs Proxmox,
+# OpenBao, or a real host (plans, dry-runs, deploys) stays local on purpose.
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      nix: ${{ steps.filter.outputs.nix }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            nix:
+              - 'flake.nix'
+              - 'flake.lock'
+              - 'hosts/**'
+              - 'modules/**'
+              - 'nix/**'
+              - 'Makefile'
+              - 'secrets/**'
+              - '.github/workflows/checks.yml'
+
+  trufflehog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: make trufflehog
+
+  nix-build:
+    needs: changes
+    if: needs.changes.outputs.nix == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # The nix compose file loads ../.env; the example is enough here since
+      # the build touches nothing that needs a token.
+      - run: cp .env.example .env
+      - run: make nix-check
