@@ -283,6 +283,15 @@ in
         destination = "/etc/secrets/rhs-sms/to";
       };
 
+      # --- Renovate (modules/renovate.nix) ---
+      # Fine-grained GitHub PAT scoped to the homelab repo. Read access
+      # comes from the renovate policy attached to this host's AppRole.
+      renovate-token = {
+        path = "kv/data/infra/renovate";
+        field = "token";
+        destination = "/etc/secrets/renovate/token";
+      };
+
       # --- Stack secrets ---
       # /opt/stacks is 0755 deploy:users (declared above); render each file
       # with explicit owner/group + manageDestinationDir = false so the
@@ -407,6 +416,9 @@ in
     topic = "https://ntfy.sh/cwage-homelab-backup";
   };
   homelab.staleness.enable = true;
+
+  # --- Renovate: weekly dependency PRs against the homelab repo ---
+  homelab.renovate.enable = true;
 
   # --- Redheaded Stranger specials -> ntfy ---
   # Toast ordering-menu stock watcher (hourly 07:00-21:00, via the
