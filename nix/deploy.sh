@@ -38,7 +38,7 @@ fi
 
 echo ""
 echo "=== Package changes (current -> new) ==="
-remote nix store diff-closures /run/current-system "${SYSTEM_PATH}" || true
+remote nix store diff-closures /run/current-system "${SYSTEM_PATH}"
 
 echo ""
 echo "=== Activation dry run (units that would restart/reload/start/stop) ==="
