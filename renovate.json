@@ -10,6 +10,16 @@
   "separateMultipleMajor": true,
   "prHourlyLimit": 0,
   "enabledManagers": ["nix", "docker-compose", "github-actions", "dockerfile"],
+  "lockFileMaintenance": {
+    "description": "Only flake.lock has a lockfile here: runs `nix flake update`, one PR with every input at its ref head",
+    "enabled": true,
+    "schedule": ["before 8am on monday"],
+    "commitMessageAction": "Refresh",
+    "commitMessageTopic": "flake.lock",
+    "prBodyNotes": [
+      "Every flake input moved to the head of its ref. CI builds all four hosts; deploy each with `make nix-deploy-host HOST=<host>` to reset its staleness clock."
+    ]
+  },
   "nix": {
     "enabled": true
   },
@@ -21,7 +31,7 @@
   },
   "packageRules": [
     {
-      "description": "One weekly PR for every flake input; CI builds all four hosts against it",
+      "description": "Tag-tracked flake inputs (none today) grouped with the lock refresh",
       "matchManagers": ["nix"],
       "groupName": "flake.lock",
       "commitMessageTopic": "flake.lock"
