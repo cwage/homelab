@@ -24,6 +24,8 @@ that cannot reach it.
 2. **Provision**: OpenTofu clones from template 9001 to create a VM (cloud-init sets IP, hostname, SSH key).
 3. **Deploy**: `make nix-deploy-host HOST=<name> TARGET=<ip>` builds the host-specific NixOS config in Docker, copies store paths to the target via `nix copy`, and activates remotely over SSH.
 
+Ongoing updates after a host exists (weekly lock refresh, deploy prompts, rollback, Renovate) are in [docs/nixos-updates.md](nixos-updates.md).
+
 The target VM must have `nix.settings.trusted-users = [ "root" "deploy" ]` (baked into the template via `modules/base.nix`) so the builder can push unsigned store paths.
 
 ### Secrets via OpenBao AppRole
