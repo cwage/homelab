@@ -19,7 +19,7 @@ jobs:
     outputs:
       nix: ${{ steps.filter.outputs.nix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -36,7 +36,7 @@ jobs:
   trufflehog:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: make trufflehog
 
   nix-build:
@@ -44,7 +44,7 @@ jobs:
     if: needs.changes.outputs.nix == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # The nix compose file loads ../.env; the example is enough here since
       # the build touches nothing that needs a token.
       - run: cp .env.example .env
