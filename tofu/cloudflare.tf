@@ -1,7 +1,15 @@
 # Cloudflare DNS and Tunnel management
 # Credentials are fetched from OpenBao at kv/infra/cloudflare/tofu
 
-# Fetch Cloudflare credentials from OpenBao
+# Fetch Cloudflare credentials from OpenBao. Two reads of the same secret on
+# purpose: the ephemeral one feeds the provider api_token and is never
+# written to state; the data source stays for account_id, which lands on
+# ordinary resource attributes that can't take ephemeral values.
+ephemeral "vault_kv_secret_v2" "cloudflare_tofu" {
+  mount = "kv"
+  name  = "infra/cloudflare/tofu"
+}
+
 data "vault_kv_secret_v2" "cloudflare_tofu" {
   mount = "kv"
   name  = "infra/cloudflare/tofu"

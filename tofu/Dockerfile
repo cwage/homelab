@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install OpenTofu
 # Version pinned for reproducibility - update as needed
-ENV TOFU_VERSION=1.6.2
+ENV TOFU_VERSION=1.12.6
 
 RUN wget -O /tmp/tofu.deb \
     "https://github.com/opentofu/opentofu/releases/download/v${TOFU_VERSION}/tofu_${TOFU_VERSION}_amd64.deb" && \

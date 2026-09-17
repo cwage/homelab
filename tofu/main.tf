@@ -37,7 +37,7 @@ provider "vault" {
 }
 
 provider "cloudflare" {
-  api_token = data.vault_kv_secret_v2.cloudflare_tofu.data["api_token"]
+  api_token = ephemeral.vault_kv_secret_v2.cloudflare_tofu.data["api_token"]
 }
 
 provider "proxmox" {
@@ -50,15 +50,15 @@ provider "proxmox" {
   }
 }
 
-# Linode API — token from OpenBao (data source in linode.tf)
+# Linode API — token from OpenBao (ephemeral read in linode.tf)
 provider "linode" {
-  token = data.vault_kv_secret_v2.linode.data["api_token"]
+  token = ephemeral.vault_kv_secret_v2.linode.data["api_token"]
 }
 
-# switch1 (MikroTik CRS310) REST API — creds from OpenBao (data source in switch.tf)
+# switch1 (MikroTik CRS310) REST API — creds from OpenBao (ephemeral read in switch.tf)
 provider "routeros" {
   hosturl  = "https://${var.switch_mgmt_ip}"
-  username = data.vault_kv_secret_v2.switch1.data["username"]
-  password = data.vault_kv_secret_v2.switch1.data["password"]
+  username = ephemeral.vault_kv_secret_v2.switch1.data["username"]
+  password = ephemeral.vault_kv_secret_v2.switch1.data["password"]
   insecure = true # self-signed cert on the switch mgmt interface
 }
