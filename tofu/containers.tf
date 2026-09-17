@@ -32,7 +32,7 @@ resource "proxmox_virtual_environment_vm" "containers" {
   # Seagate 12TB USB backup drive passthrough
   # Uses USB mapping (like GPU PCI mapping) so non-root API tokens can manage it
   usb {
-    mapping = proxmox_virtual_environment_hardware_mapping_usb.seagate_backup.name
+    mapping = proxmox_hardware_mapping_usb.seagate_backup.name
     usb3    = true
   }
 

@@ -4,7 +4,7 @@
 
 # Seagate 12TB USB backup drive
 # Allows non-root API tokens to attach the device to VMs
-resource "proxmox_virtual_environment_hardware_mapping_usb" "seagate_backup" {
+resource "proxmox_hardware_mapping_usb" "seagate_backup" {
   name    = "usb-seagate-backup"
   comment = "Seagate 12TB USB backup drive"
 
@@ -14,4 +14,11 @@ resource "proxmox_virtual_environment_hardware_mapping_usb" "seagate_backup" {
       node = var.pm_node_name
     },
   ]
+}
+
+# bpg/proxmox renamed the resource (the old name goes away at their 1.0).
+# Cross-type move; the provider carries the state across.
+moved {
+  from = proxmox_virtual_environment_hardware_mapping_usb.seagate_backup
+  to   = proxmox_hardware_mapping_usb.seagate_backup
 }

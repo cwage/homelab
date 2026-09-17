@@ -28,6 +28,16 @@
 # Do NOT add felix/gaming1 resource blocks without importing first — a plain apply
 # would try to create duplicates.
 
+# Two reads of the same secret on purpose. The ephemeral one feeds the
+# provider token and never touches state. The data source stays for
+# root_pass: linode_instance has no write-only variant of it, and only
+# ephemeral-safe destinations (provider config, write-only attrs) can take
+# an ephemeral value.
+ephemeral "vault_kv_secret_v2" "linode" {
+  mount = "kv"
+  name  = "infra/linode"
+}
+
 data "vault_kv_secret_v2" "linode" {
   mount = "kv"
   name  = "infra/linode"

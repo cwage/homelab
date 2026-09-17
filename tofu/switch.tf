@@ -13,7 +13,9 @@
 #
 # The routeros provider block lives in main.tf; var.switch_mgmt_ip in variables.tf.
 
-data "vault_kv_secret_v2" "switch1" {
+# Ephemeral: read at plan/apply time for the provider block only, never
+# written to state.
+ephemeral "vault_kv_secret_v2" "switch1" {
   mount = "kv"
   name  = "infra/switch1"
 }
