@@ -3,7 +3,7 @@ SHELL := $(shell command -v bash)
 DC := docker compose --env-file ../.env
 TRUFFLEHOG_ARGS ?= filesystem /work --fail --no-update --exclude-paths /work/.trufflehog-exclude.txt
 
-.PHONY: help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover openbao-test gaming gaming-check gaming-configs gaming-archive all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
+.PHONY: help init build galaxy check version ping access_check proxmox proxmox-check firewall firewall-check felix felix-check nas nas-check nas-discover openbao-test gaming gaming-check gaming-configs gaming-archive all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t- /' | sed 's/^/make /'
@@ -24,6 +24,9 @@ build: ## Build the Ansible Docker image
 
 galaxy: ## Install Ansible collections into collections/
 	$(DC) run --rm ansible ansible-galaxy collection install -r requirements.yml -p collections
+
+check: ## Check pinned collections and playbook syntax without credentials or host access (CI)
+	docker compose --env-file /dev/null -f docker-compose.check.yml run --build --rm check
 
 version: ## Show Ansible version inside container
 	$(DC) run --rm ansible ansible --version

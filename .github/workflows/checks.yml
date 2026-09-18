@@ -18,12 +18,18 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       nix: ${{ steps.filter.outputs.nix }}
+      ansible: ${{ steps.filter.outputs.ansible }}
     steps:
       - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
+            ansible:
+              - 'ansible/**'
+              - 'renovate.json'
+              - 'Makefile'
+              - '.github/workflows/checks.yml'
             nix:
               - 'flake.nix'
               - 'flake.lock'
@@ -51,3 +57,11 @@ jobs:
       # the build touches nothing that needs a token.
       - run: cp .env.example .env
       - run: make nix-check
+
+  ansible-check:
+    needs: changes
+    if: needs.changes.outputs.ansible == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: make ansible-check

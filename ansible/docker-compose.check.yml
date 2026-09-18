@@ -1,0 +1,24 @@
+# Separate from the deploy service: no .env, credentials, or writable repo mounts.
+services:
+  check:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /work
+    volumes:
+      - ./ansible.cfg:/work/ansible.cfg:ro
+      - ./requirements.yml:/work/requirements.yml:ro
+      - ./check.sh:/work/check.sh:ro
+      - ./playbooks:/work/playbooks:ro
+      - ./roles:/work/roles:ro
+      - ./inventories/hosts.yml:/work/inventories/hosts.yml:ro
+    environment:
+      ANSIBLE_CONFIG: /work/ansible.cfg
+      ANSIBLE_HOME: /tmp/ansible
+      ANSIBLE_LOCAL_TEMP: /tmp/ansible/tmp
+      ANSIBLE_COLLECTIONS_PATH: /tmp/collections
+      ANSIBLE_COLLECTIONS_SCAN_SYS_PATH: "false"
+      ANSIBLE_COLLECTIONS_ON_ANSIBLE_VERSION_MISMATCH: error
+      HOME: /tmp
+    entrypoint: ["bash", "/work/check.sh"]
