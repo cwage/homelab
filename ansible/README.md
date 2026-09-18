@@ -38,6 +38,35 @@ make sh                       # interactive shell in Ansible container
 
 Run `make help` for the full list.
 
+## Validation and collection updates
+
+From the repo root:
+
+```bash
+make ansible-check             # same collection and syntax checks as CI
+make ansible-galaxy            # install reviewed pins into the local collections/ directory
+```
+
+`requirements.yml` pins every collection to an exact version. Renovate opens
+weekly update PRs, grouping minor/patch updates and keeping majors separate.
+The initial pins target the Dockerfile's Ansible Core 2.16: `ansible.posix`
+2.1.0, `community.general` 11.4.9, and `community.hashi_vault` 6.2.1. General
+12.x and hashi_vault 7.x require Core 2.17 or newer, so upgrading those also
+requires reviewing the Ansible runtime.
+
+`make ansible-check` builds from the same Dockerfile as the deploy container,
+installs collections fresh inside a disposable container, checks the modules,
+lookup, and become plugins used here, and syntax-checks all playbooks.
+Unsupported `requires_ansible` metadata fails the check. It bypasses the
+OpenBao preflight and needs no `.env`, SSH key, or running homelab. The check
+mounts only the playbooks, roles, host inventory, and validation configuration;
+collections and temporary files stay inside the container.
+
+This validates collection installation, plugin loading, and static playbook
+syntax. It does not execute tasks, evaluate secret lookups, or exercise dynamic
+task includes and host-specific variables. Relevant host dry runs and manual
+review are still needed before deploying an update.
+
 ## Inventory
 
 Hosts and groups defined in `inventories/hosts.yml`. Group variables in `inventories/group_vars/`, host-specific overrides in `inventories/host_vars/`.

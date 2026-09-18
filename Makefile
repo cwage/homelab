@@ -7,7 +7,7 @@ BACKUP_DIR := backup
 NIX_DIR := nix
 OPENBAO_DIR := openbao
 
-ANSIBLE_TARGETS := help init build galaxy version ping access_check proxmox proxmox-check firewall firewall-check openbao-test felix felix-check gaming gaming-check gaming-configs gaming-archive all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
+ANSIBLE_TARGETS := help init build galaxy check version ping access_check proxmox proxmox-check firewall firewall-check openbao-test felix felix-check gaming gaming-check gaming-configs gaming-archive all check-all run adhoc sh build-tinyfugue trufflehog refresh-known-hosts
 TOFU_TARGETS := help build shell init plan apply destroy fmt validate trufflehog clean
 LEGO_TARGETS := help run renew renew-staging renew-force list show fetch-creds store retrieve
 BACKUP_TARGETS := help build shell clean local local-dry b2 b2-dry
@@ -17,7 +17,7 @@ TRUFFLEHOG_ARGS ?= filesystem /repo --fail --no-update --exclude-paths /repo/.tr
 
 .DEFAULT_GOAL := help
 
-.PHONY: help ansible tofu lego backup nix openbao ansible-% tofu-% lego-% backup-% nix-% openbao-% trufflehog install-precommit-hook bao-preflight bao-token-status
+.PHONY: help ansible tofu lego backup nix openbao ansible-check ansible-% tofu-% lego-% backup-% nix-% openbao-% trufflehog install-precommit-hook bao-preflight bao-token-status
 
 help:
 	@echo "homelab monorepo"
@@ -33,7 +33,7 @@ help:
 	@echo "  make trufflehog         (root) scan entire repo for secrets"
 	@echo "  make bao-token-status   (root) show workstation OpenBao token TTL/expiry"
 	@echo ""
-	@echo "ansible-*/tofu-* targets preflight the OpenBao token first (fail fast"
+	@echo "ansible-*/tofu-* targets (except ansible-check) preflight the OpenBao token first (fail fast"
 	@echo "instead of a cryptic 403 mid-run). Bypass with SKIP_BAO_PREFLIGHT=1."
 	@echo ""
 	@echo "Shortcuts:"
@@ -58,6 +58,10 @@ endif
 
 bao-token-status:
 	@./bin/bao-token-status
+
+# The CI check needs neither workstation credentials nor a running OpenBao.
+ansible-check:
+	@$(MAKE) -C $(ANSIBLE_DIR) check
 
 ansible-%: bao-preflight
 	@$(MAKE) -C $(ANSIBLE_DIR) $*

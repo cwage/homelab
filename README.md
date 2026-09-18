@@ -105,7 +105,7 @@ make tofu-<target>        # runs target in tofu/Makefile
 
 Use `make ansible-help` and `make tofu-help` to list all available targets.
 
-All `ansible-*` and `tofu-*` targets run an OpenBao token preflight first
+All `ansible-*` (except `ansible-check`) and `tofu-*` targets run an OpenBao token preflight first
 (`bin/bao-token-status --check-min-ttl=1d`), so an expired/expiring `BAO_TOKEN`
 fails immediately with a clear message instead of a cryptic 403 partway through
 a playbook or provider call. Bypass with `SKIP_BAO_PREFLIGHT=1` (e.g. for
@@ -116,6 +116,7 @@ targets that don't touch OpenBao, or when bao itself is down).
 ### Ansible (host configuration)
 
 ```bash
+make ansible-check            # fresh collection install + compatibility/playbook syntax checks (CI; no credentials)
 make ansible-ping             # test connectivity to all hosts
 make ansible-firewall         # apply firewall config (pf, DHCP, Unbound, WireGuard)
 make ansible-firewall-check   # dry-run firewall
@@ -127,6 +128,11 @@ make ansible-all              # apply all standard playbooks (use sparingly)
 make ansible-check-all        # dry-run all standard playbooks
 make ansible-run PLAY=playbooks/firewall.yml LIMIT=fw1 OPTS="--check --diff"
 ```
+
+Ansible collections are pinned in `ansible/requirements.yml` and updated through
+Renovate PRs. Run `make ansible-check` before merging, then `make ansible-galaxy`
+to install the merged pins locally. See [Ansible validation](ansible/README.md#validation-and-collection-updates)
+for the checks and their limits.
 
 ### OpenTofu (VM provisioning)
 
