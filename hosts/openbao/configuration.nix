@@ -165,6 +165,7 @@ in
     topic = "https://ntfy.sh/cwage-homelab-backup";
   };
   homelab.staleness.enable = true;
+  homelab.wildcardCertificate.monitor.enable = true;
 
   systemd.services.openbao-backup = {
     description = "OpenBao Raft snapshot backup";

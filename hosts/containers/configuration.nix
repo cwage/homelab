@@ -420,6 +420,9 @@ in
   # --- Renovate: weekly dependency PRs against the homelab repo ---
   homelab.renovate.enable = true;
 
+  # Renew with the agent's token; Bao independently probes the live listeners.
+  homelab.wildcardCertificate.renewal.enable = true;
+
   # --- Redheaded Stranger specials -> ntfy ---
   # Toast ordering-menu stock watcher (hourly 07:00-21:00, via the
   # flaresolverr compose service) pushing to ntfy.sh/rhs-specials; failures

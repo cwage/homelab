@@ -64,6 +64,7 @@
           ./modules/openbao-agent.nix
           ./modules/ntfy-notify.nix
           ./modules/nixos-staleness.nix
+          ./modules/wildcard-certificate
           ./hosts/openbao/configuration.nix
         ];
       };
@@ -79,6 +80,7 @@
           ./modules/rhs-specials
           ./modules/nixos-staleness.nix
           ./modules/renovate.nix
+          ./modules/wildcard-certificate
           ./hosts/containers/configuration.nix
         ];
       };
@@ -106,5 +108,17 @@
           self.nixosConfigurations.proxmox-template.config.system.build.VMA;
         default = self.packages.${system}.proxmox-template;
       };
+
+      checks.${system}.wildcard-certificate =
+        let pkgs = nixpkgs.legacyPackages.${system};
+        in pkgs.runCommand "wildcard-certificate-check" {
+          nativeBuildInputs = [ pkgs.python3 pkgs.ruff pkgs.mypy ];
+        } ''
+          cp ${./modules/wildcard-certificate}/*.py .
+          ruff check *.py
+          mypy --check-untyped-defs certificate.py test_certificate.py
+          python -m unittest -v test_certificate
+          touch $out
+        '';
     };
 }

@@ -4,6 +4,12 @@ Dockerized [lego](https://go-acme.github.io/lego/) ACME client for obtaining and
 
 For the end-to-end certificate lifecycle (renewal → OpenBao storage → deployment to Traefik/Proxmox), see [docs/tls-certificates.md](../docs/tls-certificates.md).
 
+Production renewal is scheduled by `modules/wildcard-certificate` on
+`containers`, reusing this Compose image pin with its own persistent ACME
+state. The commands here remain workstation tools for manual recovery and
+staging tests. The policy setup and deployment steps are in the lifecycle
+runbook; editing this repo alone does not activate the production timers.
+
 ## Prerequisites
 
 - Root `.env` configured with `BAO_ADDR` and `BAO_TOKEN`
