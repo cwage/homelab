@@ -406,6 +406,15 @@ path "kv/data/infra/renovate" {
 EOF
 ```
 
+### Wildcard Certificate Renewal
+
+The containers AppRole also uses the `wildcard-renewal` policy for automated
+LAN TLS renewal. Its source is `openbao/policies/wildcard-renewal.hcl`: read
+the Cloudflare credential, read/update the one LAN certificate secret.
+See [TLS setup and deployment](tls-certificates.md#one-time-setup-and-deployment)
+for policy attachment and agent reauthentication. Do not grant certificate
+write access to the shared `nixos-host` policy.
+
 ### Creating Workstation Tokens
 
 Once the policies exist, see the

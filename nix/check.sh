@@ -12,6 +12,12 @@ set -euo pipefail
 HOSTS="${HOSTS:-dns1 bao containers xmpp1}"
 status=0
 
+echo "::group::wildcard certificate offline checks"
+if ! nix build "/workspace#checks.x86_64-linux.wildcard-certificate" --no-link; then
+    status=1
+fi
+echo "::endgroup::"
+
 for host in ${HOSTS}; do
     echo "::group::nix build ${host}"
     if out=$(nix build "/workspace#nixosConfigurations.${host}.config.system.build.toplevel" \

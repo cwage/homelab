@@ -30,6 +30,7 @@ jobs:
               - 'hosts/**'
               - 'modules/**'
               - 'nix/**'
+              - 'lego/docker-compose.yml'
               - 'Makefile'
               - 'secrets/**'
               - '.github/workflows/checks.yml'

@@ -20,16 +20,130 @@ via DNS-01 challenge     kv/infra/certs/          openbao-agent → /var/lib/ope
                                                    (proxmox_certs role)
 ```
 
-bao and containers both run `homelab.openbao-agent` (see `modules/openbao-agent.nix`) with templates that deliver the cert/key from KV to disk and fire a post-rotation hook. Agent polls KV roughly every 1-2 minutes, so a `make lego-store` is automatically picked up without manual deploy. bao talks to its own openbao via loopback with TLS verification disabled — that breaks the chicken-and-egg where bao's listener TLS depends on the very cert the agent is responsible for refreshing.
+bao and containers both run `homelab.openbao-agent` (see `modules/openbao-agent.nix`) with templates that deliver the cert/key from KV to disk and fire a post-rotation hook. Agent normally refreshes static KV secrets within roughly five minutes, but propagation must be verified (see the July outage below). bao talks to its own openbao via loopback with TLS verification disabled — that breaks the chicken-and-egg where bao's listener TLS depends on the very cert the agent is responsible for refreshing.
 
 ## Certificate lifecycle
 
-### Renewal (manual)
+### Automated renewal and live checks
+
+`modules/wildcard-certificate` implements #243 and #281. After the policy
+setup and deployment below:
+
+- **containers: `wildcard-renewal.timer`**, daily at 04:00 Central, with up
+  to 15 minutes of jitter. Reads the current certificate from OpenBao; within
+  30 days of expiry, runs the pinned `lego/docker-compose.yml` image with
+  Cloudflare DNS-01 and stores the result back in the same KV secret.
+- **bao: `wildcard-monitor.timer`**, daily at 06:00 Central, independently
+  probes `bao.lan.quietlife.net:8200` and `chat.lan.quietlife.net:443`. It
+  verifies TLS trust, hostname and validity, without any OpenBao credentials.
+  Renewal and monitoring run on different hosts, so a containers outage
+  doesn't also remove the monitor.
+
+Renewal verifies the new certificate's chain, names and matching private key
+before storing it. The KV write uses check-and-set against the version read
+at startup, preventing a concurrent manual renewal from being overwritten.
+It then waits up to 15 minutes for **both live listeners to serve that exact
+certificate**, comparing SHA-256 leaf fingerprints. This also runs on days
+when issuance isn't needed, so a previous propagation failure is retried.
+
+Successful runs produce journal entries only. Renewal/storage/propagation
+failures use the existing `notify-failure@` ntfy hook. The independent
+monitor sends one alert per endpoint/certificate at each 21/7/2-day tier
+(default/high/urgent). Failed TLS probes produce an urgent alert, deduplicated
+until the condition changes or recovers. Undelivered alerts remain pending
+for the next run; notification errors also fail the unit. Healthy probes
+clear the deduplication state without a recovery notification.
+
+This does not detect failure of the entire LAN or the monitor host itself.
+It does catch a stopped renewal timer through the live certificate's age.
+No new automatic remediation restarts are performed: existing agent hooks
+still reload OpenBao/restart Traefik when their files rotate, and stalled
+propagation raises an alert for operator investigation. Proxmox's web UI
+certificate remains a manual `make ansible-proxmox` deployment.
+
+#### One-time setup and deployment
+
+Run these deliberately when ready to enable production renewal. Nothing
+here needs a new static token or copied ACME private key.
+
+1. Using an existing privileged Bao session, install the narrowly scoped
+   policy from the repo root:
+
+   ```bash
+   bao policy write wildcard-renewal openbao/policies/wildcard-renewal.hcl
+   ```
+
+   It grants read access to `kv/data/infra/cloudflare` and read/update access
+   to only `kv/data/infra/certs/lan.quietlife.net`. The certificate secret
+   must already exist. The existing Cloudflare token must retain both
+   `Zone:DNS:Edit` and `Zone:Zone:Read` for the relevant zone.
+
+2. Attach it to the **containers** host's existing AppRole (still named
+   `containers2`). This helper preserves its other attached policies:
+
+   ```bash
+   make openbao-approle-create-role NAME=containers2 IP=10.10.15.11 EXTRA_POLICIES=wildcard-renewal
+   ```
+
+3. Deploy the reviewed host configurations:
+
+   ```bash
+   make nix-deploy-host HOST=containers
+   make nix-deploy-host HOST=bao
+   ```
+
+   The containers deployment changes the agent config, restarting the agent
+   so it authenticates with the newly attached policy and renders the
+   Cloudflare token. The timers are enabled by deployment and may catch up
+   immediately. Inspect the normal deployment preview before confirming.
+
+4. Check timers/journals on the respective hosts. To deliberately exercise
+   the jobs immediately (renewal can issue a real certificate and trigger
+   the existing consumer rotation hooks):
+
+   ```bash
+   ssh -i ansible/keys/deploy deploy@containers sudo -n systemctl start wildcard-renewal.service
+   ssh -i ansible/keys/deploy deploy@containers journalctl -u wildcard-renewal -n 20 --no-pager
+   ssh -i ansible/keys/deploy deploy@bao sudo -n systemctl start wildcard-monitor.service
+   ssh -i ansible/keys/deploy deploy@bao journalctl -u wildcard-monitor -n 20 --no-pager
+   ```
+
+Renewal state lives in `/var/lib/wildcard-renewal/certs` on containers,
+root-only: the lego account, certificate and key survive runs/reboots. On
+first use, the job waits until the certificate already in Bao is due before
+registering an account and issuing a certificate. Do not copy workstation
+staging files into this directory. After a successful issuance but failed
+upload, the next run reuses the local certificate instead of reissuing.
+Losing this local state doesn't invalidate the certificate in Bao; a new
+account/certificate can be obtained when renewal is next due.
+
+Cloudflare's token is rendered to a root-only file and mounted read-only
+into lego. The Bao token comes from the agent's runtime sink on each API
+request. Neither secret is in the Nix store, command arguments or Docker
+environment values. Subprocess output and HTTP response bodies are withheld
+from journals, since failure journals are forwarded to ntfy.
+
+Missing credentials fail and alert rather than silently skipping. A 403
+after setup suggests the agent hasn't authenticated with the new policy.
+On a propagation alert, use the live-listener checks below and investigate
+the corresponding agent/reload hook; don't assume another issuance will
+help. A timed-out lego invocation can leave a container named
+`wildcard-renewal-lego`; its fixed name prevents overlapping retries. Inspect
+it before manually stopping/removing it and retrying the job.
+
+#### Local validation
+
+`make nix-check` runs Ruff, mypy and offline certificate-job tests before
+building all four host configurations. Tests cover issuance failure,
+publication retries, CAS writes, stale/unreachable listeners, alert escalation
+and deduplication. They never issue certificates or contact production.
+The first real renewal and observed propagation remain deployment checks.
+
+### Manual renewal / recovery
 
 Certs are renewed using the Dockerized lego CLI in the `lego/` directory:
 
 ```bash
-cd lego
 make lego-renew          # get production cert (use sparingly — rate limits)
 make lego-renew-staging  # get staging cert for testing
 make lego-store          # push local certs to OpenBao

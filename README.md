@@ -34,7 +34,7 @@ OpenTofu creates the VMs, Ansible configures everything that runs on them. NixOS
 
 ### Secrets and TLS
 
-Secrets (API tokens, deploy keys, TLS certs) are stored in OpenBao and fetched at deploy time via the `community.hashi_vault` Ansible collection. A wildcard Let's Encrypt cert for `*.lan.quietlife.net` is managed via the `lego/` tooling and deployed to Traefik and Proxmox. See [docs/openbao.md](docs/openbao.md), [docs/openbao-secrets.md](docs/openbao-secrets.md), and [docs/tls-certificates.md](docs/tls-certificates.md).
+Secrets (API tokens, deploy keys, TLS certs) are stored in OpenBao and fetched via Ansible or openbao-agent. The LAN wildcard certificate has daily lego renewal on `containers`, with verification that Bao and Traefik serve the renewed certificate, plus independent expiry alerts on `bao`. Enablement requires the policy and deployment steps in [docs/tls-certificates.md](docs/tls-certificates.md); Proxmox certificate deployment remains manual. See also [docs/openbao.md](docs/openbao.md) and [docs/openbao-secrets.md](docs/openbao-secrets.md).
 
 ### Backups
 
@@ -141,7 +141,7 @@ make tofu-shell      # interactive shell in Tofu container
 ```bash
 make nix-build      # build the Nix Docker image
 make nix-template   # build NixOS Proxmox VMA template image (outputs to nix/output/)
-make nix-check      # build every host toplevel without deploying (what CI runs)
+make nix-check      # certificate-job lint/type checks/tests + all host builds (what CI runs)
 make nix-deploy     # upload VMA to Proxmox, restore as VMID 9001, convert to template
 make nix-deploy-host HOST=<name> [TARGET=<ip>] [NOCONFIRM=1]  # build, copy, show closure diff + dry-activate, confirm, switch
 make nix-shell      # interactive shell in Nix container
