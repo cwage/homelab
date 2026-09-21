@@ -1,4 +1,4 @@
-FROM openbao/openbao:2.4.4
+FROM openbao/openbao:2.6.2
 
 # Add commonly-needed CLI tools for ad-hoc secret/cert work. The upstream
 # openbao image is alpine + bao only — no jq for JSON output, no openssl
