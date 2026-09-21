@@ -1,0 +1,32 @@
+---
+- name: Check controller template rendering without host access
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../roles/openbsd_firewall/defaults/main.yml
+  vars:
+    # Synthetic inputs; never load host/group vars or secret lookups here.
+    ansible_managed: Ansible managed
+    wireguard_interface: wg0
+    wireguard_port: 51820
+    wireguard_vpn_network: 192.0.2.0/24
+    wireguard_lan_network: 198.51.100.0/24
+  tasks:
+    - name: Render the templates embedded in firewall raw commands
+      ansible.builtin.assert:
+        that:
+          - rendered is string
+          - item.expected in rendered
+        quiet: true
+      vars:
+        rendered: "{{ lookup('ansible.builtin.template', playbook_dir ~ '/../roles/openbsd_firewall/templates/' ~ item.template) }}"
+      loop:
+        - template: pf.conf.j2
+          expected: pass in on $wg_if from $wg_net to 198.51.100.0/24
+        - template: dhcpd.conf.j2
+          expected: range 10.10.15.100 10.10.15.254;
+        - template: unbound.conf.j2
+          expected: "access-control: 10.10.15.0/24 allow"
+      loop_control:
+        label: "{{ item.template }}"

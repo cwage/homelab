@@ -123,7 +123,7 @@ Users role supports both `ssh_pubkey` (literal string) and `ssh_pubkey_file` (pa
 
 ### Docker Configuration
 
-- Main container: `ansible` service runs ansible-core 2.16.x in Debian stable-slim
+- Main container: `ansible` service runs Ansible Core pinned in `requirements.txt` in Debian trixie-slim
 - Network mode: `host` (containers reach LAN hosts directly)
 - User mapping: Container runs as your UID/GID (set in .env via `make init`)
 - Volumes: Repo mounted at `/work` with SELinux `:Z` label

@@ -1,0 +1,3 @@
+# Controller runtime, tracked by Renovate; collections live in requirements.yml.
+ansible-core==2.21.4
+hvac==2.4.0
