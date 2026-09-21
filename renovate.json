@@ -9,7 +9,7 @@
   "separateMajorMinor": true,
   "separateMultipleMajor": true,
   "prHourlyLimit": 0,
-  "enabledManagers": ["nix", "docker-compose", "github-actions", "dockerfile", "ansible-galaxy"],
+  "enabledManagers": ["nix", "docker-compose", "github-actions", "dockerfile", "ansible-galaxy", "pip_requirements"],
   "lockFileMaintenance": {
     "description": "Only flake.lock has a lockfile here: runs `nix flake update`, one PR with every input at its ref head",
     "enabled": true,
@@ -53,6 +53,12 @@
       "matchManagers": ["ansible-galaxy"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "ansible collections"
+    },
+    {
+      "description": "Core X.Y releases need a porting review; keep patch updates separate",
+      "matchManagers": ["pip_requirements"],
+      "matchPackageNames": ["ansible-core"],
+      "separateMinorPatch": true
     },
     {
       "description": "Actions pins grouped; low stakes",

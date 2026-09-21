@@ -12,6 +12,7 @@ services:
       - ./check.sh:/work/check.sh:ro
       - ./playbooks:/work/playbooks:ro
       - ./roles:/work/roles:ro
+      - ./tests:/work/tests:ro
       - ./inventories/hosts.yml:/work/inventories/hosts.yml:ro
     environment:
       ANSIBLE_CONFIG: /work/ansible.cfg

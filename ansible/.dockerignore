@@ -1,4 +1,5 @@
-# These images install tooling only; no repo contents belong in the build context.
+# These images install tooling only; include only build inputs.
 *
 !Dockerfile
 !Dockerfile.tinyfugue-builder
+!requirements.txt

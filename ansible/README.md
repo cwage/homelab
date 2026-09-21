@@ -49,23 +49,45 @@ make ansible-galaxy            # install reviewed pins into the local collection
 
 `requirements.yml` pins every collection to an exact version. Renovate opens
 weekly update PRs, grouping minor/patch updates and keeping majors separate.
-The initial pins target the Dockerfile's Ansible Core 2.16: `ansible.posix`
-2.1.0, `community.general` 11.4.9, and `community.hashi_vault` 6.2.1. General
-12.x and hashi_vault 7.x require Core 2.17 or newer, so upgrading those also
-requires reviewing the Ansible runtime.
+
+`requirements.txt` separately pins the controller runtime (Ansible Core 2.21.4
+and `hvac`), also tracked by Renovate. The Dockerfile uses Debian trixie for
+Python 3.13. Core 2.21 supports controller Python 3.12–3.14 and target Python
+3.9–3.14; the firewall and NAS roles use raw SSH commands without remote Python.
+See the [Core support matrix](https://docs.ansible.com/projects/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix).
+
+Core's X.Y releases can introduce breaking changes even though Renovate calls
+them minor updates. Review the relevant
+[porting guides](https://docs.ansible.com/projects/ansible/latest/porting_guides/core_porting_guides.html),
+particularly the stricter conditionals and templating introduced in 2.19.
+Renovate keeps Core patch updates separate from X.Y upgrades.
+
+The collection pins remain separate: a runtime upgrade does not approve a
+collection upgrade. General 12.x and hashi_vault 7.x require Core 2.17+, while
+General 13.x requires Core 2.18+. After merging a runtime prerequisite, request
+a rebase on the collection PRs so CI tests them against the new runtime.
 
 `make ansible-check` builds from the same Dockerfile as the deploy container,
 installs collections fresh inside a disposable container, checks the modules,
 lookup, and become plugins used here, and syntax-checks all playbooks.
+It also renders firewall templates on localhost with fixture data to exercise
+the controller's template lookup behavior without contacting a host.
 Unsupported `requires_ansible` metadata fails the check. It bypasses the
 OpenBao preflight and needs no `.env`, SSH key, or running homelab. The check
-mounts only the playbooks, roles, host inventory, and validation configuration;
+mounts only the playbooks, roles, tests, host inventory, and validation configuration;
 collections and temporary files stay inside the container.
 
-This validates collection installation, plugin loading, and static playbook
-syntax. It does not execute tasks, evaluate secret lookups, or exercise dynamic
-task includes and host-specific variables. Relevant host dry runs and manual
-review are still needed before deploying an update.
+This validates collection installation, plugin loading, static playbook
+syntax, and the template fixtures. It does not execute host tasks, evaluate
+secret lookups, or exercise dynamic task includes and host-specific variables.
+Relevant host dry runs and manual review are still needed before deploying an update.
+
+After merging a runtime change and pulling it locally, rebuild the deploy
+image with `make ansible-build`, then install the reviewed collections with
+`make ansible-galaxy`. The disposable CI image is separate from the deploy
+image, so `make ansible-check` alone does not update the tooling used for host
+operations. These commands prepare local tooling; host playbooks remain a
+separate, manual step.
 
 ## Inventory
 

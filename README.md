@@ -131,7 +131,10 @@ make ansible-run PLAY=playbooks/firewall.yml LIMIT=fw1 OPTS="--check --diff"
 
 Ansible collections are pinned in `ansible/requirements.yml` and updated through
 Renovate PRs. Run `make ansible-check` before merging, then `make ansible-galaxy`
-to install the merged pins locally. See [Ansible validation](ansible/README.md#validation-and-collection-updates)
+to install the merged pins locally. The controller runtime is pinned separately
+in `ansible/requirements.txt` and also tracked by Renovate; after a runtime
+update, run `make ansible-build` before installing collections.
+See [Ansible validation](ansible/README.md#validation-and-collection-updates)
 for the checks and their limits.
 
 ### OpenTofu (VM provisioning)
