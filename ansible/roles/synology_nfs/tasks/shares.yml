@@ -57,7 +57,7 @@
     # Remove old Ansible block if it exists (including any preceding blank line)
     sed -i '/^$/N;/\n# BEGIN ANSIBLE MANAGED BLOCK/,/# END ANSIBLE MANAGED BLOCK/d' /etc/exports
 
-    # Also remove simple block match in case the blank line pattern didn't match
+    # Also remove simple block match in case the blank line pattern did not match
     sed -i '/# BEGIN ANSIBLE MANAGED BLOCK/,/# END ANSIBLE MANAGED BLOCK/d' /etc/exports
 
     # Append new block

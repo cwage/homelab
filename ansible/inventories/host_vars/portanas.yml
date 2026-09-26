@@ -8,6 +8,10 @@
 #   tb, usbshare1, Video
 
 # Proxmox-specific NFS shares
+# WARNING: do not run `make ansible-nas` until #120 is resolved. The role's
+# /etc/exports writer fights DSM (which regenerates that file) and produces
+# duplicate export entries; entries below are currently documentation of
+# intent, applied by hand. See docs/immich.md for the manual steps.
 nfs_shares:
   - name: pve-backups
     description: "Proxmox VE backup storage"
@@ -42,6 +46,17 @@ nfs_shares:
         squash: "no_root_squash"
         security: "sys"
         # VMs/containers create their own subdirs (vm/<hostname>/, container/<hostname>/)
+
+  - name: immich
+    description: "Immich upload location: thumbnails/previews, encoded video, DB dumps (issue #333)"
+    path: /volume1/immich
+    nfs_enabled: true
+    nfs_rules:
+      - host: "10.10.15.0/24"
+        privilege: "rw"
+        squash: "no_root_squash"
+        security: "sys"
+        # immich-server writes as uid 1000 (same as paperless); Postgres is NOT here.
 
 # Key users discovered:
 # - cwage (UID 1000, GID 100)

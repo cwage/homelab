@@ -57,6 +57,16 @@ in
     options = [ "rw" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
   };
 
+  # Immich upload location (thumbnails/previews, encoded video, DB dumps).
+  # The Immich Postgres data dir is a named docker volume on the VM disk —
+  # network shares are unsupported for it. The photo archive itself is the
+  # read-only /mnt/nas/Pictures mount below, indexed in place.
+  fileSystems."/mnt/nas/immich" = {
+    device = "10.10.15.4:/volume1/immich";
+    fsType = "nfs";
+    options = [ "rw" "_netdev" "hard" "nofail" "vers=3" "noatime" ];
+  };
+
   # Read-only NAS shares — backup sources only, never written from here.
   fileSystems."/mnt/nas/Pictures" = {
     device = "10.10.15.4:/volume1/Pictures";
@@ -482,6 +492,7 @@ in
         "Pictures"
         "Documents"
         "paperless"
+        "immich" # DB dumps under immich/library/backups; thumbs regenerable
         "Books"
         "bp"
         "caitstuff"

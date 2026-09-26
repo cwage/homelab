@@ -13,6 +13,8 @@ All self-hosted services run as Docker containers on the **containers** host (`1
 | **SABnzbd** | `linuxserver/sabnzbd` | `https://sabnzbd.lan.quietlife.net` | Usenet download client |
 | **Paperless-ngx** | `paperless-ngx/paperless-ngx` | `https://paperless.lan.quietlife.net` | Document management |
 | **Paperless Redis** | `redis` | — | Backend for Paperless-ngx |
+| **Immich** | `immich-app/immich-server` | `https://immich.lan.quietlife.net` | Photo archive search (CLIP + faces) over `/mnt/nas/Pictures`, see [docs/immich.md](immich.md) |
+| **Immich ML / Valkey / Postgres** | `immich-machine-learning`, `valkey`, `immich-app/postgres` | — | Backends for Immich |
 | **staticomment** | `ghcr.io/cwage/staticomment` | `https://staticomment.lan.quietlife.net` | Comment endpoint for `quietlife.net` |
 | **CryptPad** | `cryptpad/cryptpad` | `https://pad.quietlife.net` (public, via tunnel) | End-to-end encrypted collaborative markdown/docs |
 | **Calibre-Web** | `linuxserver/calibre-web` | `https://calibre.quietlife.net` (public, via tunnel) | Web reader for the Calibre library on the NAS |
@@ -62,6 +64,8 @@ containers mounts NAS shares under `/mnt/nas/`:
 | `/mnt/nas/Media` | `portanas:/volume1/Media` | Jellyfin, Radarr, Sonarr, SABnzbd |
 | `/mnt/nas/paperless` | `portanas:/volume1/paperless` | Paperless-ngx |
 | `/mnt/nas/Books` | `portanas:/volume1/Books` | Calibre-Web (read-only) |
+| `/mnt/nas/immich` | `portanas:/volume1/immich` | Immich upload location (thumbnails, DB dumps) |
+| `/mnt/nas/Pictures` | `portanas:/volume1/Pictures` | Immich external library (read-only) |
 
 Additional NAS shares are mounted read-only for backup access. See the `fileSystems` block in `hosts/containers/configuration.nix` for the full list.
 
