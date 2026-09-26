@@ -415,6 +415,90 @@ services:
     networks:
       - proxy
 
+  # --- Immich (photo archive search; issue #333, docs/immich.md) ---
+  # Indexes /mnt/nas/Pictures IN PLACE via a read-only external library.
+  # Seeded from the workstation PoC (thumbnails + CLIP + faces already
+  # computed), so this host only ever processes new photos. ML runs on CPU:
+  # the SigLIP2 visual model does not fit the 1050 Ti's 4 GB and new-photo
+  # volume is tiny. Search uses the small text model and Postgres, so it is
+  # fast regardless.
+  #
+  # immich-server memory grows unboundedly during bulk jobs (thumbnails,
+  # faces) — measured 20+ GB on the PoC. mem_limit caps the blast radius;
+  # for any future bulk re-run, use the memory-guard approach in
+  # docs/immich.md rather than raising the cap.
+  immich-server:
+    image: ghcr.io/immich-app/immich-server:v3.2.2
+    container_name: immich-server
+    restart: unless-stopped
+    user: "1000:1000"
+    mem_limit: 6g
+    depends_on:
+      - immich-redis
+      - immich-db
+    environment:
+      - TZ=America/Chicago
+      - DB_HOSTNAME=immich-db
+      - DB_USERNAME=postgres
+      - DB_DATABASE_NAME=immich
+      - DB_PASSWORD=${IMMICH_DB_PASSWORD}
+      - REDIS_HOSTNAME=immich-redis
+      - IMMICH_MACHINE_LEARNING_URL=http://immich-ml:3003
+    volumes:
+      - /mnt/nas/immich/library:/data
+      - /mnt/nas/Pictures:/mnt/nas/Pictures:ro
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.immich.rule=Host(`immich.lan.quietlife.net`)"
+      - "traefik.http.routers.immich.entrypoints=websecure"
+      - "traefik.http.routers.immich.tls=true"
+      - "traefik.http.services.immich.loadbalancer.server.port=2283"
+    networks:
+      - proxy
+
+  immich-ml:
+    image: ghcr.io/immich-app/immich-machine-learning:v3.2.2
+    container_name: immich-ml
+    restart: unless-stopped
+    mem_limit: 6g
+    environment:
+      # Keep models resident: first search after an idle gap otherwise
+      # takes 10-30 s to reload the CLIP text model. Nothing else needs
+      # this RAM.
+      - MACHINE_LEARNING_MODEL_TTL=0
+    volumes:
+      - immich_model_cache:/cache
+    networks:
+      - proxy
+
+  immich-redis:
+    image: docker.io/valkey/valkey:9@sha256:70739f85ad2ee01a726a965584a0f94895f01b0c60b3cc8b0aeef11eaa6888cf
+    container_name: immich-redis
+    restart: unless-stopped
+    healthcheck:
+      test: redis-cli ping | grep -q PONG || exit 1
+    networks:
+      - proxy
+
+  immich-db:
+    # Immich-maintained Postgres image with the VectorChord extension. Data
+    # on a named volume (VM disk) — Immich does not support network shares.
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    container_name: immich-db
+    restart: unless-stopped
+    mem_limit: 3g
+    environment:
+      - POSTGRES_PASSWORD=${IMMICH_DB_PASSWORD}
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=immich
+      - POSTGRES_INITDB_ARGS=--data-checksums
+    volumes:
+      - immich_db:/var/lib/postgresql/data
+    shm_size: 128mb
+    networks:
+      - proxy
+
   # Web reader over the existing Calibre library on the NAS. The library is
   # mounted READ-ONLY on purpose: desktop Calibre is the only writer, and a
   # second writer against metadata.db is how the library gets corrupted.
@@ -465,6 +549,8 @@ volumes:
   slskd_config:
   beets_config:
   calibre_web_config:
+  immich_db:
+  immich_model_cache:
 
 networks:
   proxy:

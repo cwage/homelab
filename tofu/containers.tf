@@ -13,14 +13,14 @@ resource "proxmox_virtual_environment_vm" "containers" {
   }
 
   cpu {
-    cores = 4
+    cores = 8 # bumped from 4 for Immich (issue #333)
     type  = "host"
   }
 
   machine = "q35" # Required for PCIe passthrough (VFIO)
 
   memory {
-    dedicated = 8192
+    dedicated = 16384 # bumped from 8192 for Immich (issue #333)
   }
 
   disk {

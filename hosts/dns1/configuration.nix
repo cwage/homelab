@@ -72,6 +72,7 @@
           git             IN  CNAME   containers.lan.quietlife.net.
           slskd           IN  CNAME   containers.lan.quietlife.net.
           chat            IN  CNAME   containers.lan.quietlife.net.
+          immich          IN  CNAME   containers.lan.quietlife.net.
         '';
       };
 

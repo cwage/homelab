@@ -43,6 +43,17 @@ nfs_shares:
         security: "sys"
         # VMs/containers create their own subdirs (vm/<hostname>/, container/<hostname>/)
 
+  - name: immich
+    description: "Immich upload location: thumbnails/previews, encoded video, DB dumps (issue #333)"
+    path: /volume1/immich
+    nfs_enabled: true
+    nfs_rules:
+      - host: "10.10.15.0/24"
+        privilege: "rw"
+        squash: "no_root_squash"
+        security: "sys"
+        # immich-server writes as uid 1000 (same as paperless); Postgres is NOT here.
+
 # Key users discovered:
 # - cwage (UID 1000, GID 100)
 # - deploy (UID 1030, GID 100) - automation user
