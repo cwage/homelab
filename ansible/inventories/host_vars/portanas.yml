@@ -8,6 +8,10 @@
 #   tb, usbshare1, Video
 
 # Proxmox-specific NFS shares
+# WARNING: do not run `make ansible-nas` until #120 is resolved. The role's
+# /etc/exports writer fights DSM (which regenerates that file) and produces
+# duplicate export entries; entries below are currently documentation of
+# intent, applied by hand. See docs/immich.md for the manual steps.
 nfs_shares:
   - name: pve-backups
     description: "Proxmox VE backup storage"

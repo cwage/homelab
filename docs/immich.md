@@ -34,9 +34,19 @@ new env reaches the containers. A-Za-z0-9 only (Immich constraint).
 
 ### First deploy (seeded)
 
-1. `make nas-apply` (or the nas playbook) to create the `immich` share on portanas; `make tofu-plan` → read it → `make tofu-apply` for the VM bump (8 cores / 16 GB; expect *update in-place*, stop if it says replace). The VM needs a reboot for the new memory to take effect.
-2. `make nix-deploy-host HOST=dns1 TARGET=10.10.15.15` (CNAME), then `HOST=containers TARGET=10.10.15.11` (mount, compose, backups).
-3. From the workstation, `testing/immich-poc/export-seed.sh` dumps the PoC DB and rsyncs its library straight onto the share via the containers host (uses the repo deploy key + sudo rsync there). The dump lands in `/tmp/immich-seed.sql.gz` on `containers`. Before that, make sure `/mnt/nas/immich/library` exists and is owned by uid 1000 — if Docker creates it, it's root-owned and the server can't write.
+1. **NAS share, by hand** (the `synology_nfs` role's export writer is broken on DSM, see #120; `make ansible-nas` will duplicate exports). On portanas with sudo:
+   ```
+   sudo /usr/syno/sbin/synoshare --add immich "Immich upload location" /volume1/immich "" "" "" 1 0
+   sudo synoacltool -del /volume1/immich && sudo chmod 775 /volume1/immich && sudo chown 1000:100 /volume1/immich
+   ```
+   Then grant NFS access in DSM (Control Panel → Shared Folder → immich → NFS Permissions), matching the other shares. If you edit `/etc/exports` directly instead, DSM will drop the line on its next regeneration.
+   Then `make tofu-plan` → read it → `make tofu-apply` for the VM bump (8 cores / 16 GB; expect *update in-place*, stop if it says replace). Reboot the VM for the new memory to take effect.
+2. `make nix-deploy-host HOST=dns1 TARGET=10.10.15.15` (CNAME), then `HOST=containers TARGET=10.10.15.11` (mount, compose, backups). **A nix deploy does not start new compose services** (#337): on `containers`, create the upload dir as uid 1000 and bring the stack up by hand:
+   ```
+   sudo mkdir -p /mnt/nas/immich/library && sudo chown 1000:1000 /mnt/nas/immich/library
+   cd /opt/stacks && sudo docker compose up -d
+   ```
+3. From the workstation, `testing/immich-poc/export-seed.sh` dumps the PoC DB and rsyncs its library straight onto the share via the containers host (uses the repo deploy key + sudo rsync there). The dump lands in `/tmp/immich-seed.sql.gz` on `containers`.
 4. On `containers`, stop the app, keep the database, restore (Immich's documented restore; the `sed` fixes `search_path` for the vector extension), start the app:
    ```
    cd /opt/stacks && docker compose stop immich-server immich-ml
