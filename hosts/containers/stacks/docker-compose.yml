@@ -128,7 +128,7 @@ services:
       - proxy
 
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:2.20.6
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.2.1
     container_name: paperless
     restart: unless-stopped
     depends_on:
