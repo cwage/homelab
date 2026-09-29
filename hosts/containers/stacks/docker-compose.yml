@@ -288,7 +288,7 @@ services:
   # (modules/rhs-specials) to fetch the Toast ordering page. Host-local
   # consumers only — bound to 127.0.0.1, no traefik exposure.
   flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
     container_name: flaresolverr
     restart: unless-stopped
     environment:
