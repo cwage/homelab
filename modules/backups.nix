@@ -35,8 +35,20 @@ let
     )
   '';
 
+  # Sets PATH_FLAGS to the extra --exclude flags for the share in $path.
+  # Patterns are relative to that share's root, like rcloneExcludes.
+  pathExcludesCase = pathExcludes: ''
+    PATH_FLAGS=()
+    case "$path" in
+      ${lib.concatStringsSep "\n      " (lib.mapAttrsToList (p: excludes:
+        "${lib.escapeShellArg p}) PATH_FLAGS=(${lib.concatMapStringsSep " "
+          (e: "--exclude ${lib.escapeShellArg e}") excludes}) ;;")
+        pathExcludes)}
+    esac
+  '';
+
   # Common script preamble for the b2/local rclone sweeps.
-  rcloneSweepScript = { target, dest, paths, preflightExtra ? "", credsBlock ? "", extraFlags ? [] }: ''
+  rcloneSweepScript = { target, dest, paths, preflightExtra ? "", credsBlock ? "", extraFlags ? [], pathExcludes ? {} }: ''
     set -euo pipefail
 
     START_TIME=$(date +%s)
@@ -74,8 +86,9 @@ let
         continue
       fi
 
+      ${pathExcludesCase pathExcludes}
       echo "Syncing: $src -> $dest_path"
-      if rclone sync "$src" "$dest_path" "''${RCLONE_FLAGS[@]}"; then
+      if rclone sync "$src" "$dest_path" "''${RCLONE_FLAGS[@]}" "''${PATH_FLAGS[@]}"; then
         echo "OK: $path"
         SUCCEEDED+=("$path")
       else
@@ -192,6 +205,18 @@ in
         type = lib.types.str;
         default = "/mnt/nasbak";
         description = "Local mount point that receives the unencrypted copy.";
+      };
+
+      pathExcludes = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+        default = {};
+        example = { Media = [ "/Movies/**" ]; };
+        description = ''
+          Extra rclone exclude patterns for individual local paths, keyed by
+          path. Patterns are relative to that path's root. rclone sync never
+          deletes excluded files from the destination, so data that's already
+          backed up has to be removed from the drive by hand.
+        '';
       };
     };
 
@@ -521,10 +546,11 @@ in
               continue
             fi
 
+            ${pathExcludesCase cfg.local.pathExcludes}
             # Listing failure is a failure, not a skip — only an empty
             # (successful) listing means there's nothing to sample.
             if ! rclone lsf --recursive --files-only --min-age "$MIN_AGE" \
-                "''${RCLONE_FLAGS[@]}" "$src" > "$WORKDIR/listing"; then
+                "''${RCLONE_FLAGS[@]}" "''${PATH_FLAGS[@]}" "$src" > "$WORKDIR/listing"; then
               echo "FAILED: $path (source listing failed)"
               FAILED+=("$path (source listing failed)")
               continue
@@ -640,6 +666,7 @@ in
           target = "LOCAL";
           dest = cfg.local.destination;
           paths = cfg.local.paths;
+          pathExcludes = cfg.local.pathExcludes;
           preflightExtra = ''
             if ! mountpoint -q "$DEST"; then
               echo "ERROR: $DEST is not mounted — refusing to write to root fs"
