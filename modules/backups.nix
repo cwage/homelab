@@ -10,7 +10,14 @@ let
     "*.db-wal"
     "*.db-shm"
     "**/logs/**"
-    "Downloads/incomplete/**"
+    # Media/Downloads is transient (SAB/slskd staging, beets' leftover source
+    # copies) — everything worth keeping gets imported into the library.
+    # Anchored so it only matches at the root of each synced share.
+    "/Downloads/**"
+    # Immich writes its nightly pg_dumpall as *.sql.gz.tmp and renames it on
+    # completion; syncing mid-write fails the whole immich path. The finished
+    # .sql.gz is picked up by the next sweep.
+    "*.sql.gz.tmp"
   ];
 
   rcloneFlagsArray = ''
