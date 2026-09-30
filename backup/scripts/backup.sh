@@ -241,7 +241,8 @@ RCLONE_FLAGS=(
     --exclude "*.db-wal"
     --exclude "*.db-shm"
     --exclude "**/logs/**"
-    --exclude "Downloads/incomplete/**"
+    --exclude "/Downloads/**"
+    --exclude "*.sql.gz.tmp"
 )
 
 if [[ -n "$LOG_FILE" ]]; then
