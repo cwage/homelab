@@ -500,7 +500,6 @@ in
         "backup"
         "Misc"
         "Media"
-        "tb"
         "homelab-backups"
         "containers-configs"
         "tofu-state"
