@@ -504,6 +504,13 @@ in
         "containers-configs"
         "tofu-state"
       ];
+      # Movies/TV (~5.8T) outgrew the 12T USB drive. They're still in the B2
+      # sweep and re-acquirable via Radarr/Sonarr; the USB keeps the
+      # irreplaceable stuff.
+      pathExcludes.Media = [
+        "/Movies/**"
+        "/Television/**"
+      ];
     };
 
     configs = {
