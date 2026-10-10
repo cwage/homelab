@@ -7,4 +7,4 @@ collections:
   - name: community.general
     version: "11.4.9"
   - name: community.hashi_vault
-    version: "6.2.1"
+    version: "7.1.0"
