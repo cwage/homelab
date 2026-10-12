@@ -1,4 +1,4 @@
-FROM nixos/nix:2.34.1
+FROM nixos/nix:2.35.2
 
 # filter-syscalls: seccomp filtering breaks Nix builds inside Docker
 RUN mkdir -p /etc/nix && \
