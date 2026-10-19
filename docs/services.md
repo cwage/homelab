@@ -18,6 +18,7 @@ All self-hosted services run as Docker containers on the **containers** host (`1
 | **staticomment** | `ghcr.io/cwage/staticomment` | `https://staticomment.lan.quietlife.net` | Comment endpoint for `quietlife.net` |
 | **CryptPad** | `cryptpad/cryptpad` | `https://pad.quietlife.net` (public, via tunnel) | End-to-end encrypted collaborative markdown/docs |
 | **Calibre-Web** | `linuxserver/calibre-web` | `https://calibre.quietlife.net` (public, via tunnel) | Web reader for the Calibre library on the NAS |
+| **seestar_alp** | built from `smart-underworld/seestar_alp` v3.3.0 | `http://containers.lan.quietlife.net:5432` (plain HTTP, host network, no Traefik) | Seestar smart-telescope control and scheduling, see [docs/seestar.md](seestar.md) |
 | **Cloudflared** | `cloudflare/cloudflared` | — | Cloudflare Tunnel for external access (Jellyfin, CryptPad, Calibre-Web) |
 
 ## External access
