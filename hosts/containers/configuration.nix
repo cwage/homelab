@@ -232,6 +232,12 @@ in
     "z /opt/stacks/certs            0700 deploy users -"
     "d /opt/stacks/staticomment-ssh 0700 deploy users -"
     "z /opt/stacks/staticomment-ssh 0700 deploy users -"
+    "d /opt/stacks/seestar          0755 deploy users -"
+    "z /opt/stacks/seestar          0755 deploy users -"
+    # seestar_alp rewrites its config from the Settings page, so it is seeded
+    # once (C = copy only if absent) rather than symlinked from the store.
+    "C /opt/stacks/seestar/config.toml 0644 deploy users - ${./stacks/seestar/config.toml}"
+    "z /opt/stacks/seestar/config.toml 0644 deploy users -"
     "L+ /opt/stacks/docker-compose.yml - - - - ${./stacks/docker-compose.yml}"
     "L+ /opt/stacks/traefik-tls.yml    - - - - ${./stacks/traefik-tls.yml}"
     "L+ /opt/stacks/converse-webroot   - - - - ${converseWebroot}"
@@ -348,6 +354,23 @@ in
         permissions = "0600";
         manageDestinationDir = false;
         command = "${pkgs.docker}/bin/docker restart staticomment";
+      };
+
+      # seestar_alp firmware-auth key (docs/seestar.md): the RSA private key
+      # the Seestar firmware (7.18+) expects clients to sign its challenge
+      # with. Stored as the PEM body in `content`. /opt/stacks/seestar is
+      # 0755 deploy:users (declared above) and bind-mounted into the
+      # container, which runs as uid 1001 = deploy. The app caches the key
+      # after its first successful load, so rotation needs the restart.
+      stacks-seestar-interop-pem = {
+        path = "kv/data/stacks/containers/seestar-interop-pem";
+        field = "content";
+        destination = "/opt/stacks/seestar/seestar_client_key.pem";
+        owner = "deploy";
+        group = "users";
+        permissions = "0400";
+        manageDestinationDir = false;
+        command = "${pkgs.docker}/bin/docker restart seestar";
       };
 
       # --- Music stack (gluetun + slskd) secrets ---

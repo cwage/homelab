@@ -1,0 +1,80 @@
+# seestar_alp config — SEED ONLY. systemd-tmpfiles copies this to
+# /opt/stacks/seestar/config.toml on the containers host if (and only if) no
+# file exists there yet; after that the app owns it and rewrites it from its
+# Settings page. Edit live settings in the UI, not here. See docs/seestar.md.
+title = "Seestar ALP"
+
+[network]
+# 0.0.0.0: the container runs with host networking, so this is what makes the
+# Alpaca (5555) and imaging (7556) servers reachable from the LAN. 127.0.0.1
+# would bind them to loopback only.
+ip_address = '0.0.0.0'
+port = 5555
+imgport = 7556     # Imaging API port
+stport = 8090      # stellarium port
+sthost = 'localhost'
+rtsp_udp = true    # fine under host networking; set false if ever moved to a bridge network
+
+[webui_settings]
+uiport = 5432
+uitheme = "dark"
+confirm = true     # Commands page confirmation dialog
+
+# CSS overrides
+text_color = ""
+font_family = ""
+font_url = ""
+link_color = ""
+accent_color = ""
+
+[server]
+location = 'Home'
+verbose_driver_exceptions = true
+
+[device]
+can_reverse = true
+step_size = 1.0
+steps_per_sec = 6
+verify_injection = true
+
+[seestar_initialization]
+save_good_frames = true
+save_all_frames = false
+# Telescope location. 0/0 = guess from public IP. Set the real values in the
+# UI on the host; they are deliberately not in this (public) repo.
+lat = 0
+long = 0
+gain = 80
+exposure_length_preview_ms = 500
+exposure_length_stack_ms = 10000
+dither_enabled = true
+dither_length_pixel = 50
+dither_frequency = 10
+activate_LP_filter = false
+dew_heater_power = 0
+guest_mode_init = true
+battery_low_limit = 3
+dec_pos_index = 3
+is_frame_calibrated = true
+
+# RSA key for the firmware 7.18+ challenge-response auth. Rendered into
+# /opt/stacks/seestar/ by openbao-agent from kv/stacks/containers/seestar-interop-pem
+# and bind-mounted at /etc/seestar inside the container. Without it the scope
+# silently ignores every command.
+interop_pem = "/etc/seestar/seestar_client_key.pem"
+
+[logging]
+log_level = 'INFO'
+log_prefix = ''
+log_to_stdout = true   # so `docker logs seestar` is useful
+max_size_mb = 5
+num_keep_logs = 10
+log_events_in_info = true
+
+[[seestars]]
+name = "Seestar"
+# mDNS (seestar.local) does not resolve from the container: no Avahi on the
+# host, no mDNS resolver in the image. Use the LAN name (DHCP reservation +
+# NSD record) or the IP.
+ip_address = "seestar.lan.quietlife.net"
+device_num = 1

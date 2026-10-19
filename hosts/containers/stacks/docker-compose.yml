@@ -531,6 +531,37 @@ services:
     networks:
       - proxy
 
+  # seestar_alp: web controller / scheduler for the Seestar smart telescope
+  # (github.com/smart-underworld/seestar_alp). Upstream publishes no image,
+  # so compose builds it from the upstream repo pinned to a release tag —
+  # bump the tag in the context URL to upgrade (renovate does not track it).
+  # Host networking on purpose: the live view is RTSP over UDP from the
+  # scope (return packets don't survive docker NAT) and Alpaca discovery
+  # (UDP 32227) lets clients like NINA find it. No Traefik route: the UI
+  # (5432) hands the browser absolute http://<host>:7556 URLs for the image
+  # and event streams, which an https front door would break as mixed
+  # content. LAN-only, no auth of its own — never put this on the tunnel.
+  # UI: http://containers.lan.quietlife.net:5432 — see docs/seestar.md.
+  seestar:
+    build:
+      context: https://github.com/smart-underworld/seestar_alp.git#v3.3.0
+      dockerfile: docker/Dockerfile
+      args:
+        SEESTAR_UID: "1001" # = deploy on the host, owner of /opt/stacks/seestar
+        SEESTAR_GID: "100"  # = users
+    image: seestar_alp:v3.3.0
+    container_name: seestar
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TZ=America/Chicago
+      # Config lives outside the code tree so the whole dir can be bind-
+      # mounted: the Settings page saves via tmp file + rename, which fails
+      # on a single-file bind mount. The interop PEM sits in the same dir.
+      - SEESTAR_ALP_CONFIG_PATH=/etc/seestar/config.toml
+    volumes:
+      - /opt/stacks/seestar:/etc/seestar
+
 volumes:
   jellyfin_config:
   jellyfin_cache:
