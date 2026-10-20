@@ -37,6 +37,17 @@
     }
   ];
 
+  # TEMPORARY: distrust the roots behind the compromised eMudhra intermediates
+  # (https://emudhra.we-have-a-problem.com/, 2026-10-20). Browsers block them
+  # via CRLSets/OneCRL, but curl/nix/renovate/lego/prosody/etc. verify against
+  # the system bundle, which has no revocation checking. Remove once the nixpkgs
+  # pin carries an nss-cacert >= 3.131.1 (the version that drops them upstream);
+  # see docs/nixos-updates.md "Distrusting a CA".
+  security.pki.caCertificateBlacklist = [
+    "Comodo AAA Services root"
+    "emSign ECC Root CA - G3"
+  ];
+
   # SSH server
   services.openssh = {
     enable = true;

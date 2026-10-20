@@ -105,6 +105,29 @@ leave a host on a branch that never merges; the next master deploy shows a
 confusing diff. For a routine lock refresh, merge first: CI already built the
 exact closure you're about to deploy.
 
+## Distrusting a CA
+
+When a CA is compromised faster than nixpkgs can ship a new `nss-cacert`,
+`modules/base.nix` carries a `security.pki.caCertificateBlacklist` so every
+host drops the affected roots from the system bundle on the next deploy. This
+only covers things that read the system bundle (curl, nix, renovate, lego,
+prosody, Python/Go tools). Browsers already use CRLSets/OneCRL, and Docker
+images carry their own bundles and are fixed only when upstream rebuilds them.
+
+To check whether a host still trusts a chain, use the test hostnames the
+advisory publishes, e.g. for the October 2026 eMudhra incident:
+
+```bash
+ssh -i ansible/keys/deploy deploy@containers 'curl -sI https://dv-g3b-emudhra.we-have-a-problem.com/ >/dev/null && echo TRUSTED || echo blocked'
+```
+
+**Backing it out.** The blacklist is tech debt. Once a lock refresh brings in
+an `nss-cacert` that has already removed the roots (3.131.1 or later for the
+eMudhra incident; check with `ls /nix/store | grep nss-cacert` after a deploy),
+delete the blacklist from `modules/base.nix` in the same PR as the lock bump.
+Leaving a blacklist entry for a root that no longer exists is harmless but
+hides whether the upstream fix actually landed.
+
 ## Rolling back
 
 Every switch keeps the previous generation in the system profile and the
