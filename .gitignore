@@ -10,3 +10,6 @@ result-*
 
 # Backup logs
 backup/logs/
+
+# Python bytecode
+__pycache__/
