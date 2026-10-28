@@ -33,6 +33,16 @@ sudo -iu <profile>
 ./<script> start
 ```
 
+**Valheim world modifiers**
+
+Set `world_modifiers` on a Valheim profile to pass LGSM `worldmodifiers` start parameters:
+```yaml
+world_modifiers:
+  - "-modifier combat hard"
+  - "-modifier raids none"
+```
+Valid values are listed in `~/lgsm/config-default/config-lgsm/vhserver/_default.cfg` on the host. Modifiers are stored in the world's `.fwl`, so removing them does not reset the world; use `["-preset normal"]` once to revert.
+
 ## Day-to-day operations
 
 Ansible never auto-restarts game servers. After config changes, manually restart:

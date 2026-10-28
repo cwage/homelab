@@ -73,23 +73,24 @@ gaming_profiles:
   # Password fetched from OpenBao at kv/services/gaming/vh-buttopia
   - name: vh-buttopia
     game: valheim
-    active: false
+    active: true
     ports:
       game: 2456
     server_name: "Buttopia"
     world_name: "buttopia"
     public: 0
     # crossplay: true  # Enable for Xbox/PC crossplay
+    # World modifiers: LGSM worldmodifiers start params (-preset, -modifier, -setkey)
+    world_modifiers:
+      - "-modifier combat hard"
+      - "-modifier raids none"
     # BepInEx mods (clients must install matching mods)
-    mods:
-      - name: Seasonality
-        author: RustyMods
-        version: "3.7.6"
+    mods: []
   # Valheim server profile - Woopfriends
   # Password fetched from OpenBao at kv/services/gaming/vh-woopfriends
   - name: vh-woopfriends
     game: valheim
-    active: true
+    active: false
     ports:
       game: 2456
     server_name: "Woopfriends"
