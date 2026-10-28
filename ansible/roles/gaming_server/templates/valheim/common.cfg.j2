@@ -28,6 +28,12 @@ public="{{ profile.public | default(0) }}"
 crossplay="true"
 {% endif %}
 
+{% if profile.world_modifiers is defined %}
+# World modifiers (stored in the world .fwl; removing these does NOT reset them,
+# set world_modifiers: ["-preset normal"] once to revert)
+worldmodifiers="{{ profile.world_modifiers | join(' ') }}"
+{% endif %}
+
 {% if profile.savedir is defined %}
 # Custom save directory
 savedir="{{ profile.savedir }}"
