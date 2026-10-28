@@ -54,7 +54,20 @@ LAN clients → fw1 (DNS) → containers:443 → Traefik → service containers
 
 - **DNS**: Each service has a CNAME record in the NSD zone pointing to `containers.lan.quietlife.net`
 - **TLS**: Traefik serves a wildcard cert for `*.lan.quietlife.net` (see [docs/tls-certificates.md](tls-certificates.md))
-- **Storage**: Jellyfin, Radarr, Sonarr, and SABnzbd share `/mnt/nas/Media` (NFS from NAS). Paperless uses `/mnt/nas/paperless`.
+- **Storage**: Jellyfin, Radarr, Sonarr, and SABnzbd share `/mnt/nas/Media` (NFS from NAS). Paperless uses `/mnt/nas/paperless`. Jellyfin transcode segments go to a dedicated disk (see below).
+
+## Local disks
+
+| Disk | Size | Mount | Purpose |
+|------|------|-------|---------|
+| `virtio0` | 96G | `/` | OS, `/nix/store`, Docker images and named volumes |
+| `virtio1` (serial `transcodes`) | 32G | `/mnt/transcodes` | Jellyfin transcode scratch, bind-mounted over `/config/cache/transcodes` |
+
+Both are defined in `tofu/containers.tf` with `discard = "on"`, so the guest's weekly `fstrim` returns freed blocks to the `local-lvm` thin pool on pve1. The transcode disk is kept apart so a runaway 4K transcode (~80 Mbps of segments) can only fill that disk. On the root disk it filled `/` twice in October 2026, which crash-looped Jellyfin (it refuses to start with <2GiB free) and broke `immich-db`. Jellyfin's **Throttle transcodes** and **Delete segments** settings (Dashboard → Playback → Transcoding) keep a session to roughly 15 minutes of segments. Without throttling, ffmpeg runs ahead of playback and writes most of the film.
+
+Old NixOS generations are pruned by the weekly `nix-gc` timer (`modules/base.nix`, keeps 14 days).
+
+Growing a disk: raise `size` in `tofu/containers.tf` (grow only), `make tofu-plan`, and **confirm the plan updates `containers` in place**, then apply. The root partition and filesystem are grown at boot by `growpart`/`autoResize`. To grow them without a reboot: `sudo nix shell nixpkgs#cloud-utils -c growpart /dev/vda 1 && sudo resize2fs /dev/vda1`.
 
 ## NFS mounts
 

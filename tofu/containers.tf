@@ -23,11 +23,31 @@ resource "proxmox_virtual_environment_vm" "containers" {
     dedicated = 16384 # bumped from 8192 for Immich (issue #333)
   }
 
+  # Disk changes here must stay in-place (grow only; never shrink or change
+  # interface). discard = "on" lets the guest's fstrim return freed blocks to
+  # the local-lvm thin pool; the option only takes effect after a Proxmox-side
+  # stop/start of the VM.
   disk {
     datastore_id = var.pm_vm_datastore_id
     interface    = "virtio0"
-    size         = 64
+    size         = 96 # grown from 64 after / filled (2026-10-28)
+    discard      = "on"
   }
+
+  # Jellyfin transcode scratch disk, mounted at /mnt/transcodes by
+  # hosts/containers/configuration.nix via /dev/disk/by-id/virtio-transcodes.
+  disk {
+    datastore_id = var.pm_vm_datastore_id
+    interface    = "virtio1"
+    size         = 32
+    serial       = "transcodes"
+    discard      = "on"
+    backup       = false
+  }
+
+  # Don't let `tofu apply` reboot the VM to apply pending disk options; the
+  # reboot is scheduled by hand.
+  reboot_after_update = false
 
   # Seagate 12TB USB backup drive passthrough
   # Uses USB mapping (like GPU PCI mapping) so non-root API tokens can manage it

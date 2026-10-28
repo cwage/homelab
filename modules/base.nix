@@ -79,6 +79,16 @@
   # Enable nix flakes on the resulting host
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Prune old system generations and garbage-collect the store weekly. Without
+  # this every deploy's closure stays rooted forever: containers' /nix/store
+  # hit 12G (5.6G live) and helped fill its root disk on 2026-10-28.
+  # Generations from the last 14 days are kept for rollback.
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
+
   # Allow deploy user to push store paths without signatures (for remote deploys)
   nix.settings.trusted-users = [ "root" "deploy" ];
 
