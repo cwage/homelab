@@ -45,6 +45,9 @@ services:
     volumes:
       - jellyfin_config:/config
       - jellyfin_cache:/cache
+      # Dedicated transcode disk (see fileSystems."/mnt/transcodes" in
+      # configuration.nix); Docker mounts it over the jellyfin_config volume.
+      - /mnt/transcodes:/config/cache/transcodes
       - /mnt/nas/Media:/media
     labels:
       - "traefik.enable=true"

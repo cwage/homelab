@@ -143,6 +143,25 @@ in
     options = [ "rw" "nofail" "noatime" ];
   };
 
+  # Dedicated virtual disk for Jellyfin transcode segments (tofu/containers.tf,
+  # virtio1, serial "transcodes"), bind-mounted over /config/cache/transcodes
+  # in the jellyfin container. A 4K remux transcode writes ~80 Mbps of
+  # segments; on the root disk that filled / twice in October 2026, which
+  # crash-looped Jellyfin and broke immich-db. Here a runaway session can only
+  # fill this disk. autoFormat runs mkfs.ext4 only when the device has no
+  # filesystem. nofail so a missing disk doesn't drop the host into emergency
+  # mode (Jellyfin would then write to the empty mountpoint on /).
+  # nofail mounts aren't ordered before local-fs.target, so x-systemd.before
+  # makes dockerd wait for the mount at boot; otherwise the jellyfin bind
+  # mount could capture the bare directory on /. Set on the mount rather than
+  # docker.service so deploying it doesn't restart Docker.
+  fileSystems."/mnt/transcodes" = {
+    device = "/dev/disk/by-id/virtio-transcodes";
+    fsType = "ext4";
+    autoFormat = true;
+    options = [ "rw" "nofail" "noatime" "discard" "x-systemd.before=docker.service" ];
+  };
+
   # --- NVIDIA GPU (GTX 1050 Ti, passed through from Proxmox) ---
   # Headless docker host: no X, but the videoDrivers entry is the canonical
   # NixOS way to load the proprietary kernel module.
@@ -232,6 +251,9 @@ in
     "z /opt/stacks/certs            0700 deploy users -"
     "d /opt/stacks/staticomment-ssh 0700 deploy users -"
     "z /opt/stacks/staticomment-ssh 0700 deploy users -"
+    # Jellyfin (linuxserver PUID/PGID 1000) writes transcode segments here.
+    "d /mnt/transcodes              0755 1000 1000 -"
+    "z /mnt/transcodes              0755 1000 1000 -"
     "d /opt/stacks/seestar          0755 deploy users -"
     "z /opt/stacks/seestar          0755 deploy users -"
     # seestar_alp rewrites its config from the Settings page, so it is seeded
