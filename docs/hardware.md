@@ -18,9 +18,9 @@ graph TD
         portanas["portanas (.4)<br/><small>Synology DS1817+ · NFS storage</small>"]
 
         subgraph pve1["pve1 (.18) — Proxmox VE · Ryzen 7 1800X · 64 GB"]
-            dns1["dns1 (.10)<br/><small>NSD authoritative DNS</small>"]
-            openbao["openbao (.11)<br/><small>Secrets management</small>"]
-            containers["containers (.12)<br/><small>Docker host · GPU passthrough</small><br/><small>Traefik · Jellyfin · arr stack · Paperless</small>"]
+            dns1["dns1 (.15)<br/><small>NSD authoritative DNS</small>"]
+            bao["bao (.16)<br/><small>OpenBao secrets management</small>"]
+            containers["containers (.11)<br/><small>Docker host · GPU passthrough</small><br/><small>Traefik · Jellyfin · arr stack · Paperless · Immich</small>"]
         end
     end
 
@@ -83,13 +83,13 @@ Synology DS1817+. Provides NFS exports for media, documents, and backups.
 
 ## Virtual machines
 
-All VMs run on pve1 and are provisioned via OpenTofu (see `tofu/`). Base image is Debian stable cloud image.
+All VMs run on pve1 and are provisioned via OpenTofu (see `tofu/`). All three are NixOS, cloned from the `nixos-template` VM and configured from `hosts/{dns1,openbao,containers}/configuration.nix`.
 
 | VM | ID | vCPU | RAM | Disk | Purpose |
 |----|-----|------|-----|------|---------|
-| **dns1** | 101 | 1 | 512 MB | 8 GB | NSD authoritative DNS |
-| **containers** | 102 | 4 | 8 GB | 64 GB | Docker host (Traefik, Jellyfin, arr stack, Paperless) |
-| **openbao** | 103 | 1 | 2 GB | 20 GB | Secrets management |
+| **dns1** | 150 | 1 | 512 MB | 8 GB | NSD authoritative DNS |
+| **bao** | 151 | 1 | 2 GB | 20 GB | OpenBao secrets management |
+| **containers** | 152 | 8 | 16 GB | 96 GB + 32 GB transcode | Docker host (Traefik, Jellyfin, arr stack, Paperless, Immich) |
 
 The containers VM also has the GTX 1050 Ti passed through for Jellyfin hardware transcoding (NVENC).
 
