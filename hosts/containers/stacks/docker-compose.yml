@@ -81,7 +81,7 @@ services:
       - proxy
 
   radarr:
-    image: linuxserver/radarr:6.0.4
+    image: linuxserver/radarr:6.4.4
     container_name: radarr
     restart: unless-stopped
     environment:
@@ -101,7 +101,7 @@ services:
       - proxy
 
   sonarr:
-    image: linuxserver/sonarr:4.0.16
+    image: linuxserver/sonarr:4.0.20
     container_name: sonarr
     restart: unless-stopped
     environment:
@@ -121,7 +121,7 @@ services:
       - proxy
 
   paperless-redis:
-    image: docker.io/library/redis:8.0.5
+    image: docker.io/library/redis:8.10.3
     container_name: paperless-redis
     restart: unless-stopped
     user: "${UID:-1000}:${GID:-1000}"
@@ -131,7 +131,7 @@ services:
       - proxy
 
   paperless:
-    image: ghcr.io/paperless-ngx/paperless-ngx:2.20.6
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.20.15
     container_name: paperless
     restart: unless-stopped
     depends_on:
@@ -217,7 +217,7 @@ services:
   # installer since config comes from these env vars; the admin account is
   # created via the forgejo CLI, and self-registration stays off.
   forgejo-db:
-    image: postgres:17.10
+    image: postgres:17.11
     container_name: forgejo-db
     restart: unless-stopped
     environment:
@@ -230,7 +230,7 @@ services:
       - proxy
 
   forgejo:
-    image: codeberg.org/forgejo/forgejo:15.0.5
+    image: codeberg.org/forgejo/forgejo:15.0.11
     container_name: forgejo
     restart: unless-stopped
     depends_on:
@@ -273,7 +273,7 @@ services:
   # phone uses Cheogram directly) and would put a login form for the XMPP
   # account on the internet.
   converse:
-    image: nginx:1.30.4-alpine
+    image: nginx:1.31.8-alpine
     container_name: converse
     restart: unless-stopped
     volumes:
@@ -300,7 +300,7 @@ services:
       - "127.0.0.1:8191:8191"
 
   cloudflared:
-    image: cloudflare/cloudflared:2026.1.2
+    image: cloudflare/cloudflared:2026.10.7
     container_name: cloudflared
     restart: unless-stopped
     command: tunnel run
@@ -325,7 +325,7 @@ services:
   # completed downloads into /media/Music (it only talks to MusicBrainz, so it
   # stays on the normal proxy network, not the VPN).
   gluetun:
-    image: qmcgaw/gluetun:v3.41.0
+    image: qmcgaw/gluetun:v3.41.3
     container_name: gluetun
     restart: unless-stopped
     cap_add:
@@ -365,7 +365,7 @@ services:
       - proxy
 
   slskd:
-    image: slskd/slskd:0.24.4
+    image: slskd/slskd:0.26.2
     container_name: slskd
     restart: unless-stopped
     # Share gluetun's network namespace: all slskd traffic exits via the VPN.
@@ -404,7 +404,7 @@ services:
       - /mnt/nas/Media/Music:/music
 
   beets:
-    image: lscr.io/linuxserver/beets:2.3.1
+    image: lscr.io/linuxserver/beets:2.14.1
     container_name: beets
     restart: unless-stopped
     environment:
@@ -431,7 +431,7 @@ services:
   # for any future bulk re-run, use the memory-guard approach in
   # docs/immich.md rather than raising the cap.
   immich-server:
-    image: ghcr.io/immich-app/immich-server:v3.2.2
+    image: ghcr.io/immich-app/immich-server:v3.3.5
     container_name: immich-server
     restart: unless-stopped
     user: "1000:1000"
@@ -461,7 +461,7 @@ services:
       - proxy
 
   immich-ml:
-    image: ghcr.io/immich-app/immich-machine-learning:v3.2.2
+    image: ghcr.io/immich-app/immich-machine-learning:v3.3.5
     container_name: immich-ml
     restart: unless-stopped
     mem_limit: 6g
