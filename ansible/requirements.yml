@@ -3,8 +3,8 @@
 # collections' requires_ansible metadata; Renovate proposes version updates.
 collections:
   - name: ansible.posix
-    version: "2.1.0"
+    version: "2.2.2"
   - name: community.general
-    version: "11.4.9"
+    version: "11.4.10"
   - name: community.hashi_vault
     version: "6.2.1"
