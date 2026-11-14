@@ -152,7 +152,10 @@ def extract_embedded_state(html, marker):
 
 
 def find_menu_items(html, group_name):
+    """Return {guid: item} for the group (empty if the group exists with no
+    items), or None if no state blob has the group at all."""
     last_err = None
+    found_empty = False
     for marker in STATE_MARKERS:
         try:
             items = find_group_items(extract_embedded_state(html, marker),
@@ -162,21 +165,36 @@ def find_menu_items(html, group_name):
             continue
         if items:
             return items
+        if items is not None:
+            found_empty = True
+    if found_empty:
+        return {}
     if last_err:
         raise FetchError(str(last_err))
-    return {}
+    return None
 
 
 def find_group_items(state, group_name):
     """Walk the apollo cache for MenuGroup objects named group_name and
-    return {guid: item} for their fully-materialized MenuItem children."""
+    return {guid: item} for their fully-materialized MenuItem children.
+
+    Returns None if no such group exists. A group whose items list is
+    genuinely empty (the kitchen cleared it) returns {}; one with entries
+    that don't parse as MenuItems raises, since that's a format change and
+    must not read as "nothing on special"."""
     items = {}
+    found = False
+    raw_entries = 0
 
     def walk(node):
+        nonlocal found, raw_entries
         if isinstance(node, dict):
             if (node.get("__typename") == "MenuGroup"
                     and node.get("name") == group_name):
-                for item in node.get("items") or []:
+                found = True
+                entries = node.get("items") or []
+                raw_entries += len(entries)
+                for item in entries:
                     if (isinstance(item, dict)
                             and item.get("__typename") == "MenuItem"
                             and item.get("guid")):
@@ -193,6 +211,11 @@ def find_group_items(state, group_name):
                 walk(v)
 
     walk(state)
+    if not found:
+        return None
+    if raw_entries and not items:
+        raise FetchError(f"'{group_name}' group has {raw_entries} entries but "
+                         f"none parsed as MenuItems (format changed?)")
     return items
 
 
@@ -352,10 +375,12 @@ def main():
     except (FetchError, json.JSONDecodeError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
-    if not current:
+    if current is None:
         # A menu rework could rename the group; that should page us, not
-        # silently disable the watcher.
-        print(f"error: no '{args.group}' items found (group renamed?)", file=sys.stderr)
+        # silently disable the watcher. An existing-but-empty group is a
+        # normal state (no specials on right now) and falls through: its
+        # items diff as "removed from menu" and the next ones alert as new.
+        print(f"error: no '{args.group}' group found (renamed?)", file=sys.stderr)
         return 1
 
     previous = load_state(args.state_file)
