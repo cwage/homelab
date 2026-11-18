@@ -18,3 +18,7 @@ wireguard_peers:
     public_key: "+Wt0dW9Zg1z8i4G2wJ0BUZcMXAKJnRVZ8WMERLWXdH8="
     allowed_ips: "10.10.16.5/32"
     persistent_keepalive: 0
+  - name: darterpro
+    public_key: "Hi88jXiqUEHtUqjI50C9+x5zP1FUtLcyA3ohYhne7F4="
+    allowed_ips: "10.10.16.6/32"
+    persistent_keepalive: 0
